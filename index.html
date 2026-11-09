@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#1b1a24">
   <title>The Other Half: A Photographer's Passage</title>
   <link rel="stylesheet" href="css/style.css">
   <script type="importmap">
@@ -18,7 +21,7 @@
     <div class="vf-corner bl"></div><div class="vf-corner br"></div>
     <div class="vf-cross"></div>
     <div id="vf-label"></div>
-    <div class="vf-help">Click to take a photo &middot; F or right-click to lower the camera</div>
+    <div class="vf-help"><span class="mouse-only">Click to take a photo &middot; F or right-click to lower the camera</span><span class="touch-only">Drag to aim &middot; tap the shutter to take the photo</span></div>
   </div>
   <div id="flash"></div>
 
@@ -32,6 +35,21 @@
     <div id="hud-keys">WASD move &middot; Mouse look &middot; <b>E</b> talk/use &middot; <b>F</b> camera &middot; <b>J</b> journal &middot; <b>M</b> map &middot; <b>Esc</b> pause</div>
   </div>
   <div id="toasts"></div>
+
+  <!-- Touch controls (phones, tablets, touchscreen Chromebooks) -->
+  <div id="touch" class="hidden">
+    <div id="touch-hint">Left thumb: walk &middot; Right thumb: look &middot; Tap: use</div>
+    <div id="touch-stick" class="hidden"><div id="touch-knob"></div></div>
+    <div id="touch-top">
+      <button class="tbtn" id="t-map" aria-label="Map">&#128506;</button>
+      <button class="tbtn" id="t-journal" aria-label="Journal">&#128214;</button>
+      <button class="tbtn" id="t-pause" aria-label="Pause">&#10074;&#10074;</button>
+    </div>
+    <button class="tbtn big hidden" id="t-use"><b>&#9995;</b> <span></span></button>
+    <button class="tbtn round" id="t-cam" aria-label="Camera">&#128247;</button>
+    <button class="tbtn round shutter hidden" id="t-shutter" aria-label="Take photo"></button>
+  </div>
+  <div id="rotate-hint" class="hidden">Turn your device sideways for a better view.</div>
 
   <!-- Click to resume (pointer lock) -->
   <div id="resume" class="overlay hidden">
@@ -48,7 +66,7 @@
       <div id="dlg-name"></div>
       <div id="dlg-text"></div>
       <div id="dlg-choices"></div>
-      <div id="dlg-next" class="muted">Space / click to continue &#9656;</div>
+      <div id="dlg-next" class="muted" role="button"><span class="mouse-only">Space / click to continue &#9656;</span><span class="touch-only">Next &#9656;</span></div>
     </div>
   </div>
 
@@ -92,6 +110,7 @@
         <button class="btn big hidden" id="btn-continue">Continue</button>
         <button class="btn" id="btn-chapters">Chapter Select</button>
         <button class="btn" id="btn-settings">Settings</button>
+        <button class="btn touch-only" id="btn-fullscreen">Full Screen</button>
       </div>
       <div id="menu-chapters" class="hidden">
         <button class="btn" data-zone="ship">I. Steerage</button>
@@ -113,6 +132,13 @@
         <label>Ambient sound <input type="range" id="set-amb" min="0" max="1" step="0.05"></label>
         <label class="check"><input type="checkbox" id="set-tts"> Read lines aloud when no recorded voice exists (browser voice)</label>
         <label class="check"><input type="checkbox" id="set-drag"> Drag to look (use if the mouse won't lock)</label>
+        <label>Touch controls
+          <select id="set-touch">
+            <option value="auto">Automatic</option>
+            <option value="on">Always on</option>
+            <option value="off">Off</option>
+          </select>
+        </label>
         <button class="btn danger" id="btn-reset">Erase saved progress</button>
         <button class="btn muted-btn" data-back>Back</button>
       </div>

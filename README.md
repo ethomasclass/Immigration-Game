@@ -2,7 +2,7 @@
 
 A 3D exploration game about the immigrant experience in 1888 New York, for middle-school social studies. Students play a newspaper photographer who crosses the Atlantic in steerage, passes through Castle Garden, and documents life on the Lower East Side. Their photographs become evidence for the question *"Was America a land of opportunity for newcomers?"* An optional Chapter IV covers urbanization and political machines.
 
-- Runs in Chrome on **Chromebooks**: plain web files, no install, no build step, no server.
+- Runs in Chrome on **Chromebooks**, and on phones and tablets with touch controls: plain web files, no install, no build step, no server.
 - Built with [three.js](https://threejs.org) (included in `lib/`, so it works even if CDNs are blocked).
 - Tarot-style 2D characters with per-character animations; drop your illustrations into `assets/art/`.
 - Environments rebuilt from 1880s maps, photographs and records.

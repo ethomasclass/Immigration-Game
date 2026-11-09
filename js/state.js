@@ -9,7 +9,7 @@ const DEFAULTS = () => ({
   photos: [],       // { id, subject, title, desc, zone, img, caption }
   chart: { A: {}, B: {} },     // photoId -> column key
   answers: { A: { stance: '', text: '' }, B: { stance: '', text: '' } },
-  settings: { sens: 1, quality: 0.8, vo: 1, amb: 0.5, tts: false, drag: false },
+  settings: { sens: 1, quality: 0.8, vo: 1, amb: 0.5, tts: false, drag: false, touch: 'auto' },
 });
 
 export const state = DEFAULTS();

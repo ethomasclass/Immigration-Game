@@ -12,6 +12,7 @@ import { PhotoMode } from './ui/photo.js';
 import { Journal } from './ui/journal.js';
 import { Wrapup } from './ui/wrapup.js';
 import { Minimap } from './ui/minimap.js';
+import { TouchControls } from './ui/touch.js';
 import { richText } from './ui/text.js';
 import { DOCS, CARDS } from './data/dialogue.js';
 import { CHARACTERS } from './data/characters.js';
@@ -36,6 +37,7 @@ class Game {
     this.journal = new Journal(this);
     this.wrapup = new Wrapup(this);
     this.minimap = new Minimap(this);
+    this.touch = new TouchControls(this);
     this.currentGoal = null;
     this.mode = 'menu';
     this.zone = null;
@@ -83,6 +85,8 @@ class Game {
     $('set-amb').oninput = (e) => { S.amb = +e.target.value; setAmbienceVolume(S.amb); save(); };
     $('set-tts').onchange = (e) => { S.tts = e.target.checked; save(); };
     $('set-drag').onchange = (e) => { S.drag = e.target.checked; save(); };
+    $('set-touch').onchange = (e) => { S.touch = e.target.value; save(); this.touch.apply(); };
+    $('btn-fullscreen').onclick = () => { const d = document.documentElement; try { (d.requestFullscreen || d.webkitRequestFullscreen).call(d)?.catch?.(() => {}); screen.orientation?.lock?.('landscape').catch(() => {}); } catch {} };
     $('btn-reset').onclick = () => { if (confirm('Erase all saved photos, notes, and answers?')) { resetProgress(); $('btn-continue').classList.add('hidden'); } };
     // pause
     $('btn-resume').onclick = () => this.resume();
@@ -98,7 +102,7 @@ class Game {
     const S = state.settings;
     $('set-sens').value = S.sens; $('set-quality').value = String(S.quality);
     $('set-vo').value = S.vo; $('set-amb').value = S.amb;
-    $('set-tts').checked = S.tts; $('set-drag').checked = S.drag;
+    $('set-tts').checked = S.tts; $('set-drag').checked = S.drag; $('set-touch').value = S.touch || 'auto';
   }
 
   showMenu() {
@@ -177,7 +181,7 @@ class Game {
     $('goal-label').textContent = `GOAL ${n} OF ${req.length}`;
     $('goal-text').innerHTML = goal.text;
     const found = leads.filter(o => o.done).length;
-    $('goal-leads').textContent = leads.length ? `Leads to follow: ${found}/${leads.length} (J to see)` : '';
+    $('goal-leads').textContent = leads.length ? `Leads to follow: ${found}/${leads.length} (${this.touch?.enabled ? 'tap the book' : 'J'} to see)` : '';
   }
 
   // ------------------------------------------------------------------ modes
@@ -188,11 +192,12 @@ class Game {
     if (!playing) { this.controls.unlock(); if (this.photo.active) this.photo.toggle(false); }
     $('prompt').classList.add('hidden');
     if (m !== 'play') $('resume').classList.add('hidden');
+    if (this.touch) this.touch.sync();
   }
 
   showResume() {
     // Pointer lock needs a click from the student.
-    if (!state.settings.drag && !this.controls.locked) $('resume').classList.remove('hidden');
+    if (!state.settings.drag && !this.touch.enabled && !this.controls.locked) $('resume').classList.remove('hidden');
   }
 
   resume() {
@@ -334,6 +339,14 @@ class Game {
   }
 
   // ------------------------------------------------------------------ loop
+  rotateHint() {
+    const show = this.touch.enabled && innerHeight > innerWidth && this.mode === 'play';
+    if (show !== this._rot) {
+      this._rot = show; $('rotate-hint').classList.toggle('hidden', !show);
+      clearTimeout(this._rotT); if (show) this._rotT = setTimeout(() => $('rotate-hint').classList.add('hidden'), 5000);
+    }
+  }
+
   resize() {
     const q = state.settings.quality || 0.8;
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, 1) * q);
@@ -350,7 +363,9 @@ class Game {
     this.controls.update(dt, this.zone.colliders, this.zone.bounds);
     this.photo.update(dt);
     this.minimap.update(dt);
+    this.rotateHint();
     const f = this.findFocus();
+    this.touch.update(f);
     if (f !== this.focus) {
       this.focus = f;
       const p = $('prompt');

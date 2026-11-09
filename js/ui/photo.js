@@ -26,6 +26,7 @@ export class PhotoMode {
     this.game.camera.fov = on ? 40 : 70;
     this.game.camera.updateProjectionMatrix();
     if (on) sfx('page');
+    this.game.touch?.sync();
   }
 
   /** Which subject is in frame right now? */

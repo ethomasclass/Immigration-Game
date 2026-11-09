@@ -20,6 +20,8 @@ export class Controls {
     this.roll = 0;  // ship sway, set by zone
     this.floorY = 0; // height of the floor the player stands on (roofs)
     this.shake = 0;  // 0..1, e.g. an El train overhead
+    this.touchMove = { x: 0, y: 0 };  // virtual joystick, -1..1 (y down = backward)
+    this.touchMode = false;
     this.onClick = null;      // left click while playing
     this.onRightClick = null; // right click while playing
     this.onLockChange = null;
@@ -40,7 +42,7 @@ export class Controls {
 
     canvas.addEventListener('contextmenu', (e) => e.preventDefault());
     canvas.addEventListener('mousedown', (e) => {
-      if (!this.enabled) return;
+      if (!this.enabled || this.touchMode) return;
       if (e.button === 2) { this.onRightClick && this.onRightClick(); return; }
       if (state.settings.drag) { this.dragging = true; this.dragMoved = 0; return; }
       if (!this.locked) { this.lock(); return; }
@@ -57,19 +59,11 @@ export class Controls {
       if (this.locked) this.look(e.movementX, e.movementY);
       else if (this.dragging) { this.dragMoved += Math.abs(e.movementX) + Math.abs(e.movementY); this.look(-e.movementX * 1.5, -e.movementY * 1.5); }
     });
-    // Touchscreen Chromebooks: one-finger drag looks around.
-    let last = null;
-    canvas.addEventListener('touchstart', (e) => { last = e.touches[0]; }, { passive: true });
-    canvas.addEventListener('touchmove', (e) => {
-      if (!this.enabled || !last) return;
-      const t = e.touches[0];
-      this.look(-(t.clientX - last.clientX) * 2, -(t.clientY - last.clientY) * 2);
-      last = t;
-    }, { passive: true });
+    // Touch input is handled by ui/touch.js (joystick + drag to look).
   }
 
   lock() {
-    if (state.settings.drag) return;
+    if (state.settings.drag || this.touchMode) return;
     try {
       const p = this.canvas.requestPointerLock();
       if (p && p.catch) p.catch(() => { state.settings.drag = true; this.onLockChange && this.onLockChange(false, true); });
@@ -99,13 +93,14 @@ export class Controls {
       // Arrow keys turn (helps students with touchpads).
       if (k.has('ArrowLeft')) this.yaw += 1.8 * dt;
       if (k.has('ArrowRight')) this.yaw -= 1.8 * dt;
+      fx += this.touchMove.x; fz -= this.touchMove.y;
     }
-    const run = k.has('ShiftLeft') || k.has('ShiftRight');
+    const run = k.has('ShiftLeft') || k.has('ShiftRight') || Math.hypot(this.touchMove.x, this.touchMove.y) > 0.97;
     const speed = run ? 5.2 : 3.0;
     const sin = Math.sin(this.yaw), cos = Math.cos(this.yaw);
     let wx = -sin * fz + cos * fx, wz = -cos * fz - sin * fx;
     const len = Math.hypot(wx, wz);
-    if (len > 0) { wx /= len; wz /= len; }
+    if (len > 1) { wx /= len; wz /= len; }   // keep analog (joystick) speeds below full
     const a = Math.min(1, dt * 12);
     this.vel.x += (wx * speed - this.vel.x) * a;
     this.vel.z += (wz * speed - this.vel.z) * a;
