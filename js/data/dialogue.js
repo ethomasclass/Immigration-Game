@@ -269,7 +269,8 @@ export const DIALOGUE = {
         note: 'STEERAGE: The cheapest tickets. Hundreds of people slept in crowded bunks below deck, with little air, light, or privacy.',
         lines: [
           '[[steerage|Steerage]]. Cheapest ticket on the ship. Near a thousand souls below decks on this crossing.',
-          'Bunks two high. Straw mattress, maybe a blanket. Men on one side, women and families on the other.',
+          'Iron berths, two high, six feet by two. A sack of straw, one blanket, and a cork life preserver for a pillow.',
+          'Single men sleep forward, single women aft, and families here in the middle.',
           'Upstairs, first class has a dining room with chandeliers. Same ship. Different world.',
         ],
         next: 'hub',
@@ -278,6 +279,7 @@ export const DIALOGUE = {
         set: ['heard_conditions'],
         lines: [
           'Herring, potatoes, black bread, and a soup the cook calls stew. Nobody asks for seconds.',
+          'There\'s no dining room. You bring your own tin plate and cup, and I ladle it out of the big pans.',
           'Smart ones bring their own food from home: cheese, dried sausage, onions.',
         ],
         next: 'hub',
@@ -300,7 +302,7 @@ export const DIALOGUE = {
         next: 'hub',
       },
       land: {
-        lines: ['Tomorrow morning, if the fog lifts. When you\'re ready, climb the ladder at the front of the hold.'],
+        lines: ['Tomorrow morning, if the fog lifts. When you\'re ready, climb the ladder up through the hatch.'],
         end: true,
       },
     },
@@ -341,7 +343,7 @@ export const DIALOGUE = {
       },
       sick: {
         lines: [
-          'If it\'s catching, they go to the hospital on the island.',
+          'If it\'s catching, they go to the hospital on Ward\'s Island.',
           'If we turn them away, the steamship company must carry them home, at the company\'s own cost.',
         ],
         next: 'hub',
@@ -855,7 +857,8 @@ export const DIALOGUE = {
         set: ['learned_society'],
         note: 'MUTUAL AID: Landsmanshaftn (hometown societies) collected small monthly dues and helped members with sick pay, loans, jobs, and burials.',
         lines: [
-          'Welcome. I am Kaplan, secretary of the Kiever Society. We are a [[landsmanshaft]]: everyone from Kiev and the towns nearby.',
+          'Welcome to the new synagogue on Eldridge Street, finished just last year. I am Kaplan, secretary of the Kiever Society.',
+          'We are a [[landsmanshaft]]: everyone from Kiev and the towns nearby.',
           'Each member pays a little every month. When someone is sick, we pay. When someone dies, we bury them properly.',
           'When a newcomer arrives, we help find a room and a job.',
         ],
@@ -893,7 +896,8 @@ export const DIALOGUE = {
         set: ['learned_parish'],
         note: 'PARISHES: Catholic parishes ran schools, helped the sick and poor, and gave Irish and Italian immigrants a community.',
         lines: [
-          'Good day. The Irish built this [[parish]] church. Now the Italians come too.',
+          'Good day. This is the Church of the Transfiguration, on Mott Street. Protestants built it long ago, and the Irish made it a Catholic [[parish]].',
+          'Now the Italians come too, and Chinese neighbors live all around us.',
           'The Irish are not always happy to share their pews. Different saints, different songs.',
           'But we run a school. We visit the sick. We help men find work. A parish is like a village inside the city.',
         ],
@@ -1018,7 +1022,7 @@ export const DIALOGUE = {
         set: ['learned_guild'],
         note: 'SETTLEMENT HOUSES: The Neighborhood Guild (1886) on the Lower East Side was America\'s first settlement house. Volunteers lived in the neighborhood and ran clubs, classes, and a kindergarten.',
         lines: [
-          'Hello! Welcome to the [[Neighborhood Guild]]. Dr. Stanton Coit started it in 1886. It\'s the first [[settlement house]] in America.',
+          'Hello! Welcome to the [[Neighborhood Guild]], here at 146 Forsyth Street. Dr. Stanton Coit started it in 1886. It\'s the first [[settlement house]] in America.',
           'We don\'t just visit the neighborhood. We live here. We run boys\' and girls\' clubs, a reading room, English classes, a kindergarten.',
         ],
         choices: [
@@ -1211,7 +1215,10 @@ export const DIALOGUE = {
         ],
       },
       what: {
-        lines: ['Offices! Ten stories, maybe more. A few years ago, five stories was tall. Look at the Tribune tower over there: two hundred and sixty feet!'],
+        lines: [
+          'The new Times Building! Thirteen stories. And here is the trick: we build it right around the old building, while the presses keep printing inside!',
+          'A few years ago, five stories was tall. Look at the Tribune tower over there: two hundred and sixty feet!',
+        ],
         next: 'hub',
       },
       tall: {
@@ -1287,7 +1294,7 @@ export const DIALOGUE = {
         note: 'ELEVATED TRAINS: "The El" ran steam trains on iron tracks above the street. It was fast, but it dropped cinders and oil on the people below and blocked sunlight.',
         lines: [
           'Third Avenue El! Uptown trains! Steam engines on an iron road, right above the street!',
-          'Fifty-ninth Street for the Park! Five cents!',
+          'For Central Park? Ride to Fifty-Ninth Street and walk west. Or take the Sixth Avenue El, right to the Park\'s corner! Five cents!',
         ],
         choices: [
           { text: 'What\'s it like to live under the El?', next: 'under' },
@@ -1417,7 +1424,7 @@ export const DOCS = {
   },
   statue: {
     title: 'The Statue in the Harbor',
-    text: 'Across the water stands the Statue of Liberty, a gift from the people of France. It was dedicated in 1886, just two years ago.\n\nIts torch is the first thing many immigrants see of America. Its full name is "Liberty Enlightening the World."',
+    text: 'Across the water, on Bedloe\'s Island, stands the Statue of Liberty, a gift from the people of France. It was dedicated in 1886, just two years ago.\n\nIts copper skin is still reddish brown. Over the next twenty years, the weather will slowly turn it green. Its full name is "Liberty Enlightening the World," and at night its torch works as a lighthouse.',
   },
   handbill: {
     title: 'A Handbill on the Wall',

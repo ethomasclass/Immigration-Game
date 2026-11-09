@@ -4,7 +4,8 @@ A 3D exploration game about the immigrant experience in 1888 New York, for middl
 
 - Runs in Chrome on **Chromebooks**: plain web files, no install, no build step, no server.
 - Built with [three.js](https://threejs.org) (included in `lib/`, so it works even if CDNs are blocked).
-- Tarot-style art direction: drop your illustrations into `assets/art/`.
+- Tarot-style 2D characters with per-character animations; drop your illustrations into `assets/art/`.
+- Environments rebuilt from 1880s maps, photographs and records.
 - Voiceover ready: drop ElevenLabs MP3s into `assets/audio/vo/`.
 
 ## Guides
@@ -12,6 +13,8 @@ A 3D exploration game about the immigrant experience in 1888 New York, for middl
 - **[Teacher Guide](docs/TEACHER_GUIDE.md):** timing, controls, answer key, history notes
 - **[Art Guide](docs/ART_GUIDE.md):** every texture name, and sizes for your tarot art
 - **[Voiceover Guide](docs/VOICEOVER_GUIDE.md):** ElevenLabs workflow; the script is in `assets/audio/vo_script.csv`
+- **[Character Art Prompts](docs/CHARACTER_ART_PROMPTS.md):** Google Flow prompts for every character, in the tarot style
+- **[Historical Reference](docs/HISTORICAL_REFERENCE.md):** what 1888 New York looked like, with sources
 
 ## Publish on GitHub Pages
 

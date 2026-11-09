@@ -14,7 +14,7 @@ export const SUBJECTS = {
   poster:     { title: 'The Promise', desc: 'A steamship poster selling cheap fares. Companies advertised all over Europe.', col: 'business', zone: 'ship' },
   food:       { title: 'The Ration', desc: 'Steerage food: thin stew and hard bread.', col: 'business', zone: 'ship' },
   // ---- Zone 2 ----
-  statue:     { title: 'Liberty', desc: 'The Statue of Liberty, dedicated in 1886, seen from Castle Garden.', col: 'government', zone: 'castle' },
+  statue:     { title: 'Liberty', desc: 'The Statue of Liberty, dedicated in 1886, still copper brown, seen from Castle Garden.', col: 'government', zone: 'castle' },
   castle:     { title: 'The Fortress', desc: 'Castle Garden, an old fort used as New York\'s immigrant station from 1855 to 1890.', col: 'government', zone: 'castle' },
   doctor:     { title: 'The Physician', desc: 'A doctor checks each immigrant for disease in a few seconds.', col: 'government', zone: 'castle' },
   clerk:      { title: 'The Ledger', desc: 'A clerk asks the questions required by the Immigration Act of 1882.', col: 'government', zone: 'castle' },
@@ -24,7 +24,7 @@ export const SUBJECTS = {
   changer:    { title: 'The Money Changer', desc: 'A street money changer who gives bad rates.', col: 'business', zone: 'castle' },
   agent:      { title: 'The Guide', desc: 'Castle Garden\'s information desk helped protect immigrants.', col: 'government', zone: 'castle' },
   // ---- Zone 3 ----
-  tenement:   { title: 'The Tenement', desc: 'A crowded tenement on Hester Street, built under the 1879 tenement law.', col: 'government', zone: 'les' },
+  tenement:   { title: 'The Tenement', desc: 'A crowded tenement on Hester Street, built under the 1879 tenement law, with air shafts and a yard privy.', col: 'government', zone: 'les' },
   sweatshop:  { title: 'The Needle', desc: 'A family sews coats at home for piecework pay.', col: 'business', zone: 'les' },
   girl:       { title: 'The Button Girl', desc: 'Ten-year-old Sarah sews buttons after school.', col: 'business', zone: 'les' },
   boarder:    { title: 'The Boarder', desc: 'Yankel pays a dollar a week to sleep on two chairs.', col: 'people', zone: 'les' },
@@ -48,7 +48,7 @@ export const SUBJECTS = {
   plunkitt:   { title: 'The Boss', desc: 'Tammany leader George Washington Plunkitt at his bootblack-stand "office."', col: 'machine', zone: 'city' },
   oldrep:     { title: 'The Old Reporter', desc: 'A reporter who saw the newspapers bring down Boss Tweed.', col: 'machine', zone: 'city' },
   tribune:    { title: 'The Tower', desc: 'The Tribune Building (1875), one of the tallest in New York.', col: 'growth', zone: 'city' },
-  frame:      { title: 'The Builders', desc: 'Immigrant workers raise a new tall office building.', col: 'growth', zone: 'city' },
+  frame:      { title: 'The Builders', desc: 'Immigrant workers raise the new 13-story Times Building around the old one.', col: 'growth', zone: 'city' },
   bridge:     { title: 'The Bridge', desc: 'The Brooklyn Bridge, opened in 1883.', col: 'growth', zone: 'city' },
   horsecar:   { title: 'The Horsecar', desc: 'A horse-drawn streetcar on rails.', col: 'growth', zone: 'city' },
   el:         { title: 'The Iron Road', desc: 'The elevated railway ("the El") runs steam trains above the street.', col: 'growth', zone: 'city' },

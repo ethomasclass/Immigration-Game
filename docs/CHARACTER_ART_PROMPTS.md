@@ -1,23 +1,22 @@
 # Character Art Prompts (Google Flow)
 
-These prompts make the **character art** in a tarot-illustration style. They make the figure only: no card, border, title, or Roman numeral. The game adds the tarot frame itself.
+These prompts make the **2D character art** in a tarot-illustration style. They make the figure only: no card, border, title, or Roman numeral. Characters appear as flat illustrated cutouts in the 3D world, like a paper theater.
 
 ## How to use
 
 1. In Flow, create an image with **Portrait (9:16)** aspect ratio.
 2. Paste the **STYLE BLOCK**, then one **character line** from below. Keep the style block identical every time; that's what keeps the cast consistent.
 3. Generate Rivka first. When you like one, save it and add it as a **reference image (ingredient)** for every later character, with the note *"match the art style of the reference image, not the character."*
-4. Remove the background (Flow's edit tools, Canva, or remove.bg) and save as a PNG:
-   - `assets/art/portrait_<id>.png`: the full-body figure, shown in the dialogue box. *(Required)*
-   - Optional: a close-up crop of the face, saved as `assets/art/face_<id>.png`.
-5. Refresh the game. Each character's art appears automatically, using the file names in the table.
+4. Remove the background (Flow's edit tools, Canva, or remove.bg), crop tight with the feet at the bottom edge, and save as **`assets/art/portrait_<id>.png`**. This one image is used both for the **2D character in the 3D world** and in the **dialogue box**.
+5. Refresh the game. The character appears automatically.
+6. *(Optional, animation)*: animate the portrait in Flow (Veo) and save an 8-frame sprite strip as `assets/art/anim_<id>.png`. See [ART_GUIDE.md](ART_GUIDE.md#optional-animated-characters-with-flow-veo).
 
 ---
 
 ## STYLE BLOCK (paste first, every time)
 
 ```
-Character illustration in an Art Nouveau tarot-card art style, without the card: a single full-body figure standing, facing the viewer at a slight three-quarter angle, centered, head to feet fully visible, plain flat cream background (#EFE3C6) with no scenery, no border, no frame, no text, no lettering.
+Character illustration in an Art Nouveau tarot-card art style, without the card: a single full-body figure standing, facing the viewer at a slight three-quarter angle, centered, head to feet fully visible, feet at the bottom of the image, plain flat cream background (#EFE3C6) with no scenery, no shadow, no border, no frame, no text, no lettering.
 Confident hand-inked black linework with varied line weight, flat cel-shaded color with soft watercolor-textured fills and subtle paper grain, gentle flowing curves in hair and fabric inspired by 1890s Art Nouveau posters, decorative but readable.
 Muted vintage palette: ochre gold, deep teal, brick red, olive, warm cream, sepia browns, ink black.
 Historically accurate clothing for New York, 1888. Dignified, humane portrayal with natural proportions, no caricature or exaggerated ethnic features.

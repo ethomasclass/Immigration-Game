@@ -28,7 +28,7 @@ class Game {
     this.canvas = $('view');
     this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas, antialias: false, powerPreference: 'low-power' });
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
-    this.camera = new THREE.PerspectiveCamera(70, innerWidth / innerHeight, 0.05, 400);
+    this.camera = new THREE.PerspectiveCamera(70, innerWidth / innerHeight, 0.08, 2500);
     this.controls = new Controls(this.canvas, this.camera);
     this.dialogue = new Dialogue(this);
     this.photo = new PhotoMode(this);
@@ -130,6 +130,7 @@ class Game {
         this.zoneId = id;
         state.zone = id; save();
         this.zone.build();
+        this.zone.optimize();
         const sp = spawn || this.zone.spawn;
         this.controls.setPose(sp.x, sp.z, sp.yaw);
         this.controls.roll = 0;

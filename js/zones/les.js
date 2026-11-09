@@ -416,7 +416,7 @@ export class LowerEastSideZone extends Zone {
       gd.position.set(-0.7 + (i % 4) * 0.45, 0.95, i < 4 ? -0.2 : 0.2); g.add(gd);
     }
     g.position.set(x, 0, z); g.rotation.y = ry;
-    this.scene.add(g);
+    this.scene.add(g); this.bake(g);
     const swap = Math.abs(Math.sin(ry)) > 0.7;
     this.colliders.push(swap ? { minX: x - 0.55, maxX: x + 0.55, minZ: z - 1.1, maxZ: z + 1.1, see: true } : { minX: x - 1.1, maxX: x + 1.1, minZ: z - 0.55, maxZ: z + 0.55, see: true });
   }
@@ -431,7 +431,7 @@ export class LowerEastSideZone extends Zone {
       const horse = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.7, 1.7), colorMat(sx < 0 ? '#5a3a24' : '#3a2416')); horse.position.set(sx, 1.25, -4.2); g.add(horse);
       const neck = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.8, 0.4), colorMat('#4a2e1c')); neck.position.set(sx, 1.7, -5.1); neck.rotation.x = -0.5; g.add(neck);
     }
-    g.position.set(x, 0, z); this.scene.add(g);
+    g.position.set(x, 0, z); this.scene.add(g); this.bake(g);
     this.colliders.push({ minX: x - 1.1, maxX: x + 1.1, minZ: z - 6, maxZ: z + 2.6 });
   }
 

@@ -23,7 +23,7 @@ export class PhotoMode {
     vf.classList.toggle('hidden', !on);
     document.getElementById('crosshair').classList.toggle('hidden', on);
     document.getElementById('hud-keys').classList.toggle('hidden', on);
-    this.game.camera.fov = on ? 50 : 70;
+    this.game.camera.fov = on ? 40 : 70;
     this.game.camera.updateProjectionMatrix();
     if (on) sfx('page');
   }

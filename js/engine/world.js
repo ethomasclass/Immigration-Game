@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import { material, colorMat, texture } from './textures.js';
 import { CHARACTERS } from '../data/characters.js';
 import { makeCutout, animateCutout } from './cutout.js';
+import { mergeGeometries } from '../../lib/BufferGeometryUtils.js';
 
 export class Zone {
   constructor(game) {
@@ -33,6 +34,44 @@ export class Zone {
     for (const n of this.npcs) {
       if (!n.group.visible) continue;
       animateCutout(n.group, this.time, cam, speaker && speaker === n.id && n.talking !== false && d.currentTree === n.talkTree);
+    }
+  }
+
+  /** Move a static group's meshes into the scene (keeping their placement) so optimize() can merge them. */
+  bake(g) {
+    g.updateMatrixWorld(true);
+    const meshes = [];
+    g.traverse(o => { if (o.isMesh) meshes.push(o); });
+    for (const m of meshes) { m.updateMatrixWorld(true); const mw = m.matrixWorld.clone(); m.parent.remove(m); m.matrix.copy(mw); m.matrix.decompose(m.position, m.quaternion, m.scale); this.scene.add(m); }
+    if (g.parent) g.parent.remove(g);
+  }
+
+  /**
+   * Merge static meshes that share a material into one mesh per material.
+   * Cuts draw calls a lot (important on Chromebooks). Meshes with
+   * userData.keep (things that move or get hidden) are left alone.
+   */
+  optimize() {
+    const groups = new Map();
+    const remove = [];
+    for (const o of this.scene.children) {
+      if (!o.isMesh || o.userData.keep || Array.isArray(o.material) || o.material.transparent) continue;
+      const g = o.geometry;
+      if (!g.index && !g.attributes.position) continue;
+      o.updateMatrixWorld(true);
+      const geo = (g.index ? g.toNonIndexed() : g.clone()).applyMatrix4(o.matrixWorld);
+      for (const k of Object.keys(geo.attributes)) if (!['position', 'normal', 'uv'].includes(k)) geo.deleteAttribute(k);
+      if (!geo.attributes.uv || !geo.attributes.normal) continue;
+      const key = o.material.uuid;
+      if (!groups.has(key)) groups.set(key, { mat: o.material, geos: [] });
+      groups.get(key).geos.push(geo);
+      remove.push(o);
+    }
+    for (const o of remove) this.scene.remove(o);
+    for (const { mat, geos } of groups.values()) {
+      const merged = geos.length === 1 ? geos[0] : mergeGeometries(geos, false);
+      if (!merged) continue;
+      this.scene.add(new THREE.Mesh(merged, mat));
     }
   }
 
@@ -220,6 +259,23 @@ export class Zone {
       const x = cx + Math.sin(a) * r, z = cz + Math.cos(a) * r;
       this.colliders.push({ minX: x - 0.38, maxX: x + 0.38, minZ: z - 0.38, maxZ: z + 0.38 });
     }
+  }
+
+  /** Straight wall between two points (any angle), with block colliders along it. */
+  wallLine(x1, z1, x2, z2, h, mat, t = 0.4, y = 0) {
+    const len = Math.hypot(x2 - x1, z2 - z1);
+    const m = new THREE.Mesh(new THREE.BoxGeometry(len, h, t), toMat(mat));
+    m.position.set((x1 + x2) / 2, y + h / 2, (z1 + z2) / 2);
+    m.rotation.y = -Math.atan2(z2 - z1, x2 - x1);
+    this.scene.add(m);
+    const cols = [];
+    if (y < 1.5) for (let d = 0; d <= len; d += 0.5) {
+      const x = x1 + (x2 - x1) * d / len, z = z1 + (z2 - z1) * d / len;
+      const c = { minX: x - 0.38, maxX: x + 0.38, minZ: z - 0.38, maxZ: z + 0.38 };
+      this.colliders.push(c); cols.push(c);
+    }
+    m.userData.cols = cols;
+    return m;
   }
 
   tree(x, z, s = 1) {

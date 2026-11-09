@@ -185,8 +185,15 @@ const DRAW = {
       // fire escape balcony line
       if (s.escape) { ctx.fillStyle = '#121212'; ctx.fillRect(w * 0.12, y0 + flH * 0.86, w * 0.76, 3); for (let x = w * 0.12; x < w * 0.88; x += 5) ctx.fillRect(x, y0 + flH * 0.7, 1, flH * 0.16); }
     }
-    // ground-floor storefront
+    // ground floor: civic buildings get rusticated stone and a central door instead of shops
     const sy = h - storeH;
+    if (s.civic) {
+      ctx.fillStyle = s.stone || '#cfcac0'; ctx.fillRect(0, sy, w, storeH);
+      ctx.fillStyle = 'rgba(0,0,0,.18)'; for (let y = sy; y < h; y += storeH / 5) ctx.fillRect(0, y, w, 2);
+      for (let b = 0; b < bays; b++) { const x = b * bw + bw * 0.3; ctx.fillStyle = '#2a2a2e'; ctx.fillRect(x, sy + storeH * 0.3, bw * 0.4, storeH * 0.5); ctx.beginPath(); ctx.arc(x + bw * 0.2, sy + storeH * 0.3, bw * 0.2, Math.PI, 0); ctx.fill(); }
+      noise(ctx, w, h, r, 10, 1000);
+      return;
+    }
     ctx.fillStyle = s.storeColor || '#3a2a1e'; ctx.fillRect(0, sy, w, storeH);
     ctx.fillStyle = s.signColor || '#2a2420'; ctx.fillRect(w * 0.04, sy + 4, w * 0.92, storeH * 0.2);
     ctx.fillStyle = '#d8c48a'; ctx.font = `bold ${Math.round(storeH * 0.13)}px Georgia`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
@@ -246,6 +253,24 @@ const DRAW = {
     ctx.fillStyle = '#2e3440'; ctx.beginPath(); ctx.arc(w * 0.5, h * 0.4, w * 0.07, 0, 7); ctx.fill();
     ctx.fillStyle = '#2a2420'; ctx.font = `bold ${Math.round(w * 0.05)}px Georgia`; ctx.textAlign = 'center';
     ctx.fillText('CHURCH OF THE TRANSFIGURATION', w / 2, h * 0.6);
+  },
+  // Straw ticks seen from above/side: canvas or blue gingham covers, grey/brown wool blankets.
+  berths(ctx, w, h, s, r) {
+    const n = s.n || 4, bw = w / n;
+    for (let i = 0; i < n; i++) {
+      const x = i * bw;
+      const gingham = r() < 0.4;
+      ctx.fillStyle = gingham ? '#5a6e9a' : '#d9d2bf'; ctx.fillRect(x + 2, 0, bw - 4, h);
+      if (gingham) { ctx.fillStyle = 'rgba(255,255,255,.35)'; for (let k = 0; k < bw; k += 8) ctx.fillRect(x + k, 0, 4, h); for (let k = 0; k < h; k += 8) ctx.fillRect(x, k, bw, 4); }
+      ctx.fillStyle = r() < 0.5 ? '#6b6258' : '#5a4636'; ctx.fillRect(x + 4, h * (0.35 + r() * 0.1), bw - 8, h * 0.5);  // blanket
+      ctx.fillStyle = '#c8a870'; ctx.fillRect(x + bw * 0.25, h * 0.04, bw * 0.5, h * 0.16);                             // cork pillow
+      ctx.fillStyle = '#2a2a2a'; ctx.fillRect(x, 0, 2, h);                                                              // iron pipe partition
+    }
+    noise(ctx, w, h, r, 16, 900);
+  },
+  sawdust(ctx, w, h, s, r) {
+    DRAW.planks(ctx, w, h, { color: '#6a4a30', n: 8 }, r);
+    for (let i = 0; i < 2500; i++) { ctx.fillStyle = `rgba(${200 + r() * 40},${170 + r() * 30},${110 + r() * 30},${0.25 + r() * 0.4})`; ctx.fillRect(r() * w, r() * h, 1 + r() * 2, 1 + r() * 2); }
   },
   sky(ctx, w, h, s) {
     const g = ctx.createLinearGradient(0, 0, 0, h);

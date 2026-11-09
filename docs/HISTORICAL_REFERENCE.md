@@ -73,6 +73,7 @@ This research backs the game's environments. Colors are rendering estimates. Poi
 - **Grounds:** wooden-slat benches and rustic cedar shelters, small "Keep off the grass" boards, and **sheep on the Sheep Meadow**.
 
 ## How the game simplifies
+- The Statue of Liberty is placed at its true compass bearing (SW) but drawn about 2× larger than its real apparent size from the Battery, so students can photograph it.
 - **Distances:** the street grid keeps the real **order and widths** of streets, but blocks are shortened to about 30 m. Mott Street is moved one block west of the Bowery (really about 6 blocks).
 - **The Neighborhood Guild** is one block north of Grand, not three.
 - **One ship** carries Jewish, Italian, and German passengers together for storytelling.

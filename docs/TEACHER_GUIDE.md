@@ -8,7 +8,8 @@ Students play a newspaper photographer in **1888**. They cross the Atlantic in s
 - Progress (photos, notes, answers) saves automatically **on that Chromebook only**. If a student switches computers, they can use **Chapter Select** to jump ahead.
 - If the mouse won't "lock" (some managed Chromebooks), turn on **Settings → Drag to look**.
 - If the game runs slowly, set **Settings → Graphics quality → Low**.
-- Controls: **WASD** move · **mouse** look · **E** talk/use · **F** (or right-click) raise camera, click to take a photo · **J** journal · **Esc** pause.
+- Controls: **WASD** move · **mouse** look · **E** talk/use · **F** (or right-click) raise camera, click to take a photo · **J** journal · **M** map · **Esc** pause.
+- The places are rebuilt from 1880s maps, photographs and records. See [HISTORICAL_REFERENCE.md](HISTORICAL_REFERENCE.md) for sources and the places where distances are compressed.
 
 ## Structure and timing
 
