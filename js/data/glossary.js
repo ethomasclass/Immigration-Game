@@ -1,0 +1,51 @@
+// Word bank. In dialogue and documents, write [[term]] or [[shown text|term]]
+// to make a clickable, highlighted vocabulary word.
+export const GLOSSARY = {
+  'emigrate': 'To leave your home country to live in another one.',
+  'immigrant': 'A person who comes to live in a new country.',
+  'push factor': 'A reason that pushes people to leave home, such as violence, unfair laws, or poverty.',
+  'pull factor': 'A reason that pulls people toward a new place, such as jobs, family, or freedom.',
+  'pogrom': 'A violent attack by a mob on a group of people, especially attacks on Jewish communities in the Russian Empire.',
+  'May Laws': 'Rules the Russian government made in 1882 that limited where Jewish people could live and how they could work.',
+  'steerage': 'The cheapest, most crowded section of a ship, below the deck. Most immigrants traveled this way.',
+  'chain migration': 'When immigrants follow family or neighbors who already moved. One person settles, then writes home, and others follow.',
+  'old immigrants': 'People who came mostly from northern and western Europe (Ireland, Germany, Britain, Scandinavia) before about 1880.',
+  'new immigrants': 'People who came mostly from southern and eastern Europe (Italy, Russia, Poland, Greece) after about 1880.',
+  'bird of passage': 'An immigrant, often an Italian man, who came to work for a few seasons and planned to return home.',
+  'padrone': 'A labor boss who found jobs for Italian immigrants. Some helped; many cheated the workers.',
+  'Castle Garden': 'New York\'s immigrant station from 1855 to 1890, at the southern tip of Manhattan. Ellis Island replaced it in 1892.',
+  'head tax': 'A fee of 50 cents for each immigrant, charged by the Immigration Act of 1882. Shipping companies paid it and added it to ticket prices.',
+  'public charge': 'Someone who would have to depend on the government or charity to live. The 1882 law turned away people "likely to become a public charge."',
+  'Immigration Act of 1882': 'The first broad federal immigration law. It set a 50-cent head tax and banned convicts and anyone likely to become a public charge.',
+  'Chinese Exclusion Act': 'A law passed in 1882 that banned Chinese laborers from coming to the United States. It was the first law to ban a group because of its nationality.',
+  'exclusion': 'Keeping a person or group out.',
+  'runner': 'A person who waited outside the immigrant station to steer newcomers to boardinghouses or jobs. Many were swindlers.',
+  'swindler': 'Someone who cheats people out of money.',
+  'boardinghouse': 'A house where people rent a bed and get meals.',
+  'tenement': 'A crowded apartment building where poor families lived, often with little light or fresh air.',
+  'Tenement Act of 1879': 'A New York law that said every room needed a window. Builders met it with narrow air shafts, making "dumbbell" tenements.',
+  'privy': 'An outdoor toilet, like an outhouse.',
+  'boarder': 'A person who pays a family to sleep in their home.',
+  'piecework': 'Work paid by the piece, for each item finished, not by the hour.',
+  'sweatshop': 'A crowded, unsafe workplace with long hours and low pay. Many were in tenement apartments.',
+  'pushcart': 'A wheeled cart pushed by hand, used to sell goods on the street.',
+  'peddler': 'A person who sells goods on the street or door to door.',
+  'mutual aid': 'When people in a community pool their money and help one another.',
+  'landsmanshaft': 'A society of Jewish immigrants from the same hometown. Members helped each other with loans, sick pay, and burials. (Plural: landsmanshaftn.)',
+  'parish': 'A local church community, such as a Catholic parish.',
+  'synagogue': 'A Jewish house of worship and community center.',
+  'ethnic newspaper': 'A newspaper written in an immigrant group\'s own language, such as Yiddish, Italian, or German.',
+  'nativism': 'The belief that people born in a country are better than immigrants, and that immigration should be stopped or limited.',
+  'prejudice': 'An unfair opinion about a person or group, formed without knowing them.',
+  'settlement house': 'A community center in a poor neighborhood, where volunteers taught classes and helped immigrants.',
+  'Neighborhood Guild': 'America\'s first settlement house, opened in 1886 on the Lower East Side of New York.',
+  'ward boss': 'A local political leader who did favors (jobs, coal, help with the law) in exchange for votes.',
+  'merchant': 'A person who owns a store or trades goods.',
+  'assimilate': 'To become part of a new culture, for example by learning the language and customs.',
+  'flash powder': 'A powder that burns with a bright flash, letting photographers take pictures in dark rooms. New in 1887.',
+};
+
+export function termKey(t) {
+  const k = Object.keys(GLOSSARY).find(g => g.toLowerCase() === t.toLowerCase());
+  return k || null;
+}
