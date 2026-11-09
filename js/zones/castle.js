@@ -220,7 +220,7 @@ export class CastleZone extends Zone {
     this.barrier = this.wallLine(bx - d.ux * 2, bz - d.uz * 2, bx + d.ux * 2, bz + d.uz * 2, 2.4, '#3a2a1a', 0.25);
     this.barrier.userData.keep = true;
     this.sign2(d.x - d.nx * 1.6, 3.4, d.z - d.nz * 1.6, 'TO NEW YORK · NACH NEW YORK', Math.atan2(-d.nx, -d.nz));
-    this.interact({ x: d.x - d.nx * 2.6, z: d.z - d.nz * 2.6, r: 2.4, prompt: 'Go through the gate', cond: () => this.inspected(), action: () => this.openGate() }).lockedMsg = 'The gate is locked. Pass the medical check and registration first.';
+    this.interact({ x: d.x - d.nx * 2.6, z: d.z - d.nz * 2.6, r: 2.4, prompt: 'Go through the gate', cond: () => this.inspected(), action: () => this.openGate() }).lockedMsg = 'Not yet. Finish your goal (top left) first.';
   }
 
   sign2(x, y, z, text, ry) {
@@ -276,7 +276,7 @@ export class CastleZone extends Zone {
     this.panel(40, 2.8, -71.9, 2.2, 0.4, ['sign_street_STATE ST', { type: 'sign', title: 'STATE ST', color: '#1d2a3a', ink: '#f0e8d0', w: 192, h: 40 }]);
   }
 
-  inspected() { return flag('medical') && flag('registered'); }
+  inspected() { return flag('medical') && flag('registered') && flag('novak_decided'); }
 
   openGate(silent = false) {
     if (this.barrier.visible === false) return;
@@ -315,12 +315,12 @@ export class CastleZone extends Zone {
     return [
       { text: 'Walk up the pier into Castle Garden and see the doctor', done: flag('medical'), at: [-4.2, 16.6] },
       { text: 'Watch Rivka register with the clerk', done: flag('registered'), at: [2.4, 8] },
+      { text: 'Find Mr. Novak from the ship. He is being held on a bench.', done: flag('novak_decided'), at: [Math.sin(4.75) * 23, Math.cos(4.75) * 23] },
       { text: 'Go through the gate marked "To New York"', done: flag('gate_opened'), at: [d.x, d.z] },
       { text: 'Outside the fence, hear what a "helper" is offering', done: flag('talked_runner') || flag('talked_changer'), at: [34, -46] },
       { text: 'Talk to Rivka: help her family decide who to trust', done: flag('gate_done'), at: [40.3, -43.6] },
       { text: 'Walk up to Hester Street', done: false, at: [40, -66] },
       { text: 'From the pier, photograph the Statue of Liberty (look southwest)', done: state.photos.some(p => p.subject === 'statue'), at: [0, 58], optional: true },
-      { text: 'Find out who gets turned away (the old man on the bench)', done: flag('met_novak'), at: [Math.sin(4.75) * 23, Math.cos(4.75) * 23], optional: true },
       { text: 'Read the newspaper on the bench', done: flag('read_newspaper'), at: [Math.sin(4.62) * 24.6, Math.cos(4.62) * 24.6], optional: true },
       { text: 'Ask Miss Carver at the information desk for advice', done: flag('talked_agent'), at: [7.3, -15.6], optional: true },
       { text: `Hear all three offers of help (${talked}/3)`, done: talked >= 3, optional: true },

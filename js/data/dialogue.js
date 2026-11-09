@@ -42,6 +42,7 @@ export const DIALOGUE = {
           { text: 'Why did your family leave?', next: 'why', key: true },
           { text: 'How did you pay for the trip?', next: 'pay' },
           { text: 'What is that paper you keep holding?', next: 'letter', key: true },
+          { text: 'Would you like your picture taken?', next: 'photo' },
           { text: 'Goodbye for now.', next: 'bye' },
         ],
       },
@@ -88,6 +89,16 @@ export const DIALOGUE = {
         ],
         next: 'hub',
       },
+      photo: {
+        set: ['promised_print'],
+        lines: [
+          'A picture? Of us? ...Yes. Please.',
+          'My Bubbe, my grandmother, stayed behind. She is too old for the ship. She cried so hard at the station, the conductor waited.',
+          'If you send her a picture, she will know we are alive. That we made it.',
+          { who: 'narrator', text: 'You promise Rivka a print. (Press F to raise your camera, then aim at her.)' },
+        ],
+        next: 'hub',
+      },
       bye: {
         lines: ['Take a good picture of us. So someday my children see how we came.'],
         end: true,
@@ -99,9 +110,11 @@ export const DIALOGUE = {
     speaker: 'mama',
     nodes: {
       start: {
+        set: ['heard_cough'],
         lines: [
           'Rivka does the talking. Her English is better than mine.',
-          'She learned from Moishe\'s letters. Every word, she copied in a little book.',
+          'Shmuel coughs at night. Since Hamburg. If the American doctors hear it, they send him back.',
+          'Back to what? There is nothing to go back to. Please. Do not tell anyone.',
         ],
         end: true,
       },
@@ -114,7 +127,8 @@ export const DIALOGUE = {
       start: {
         lines: [
           'Is it true the streets in America are made of gold?',
-          'Moishe\'s letter says the streets are made of hard work. I wanted gold.',
+          'Mr. Novak is making me a horse! Out of wood! He says it can swim across the ocean.',
+          { who: 'narrator', text: 'Shmuel coughs, a deep rattling cough. He looks at his mother, frightened, and covers his mouth.' },
         ],
         end: true,
       },
@@ -125,7 +139,20 @@ export const DIALOGUE = {
     speaker: 'giuseppe',
     nodes: {
       start: {
-        lines: ['Ah, a photographer! Take my picture. Make me look rich, so my mother is proud.'],
+        branch: [{ if: 'lemon', next: 'again' }, { next: 'first' }],
+      },
+      first: {
+        set: ['lemon'],
+        lines: [
+          'Ah, a photographer! Here, catch!',
+          { who: 'narrator', text: 'He tosses you a lemon, wrinkled from twelve days at sea.' },
+          'From my mother\'s tree. Smell it. That is Calabria. That is home.',
+          'Keep it! Take my picture instead. Make me look rich, so Mamma is proud.',
+        ],
+        next: 'hub',
+      },
+      again: {
+        lines: ['Photographer! You still have my lemon? Good. Don\'t eat it. It\'s not for eating. It\'s for remembering.'],
         next: 'hub',
       },
       hub: {
@@ -248,6 +275,29 @@ export const DIALOGUE = {
     },
   },
 
+  novak_ship: {
+    speaker: 'novak',
+    nodes: {
+      start: {
+        set: ['met_novak_ship'],
+        lines: [
+          'Sit, sit. My hands need work, or they forget.',
+          { who: 'narrator', text: 'The old man is carving a little wooden horse with a pocketknife. Curls of wood collect in his lap.' },
+          'For the boy with the cough. Every child should own a horse.',
+          'My son Tomas went to Chicago eleven years ago. He writes every Christmas.',
+          'My wife died in the spring. So I sold the loom, the house, everything, for the ticket.',
+          'Tomas does not know I am coming. I will knock on his door. A surprise!',
+        ],
+        choices: [
+          { text: 'What if something goes wrong?', next: 'wrong' },
+          { text: 'He\'ll be so happy to see you.', next: 'happy' },
+        ],
+      },
+      wrong: { lines: ['Wrong? I am seventy-two. Everything already went wrong once. Then you start again.'], end: true },
+      happy: { lines: ['Ha! First he will shout at me for coming alone. Then he will be happy.'], end: true },
+    },
+  },
+
   steward: {
     speaker: 'steward',
     nodes: {
@@ -319,8 +369,12 @@ export const DIALOGUE = {
         set: ['medical'],
         lines: [
           'Next! Step forward. Look at me. Open your eyes wide.',
-          'Breathe. Again. Any coughing? Fever? Good.',
-          'You\'ll do. Move along.',
+          'You\'ll do. Move along. Next!',
+          { who: 'narrator', text: 'The doctor turns to Shmuel. The boy coughs. Mrs. Abramowitz grips your arm so hard it hurts.' },
+          'This one. Open your mouth. Breathe. Again. ...Again.',
+          { who: 'narrator', text: 'The whole line has gone quiet.' },
+          '...Seasick. Half the ship is seasick. Move along.',
+          { who: 'mama', text: 'Thank God. Thank God.' },
         ],
         next: 'hub',
       },
@@ -422,29 +476,45 @@ export const DIALOGUE = {
     speaker: 'novak',
     nodes: {
       start: {
+        branch: [{ if: 'novak_decided', next: 'after' }, { next: 'first' }],
+      },
+      first: {
         set: ['met_novak'],
         note: 'WHO GETS IN? Anton Novak, an old weaver with no money and no family meeting him, was held as "likely to become a public charge."',
         lines: [
-          'They keep me here, on this bench. Two days now.',
-          'They say I am old. I have no money. No one meets me. "Public charge," they say.',
-          'Forty years I was a weaver in Bohemia. My hands still work. Look.',
+          'Photographer! You remember me, from the ship?',
+          'They keep me here, on this bench. "Public charge," they say. Old, no money, nobody meeting me.',
+          'I tell them, my son Tomas is in Chicago! They say, "Then where is he?"',
+          'A telegram to Chicago costs twenty-five cents. I have four cents. Everything else went for the ticket.',
+          'If no one comes for me in three days, they put me back on the ship.',
         ],
         choices: [
-          { text: 'Do you have any family here?', next: 'family' },
-          { text: 'What will happen to you?', next: 'happen' },
+          { text: 'Pay for the telegram yourself (25 cents of your own money).', next: 'pay', key: true },
+          { text: 'I\'m sorry. I can\'t.', next: 'nopay', key: true },
         ],
       },
-      family: {
-        lines: ['My son is in Chicago. I sent a telegram. If he comes for me, they let me in.'],
-        next: 'happen',
-      },
-      happen: {
+      pay: {
+        set: ['paid_telegram', 'novak_decided'],
         lines: [
-          'If he does not come... they put me back on the ship.',
-          'Write about me, photographer. So someone knows I was here.',
+          { who: 'narrator', text: 'You count out the coins. Mr. Novak holds them a long time before he closes his hand.' },
+          'Tomas Novak. Halsted Street, Chicago. "Your father is at Castle Garden. Come."',
+          'If he comes, I owe you my life. If he does not... I owe you anyway.',
         ],
         end: true,
       },
+      nopay: {
+        set: ['novak_decided'],
+        lines: [
+          'No, no. You are young. Your money is your future. I understand.',
+          { who: 'narrator', text: 'He goes back to carving. The little horse for Shmuel is almost finished.' },
+        ],
+        end: true,
+      },
+      after: {
+        branch: [{ if: 'paid_telegram', next: 'waiting' }, { next: 'carving' }],
+      },
+      waiting: { lines: ['Every time the door opens, I think: Tomas. Not yet. Not yet.'], end: true },
+      carving: { lines: ['The horse is finished. Give it to the boy for me, if I cannot.'], end: true },
     },
   },
 
@@ -633,6 +703,7 @@ export const DIALOGUE = {
           { text: 'Who are all these people?', next: 'boarders' },
           { text: 'Who helps you when times are hard?', next: 'society' },
           { text: 'Is America a land of opportunity?', next: 'opportunity' },
+          { text: 'May I photograph Sarah at her sewing?', next: 'sarah', key: true },
           { text: 'I\'ll look around.', next: 'bye' },
         ],
       },
@@ -681,7 +752,46 @@ export const DIALOGUE = {
         ],
         next: 'hub',
       },
+      sarah: {
+        set: ['heard_sarah_plea'],
+        lines: [
+          '...Photograph the room. Photograph the machine. Photograph me, I don\'t care.',
+          'But please. Not my Sarah\'s face.',
+          'Mr. Kessler reads the newspapers. If he sees a child working in his coats, he says we make trouble, and the work goes to the next family. There is always a next family.',
+          'Promise me you will think about it, before you print anything.',
+        ],
+        next: 'hub',
+      },
       bye: { lines: ['Be careful on the stairs. And thank you, for bringing my family.'], end: true },
+    },
+  },
+
+  kessler1: {
+    speaker: 'kessler',
+    nodes: {
+      start: {
+        set: ['met_kessler'],
+        lines: [
+          'Ten coats. Eleven. Twelve. This one, the seam is crooked. Ten cents off.',
+          { who: 'chana', text: 'It is straight! Look at it! It is straight!' },
+          'Then next week it is straight. This week, ten cents off.',
+          'You want the work, Mrs. Abramowitz, or should I give it to the Rosenbergs upstairs?',
+          { who: 'narrator', text: 'Chana says nothing. Her hands are shaking.' },
+        ],
+        choices: [
+          { text: 'That seam looks straight to me.', next: 'straight' },
+          { text: '(Say nothing.)', next: 'nothing' },
+        ],
+      },
+      straight: {
+        lines: [
+          'You are the photographer? Listen, mister.',
+          'The manufacturer on Broadway pays me less every season. If I don\'t squeeze, I lose the contract, and nobody in this building eats.',
+          'You want a villain for your newspaper? Go photograph the man on Broadway.',
+        ],
+        end: true,
+      },
+      nothing: { lines: ['Good. A man who knows when to keep quiet. Next Friday, Moishe. Fourteen coats.'], end: true },
     },
   },
 
@@ -742,6 +852,7 @@ export const DIALOGUE = {
           { text: 'Why do you photograph the tenements?', next: 'why' },
           { text: 'How do you take pictures in the dark?', next: 'flash' },
           { text: 'Do people agree to be photographed?', next: 'consent' },
+          { text: 'Moishe begged me not to photograph Sarah\'s face.', next: 'faces', key: true },
           { text: 'What do you think of this yard?', next: 'yard' },
           { text: 'Good luck, Mr. Riis.', next: 'bye' },
         ],
@@ -767,6 +878,16 @@ export const DIALOGUE = {
           'Agree? Ha. Most of them were asleep when the flash went off. Some ran. Some threw things.',
           'It frightens them, I know. But the city must see.',
           { who: 'narrator', text: 'You wonder: is it fair to photograph people without asking? Riis\'s pictures helped change laws, but some of what he wrote about immigrant groups was unkind and unfair.' },
+        ],
+        next: 'hub',
+      },
+      faces: {
+        set: ['heard_riis_faces'],
+        lines: [
+          'He is afraid. I understand. I have seen what bosses do.',
+          'But hear me. Uptown, a picture of a dark room is just a dark room. Readers turn the page.',
+          'A child\'s face at a sewing machine? That, nobody forgets. Faces change laws.',
+          'And sometimes faces cost a family its work. That is the hard part of this job, friend. You will have to choose.',
         ],
         next: 'hub',
       },
@@ -1418,6 +1539,685 @@ export const DIALOGUE = {
       },
     },
   },
+
+  // ==========================================================================
+  // DAY 2 · IV. ONE WEEK LATER: HESTER STREET (Monday, November 5, 1888)
+  // ==========================================================================
+  rivka2: {
+    speaker: 'rivka',
+    nodes: {
+      start: {
+        branch: [
+          { if: 'rivka_decided', next: 'after' },
+          { if: 'photo_rivka', ifNot: 'gave_print', next: 'print' },
+          { next: 'shop' },
+        ],
+      },
+      print: {
+        set: ['gave_print'],
+        lines: [
+          'Photographer! I hoped you would come.',
+          { who: 'narrator', text: 'You hand Rivka the print you made on the ship. She stares at it for a long time.' },
+          'That is us. That is really us. Shmuel, Mama, me.',
+          'Bubbe will hold this in her hands. She will see we are alive.',
+          { who: 'narrator', text: 'She wipes her eyes with the back of her wrist and laughs at herself.' },
+        ],
+        next: 'shop',
+      },
+      shop: {
+        lines: [
+          'I work for Mr. Kessler now. Sleeves and buttonholes, eleven hours a day.',
+          'Two weeks, and he has not paid us. "Next Friday," he says. Every Friday is next Friday.',
+        ],
+        next: 'debt',
+      },
+      debt: {
+        branch: [{ if: 'swindled', next: 'owe' }, { if: 'shortchanged', next: 'owe' }, { next: 'card' }],
+      },
+      owe: {
+        lines: ['And we still owe the Kiever Society for the money that was stolen from us at Castle Garden. Every week, a little.'],
+        next: 'card',
+      },
+      card: {
+        lines: [
+          'Esther, the girl on the box, says if we all sign the union card, Kessler must pay. Or we stop work, all together.',
+          'But if he finds out I signed, he throws me out. And Mama and Shmuel eat what I earn.',
+          'You have seen more of America than me. What should I do?',
+        ],
+        choices: [
+          { text: 'Sign it. Stand together with the others.', next: 'sign', key: true },
+          { text: 'Wait. It\'s too dangerous right now.', next: 'wait', key: true },
+        ],
+      },
+      sign: {
+        set: ['rivka_union', 'rivka_decided'],
+        lines: [
+          'Yes. Yes! Papa used to say: one finger is easy to break. A fist is not.',
+          { who: 'narrator', text: 'She signs in careful Yiddish letters, and then again in English: Rivka Abramowitz.' },
+        ],
+        next: 'vote',
+      },
+      wait: {
+        set: ['rivka_wait', 'rivka_decided'],
+        lines: [
+          'Maybe you are right. Maybe next season, when we have something saved.',
+          { who: 'narrator', text: 'She folds the union card very small and slips it into her shoe.' },
+        ],
+        next: 'vote',
+      },
+      vote: {
+        lines: [
+          'Tomorrow is the election. Everyone on the street is shouting about it.',
+          'I cannot vote. Women cannot vote. Not Mama, not Mrs. Brennan, not anyone.',
+          'But I can shout. Maybe louder than the men.',
+        ],
+        end: true,
+      },
+      after: {
+        branch: [{ if: 'rivka_union', next: 'after_sign' }, { next: 'after_wait' }],
+      },
+      after_sign: { lines: ['If Kessler finds out, he finds out. I am not afraid. ...I am a little afraid.'], end: true },
+      after_wait: { lines: ['The card is in my shoe. I can feel it when I walk.'], end: true },
+    },
+  },
+
+  esther: {
+    speaker: 'esther',
+    nodes: {
+      start: {
+        set: ['met_esther'],
+        note: 'UNIONS: The United Hebrew Trades was founded in New York in 1888 to organize Jewish workers in the garment shops, bakeries, and print shops.',
+        lines: [
+          'Sisters! Brothers! Fourteen hours for three dollars a week! They tell us there is no money. There is money!',
+          'The United Hebrew Trades started just last month. Cloakmakers, bakers, typesetters.',
+          'Alone, they cheat us one by one. Together, they cannot!',
+        ],
+        choices: [
+          { text: 'Aren\'t you afraid?', next: 'afraid' },
+          { text: 'What happens if the workers strike?', next: 'strike' },
+        ],
+      },
+      afraid: {
+        lines: [
+          'Of course. The police broke up our meeting on Thursday.',
+          'But I am more afraid of my mother\'s hands. Thirty years of sewing. They don\'t open anymore.',
+        ],
+        end: true,
+      },
+      strike: {
+        lines: [
+          'We all stop work, on the same day. No coats, no money for the boss.',
+          'He can fire one girl. He cannot fire twenty. Not in November, with orders waiting.',
+        ],
+        end: true,
+      },
+    },
+  },
+
+  kessler2: {
+    speaker: 'kessler',
+    nodes: {
+      start: {
+        set: ['met_kessler2'],
+        lines: [
+          'You again, with the camera. You want to put me in your newspaper too?',
+          'Union, union. You know what the manufacturer told me? Cut prices ten percent, or he gives the contract to the next man.',
+          'So I hold the pay a little. I pay it! Eventually.',
+          'I came over in \'72 with nothing. I sewed in a room like theirs for nine years. Now I am the boss, and everyone hates me.',
+          'This is America, mister. Somebody squeezes you, you squeeze somebody.',
+        ],
+        end: true,
+      },
+    },
+  },
+
+  moishe2: {
+    speaker: 'moishe',
+    nodes: {
+      start: {
+        branch: [
+          { if: 'met_moishe2', next: 'vote' },
+          { if: 'printed_sarah', next: 'printed' },
+          { next: 'kept' },
+        ],
+      },
+      printed: {
+        set: ['met_moishe2'],
+        lines: [
+          'So. You came back.',
+          'Your picture was in every hand on Hester Street. My Sarah\'s face, at the machine.',
+          'The next morning, Mr. Kessler came up those stairs and took the coats away. All of them. "Troublemakers," he said.',
+          { who: 'narrator', text: 'The sewing machine is silent. Chana is washing other people\'s laundry in a tub.' },
+          'But. A lady from the Neighborhood Guild came, with your newspaper in her hand.',
+          'Now Sarah goes to their class after school, instead of sewing buttons. She is learning to read English.',
+          'So I don\'t know if I should thank you, or throw you down the stairs.',
+        ],
+        next: 'letter',
+      },
+      kept: {
+        set: ['met_moishe2'],
+        lines: [
+          'You kept your word. Thank you.',
+          'We still have Kessler\'s coats. Fourteen hours a day.',
+          'Sarah still sews buttons. Nothing is worse. Nothing is better, either.',
+        ],
+        next: 'letter',
+      },
+      letter: {
+        branch: [{ ifNot: 'paid_telegram', next: 'novak' }, { next: 'vote' }],
+      },
+      novak: {
+        set: ['read_novak_letter'],
+        lines: ['Oh! A letter came for you. Here, at our address. It has a steamship company stamp.'],
+        doc: 'novak_letter',
+        next: 'vote',
+      },
+      vote: {
+        set: ['heard_moishe_vote'],
+        lines: [
+          'And tomorrow, I vote! Me!',
+          'Mr. Quinn took me to the courthouse last month. I came in \'82, six years, so it is legal. Twenty minutes, and I am a citizen, with papers.',
+          'Quinn says, vote Grant. Mr. Whitcomb from the Guild says, vote Hewitt. Grant\'s people bring coal. Hewitt\'s people bring speeches.',
+          'In Russia, the Tsar told me where I could live. Tomorrow, I help choose the mayor of New York. Can you believe it?',
+        ],
+        end: true,
+      },
+    },
+  },
+
+  mama2: {
+    speaker: 'mama',
+    nodes: {
+      start: {
+        lines: [
+          'Rivka works so hard. I take in washing. And Shmuel goes to the public school!',
+          'He learns English faster than all of us. He corrects my English now. Like a little professor.',
+        ],
+        end: true,
+      },
+    },
+  },
+
+  shmuel2: {
+    speaker: 'shmuel',
+    nodes: {
+      start: {
+        set: ['met_shmuel2'],
+        branch: [{ if: 'paid_telegram', next: 'happy' }, { next: 'sad' }],
+      },
+      happy: {
+        lines: ['Mr. Novak finished my horse! I tried to make it swim in the washtub. It sinks. But it\'s a very good horse.'],
+        end: true,
+      },
+      sad: {
+        lines: [
+          'Mr. Novak gave Mama this horse for me. Then they put him back on the ship.',
+          'Why did they send him back? He was nice. He wasn\'t a "public charge." He was Mr. Novak.',
+        ],
+        end: true,
+      },
+    },
+  },
+
+  boss2: {
+    speaker: 'boss',
+    nodes: {
+      start: {
+        set: ['heard_quinn2'],
+        note: 'THE 1888 ELECTION: Tammany Hall backed Hugh J. Grant, the son of Irish immigrants. Its clubs gave out coal and jobs and expected votes in return.',
+        lines: [
+          'Friends! Neighbors! Who brought coal when the blizzard came in March?',
+          'Who found your cousin a job? Who stood next to your boy in front of the judge?',
+          'Tomorrow, vote for Hugh J. Grant! The son of Irish immigrants! One of US!',
+        ],
+        choices: [
+          { text: 'What about Mayor Hewitt?', next: 'hewitt' },
+          { text: 'What do you get out of all this?', next: 'what' },
+          { text: '(Walk away.)', next: 'bye' },
+        ],
+      },
+      hewitt: {
+        lines: [
+          'Hewitt! He wouldn\'t even review the St. Patrick\'s Day parade! Wouldn\'t fly the green flag over City Hall!',
+          'He thinks we\'re dirt. He\'ll build parks for the rich and send inspectors to close your shops.',
+        ],
+        next: 'start2',
+      },
+      what: {
+        lines: ['Me? Ha! A city job here, a contract there. Everybody eats, friend. That\'s politics.'],
+        next: 'start2',
+      },
+      start2: { lines: ['Coal! Who needs coal? Grant\'s coal, free for the asking!'], end: true },
+      bye: { lines: ['Remember, friend! Tuesday! Grant!'], end: true },
+    },
+  },
+
+  brennan2: {
+    speaker: 'brennan',
+    nodes: {
+      start: {
+        set: ['heard_brennan2'],
+        lines: [
+          'Tomorrow my Michael will be first in line at the polls. Women can\'t vote, more\'s the pity.',
+          'In March, Mayor Hewitt wouldn\'t review our parade on St. Patrick\'s Day. Wouldn\'t fly the green flag over City Hall.',
+          'As if we Irish hadn\'t built half this city with our backs.',
+          'Hugh Grant\'s father came over on the boats, like mine. That\'s Michael\'s vote.',
+        ],
+        end: true,
+      },
+    },
+  },
+
+  guild2: {
+    speaker: 'guild',
+    nodes: {
+      start: {
+        set: ['heard_whitcomb2'],
+        note: 'REFORM: Mayor Abram Hewitt ran an honest government and pushed for small parks and a public subway, but many immigrants felt he looked down on them.',
+        lines: [
+          'Leaflet? Vote for Mayor Hewitt! An honest man. Not one dollar stolen from the city.',
+          'He passed the law for small parks in crowded neighborhoods, like this one. He wants a public railway under the streets.',
+          'Tammany buys your vote with a sack of coal, then steals the coal money back from the city ten times over.',
+        ],
+        choices: [
+          { text: 'People here say Hewitt looks down on them.', next: 'down' },
+          { text: 'Thank you.', next: 'bye' },
+        ],
+      },
+      down: {
+        lines: [
+          '...He has said foolish things about the Irish. I admit that.',
+          'But a mayor who insults you honestly is better than one who robs you kindly. Isn\'t he?',
+        ],
+        end: true,
+      },
+      bye: { lines: ['Tuesday! Vote for honest government!'], end: true },
+    },
+  },
+
+  lee2: {
+    speaker: 'lee',
+    nodes: {
+      start: {
+        set: ['heard_lee2'],
+        lines: [
+          'All of Mott Street talks about the election. Grant, Hewitt, Erhardt.',
+          'You want to know who I vote for?',
+          'The law says I will never vote. Not tomorrow. Not ever. I pay my taxes. I cannot choose.',
+          'And last month Congress passed the Scott Act. Now, if a Chinese worker goes home to visit his family, he can never come back.',
+          'My brother was saving to visit our mother. Now he will not go. He will not see her again.',
+        ],
+        end: true,
+      },
+    },
+  },
+
+  giuseppe3: {
+    speaker: 'giuseppe',
+    nodes: {
+      start: {
+        set: ['met_gius3'],
+        lines: [
+          'Photographer! Look at me! Mr. Quinn found me work, on the new Times Building!',
+          'Eleven stories! I carry bricks up, up, up, all day. A dollar and a half, and no padrone taking his cut!',
+          'Quinn says I don\'t owe him anything. ...Except one little favor tomorrow. I tell you later.',
+          'Come see me on Park Row!',
+        ],
+        end: true,
+      },
+    },
+  },
+
+  newsboy2: {
+    speaker: 'newsboy',
+    nodes: {
+      start: {
+        lines: ['Extra, extra! Election tomorrow! Grant! Hewitt! Erhardt! Who\'ll be mayor? Read all about it, two cents!'],
+        end: true,
+      },
+    },
+  },
+
+  // ==========================================================================
+  // DAY 2 · V. PARK ROW (Monday afternoon)
+  // ==========================================================================
+  giuseppe4: {
+    speaker: 'giuseppe',
+    nodes: {
+      start: {
+        branch: [{ if: 'gius_decided', next: 'after' }, { next: 'ask' }],
+      },
+      ask: {
+        lines: [
+          'You came! Look up. Eleven stories. Tonight my back will say hello to me.',
+          'Now. The favor. Mr. Quinn says tomorrow, I go to the polls and I say, "My name is Patrick Moran."',
+          'Patrick Moran died in August. But he is still on the voting list.',
+          'I am not a citizen. I cannot vote. But Quinn says, "Everybody does it. Do it, or the job goes to a fellow who will."',
+          'What do I do, photographer? No job, no money for Mamma.',
+        ],
+        choices: [
+          { text: 'Refuse. It\'s against the law, and it\'s wrong.', next: 'refuse', key: true },
+          { text: 'Do it. Your mother needs the money.', next: 'repeat', key: true },
+          { text: 'Tell a reporter. Mr. Haskins could expose Quinn.', next: 'expose', key: true },
+        ],
+      },
+      refuse: {
+        set: ['gius_refuse', 'gius_decided'],
+        lines: [
+          'You are right. My father always said: a man has his name and nothing else.',
+          'I keep my name. I tell Quinn tonight.',
+          { who: 'narrator', text: 'He doesn\'t look proud. He looks scared.' },
+        ],
+        next: 'climb',
+      },
+      repeat: {
+        set: ['gius_repeat', 'gius_decided'],
+        lines: [
+          'Yes. Yes. One little vote. Who does it hurt?',
+          { who: 'narrator', text: 'He laughs. But he doesn\'t look at you.' },
+        ],
+        next: 'climb',
+      },
+      expose: {
+        set: ['gius_expose', 'gius_decided'],
+        lines: [
+          'The newspapers? Then everyone knows it was me who talked...',
+          '...But maybe they stop it. For everybody. All right. Tell your Mr. Haskins.',
+        ],
+        next: 'climb',
+      },
+      climb: {
+        lines: ['Now I climb, or the foreman docks me. Go up on the Potter Building roof next door, you can watch me work! Take my picture for Mamma!'],
+        action: 'giuseppeClimbs',
+        end: true,
+      },
+      after: { lines: ['Up on the Potter roof! Wave at me!'], end: true },
+    },
+  },
+
+  giuseppe_roof: {
+    speaker: 'giuseppe',
+    nodes: {
+      start: {
+        lines: [
+          'Fotografo! Up here! You see? I am higher than the church steeples!',
+          'Take my picture! For Mamma! Tell her I am a big man in America now!',
+        ],
+        action: 'fall',
+        end: true,
+      },
+    },
+  },
+
+  fall: {
+    speaker: 'narrator',
+    nodes: {
+      start: {
+        set: ['saw_fall'],
+        lines: [
+          { who: 'narrator', text: 'A board cracks, loud as a gunshot.' },
+          { who: 'narrator', text: 'Giuseppe drops through the open floor, bricks and all.' },
+          { who: 'narrator', text: 'He lands on the planking one story down. He doesn\'t move.' },
+          { who: 'narrator', text: '...Then he does. He is holding his arm and shouting in Italian. Alive.' },
+          { who: 'narrator', text: 'The men are lowering him down the ladders. Hurry down to the street.' },
+        ],
+        end: true,
+      },
+    },
+  },
+
+  aftermath: {
+    speaker: 'giuseppe',
+    nodes: {
+      start: {
+        set: ['saw_aftermath'],
+        lines: [
+          'Photographer... I am alive. The arm is broken. Maybe two ribs.',
+          { who: 'foreman', text: 'He can\'t carry a hod with one arm. No work, no pay. That\'s the rule. I don\'t make it.' },
+        ],
+        next: 'who',
+      },
+      who: {
+        branch: [{ if: 'gius_repeat', next: 'quinn' }, { if: 'gius_expose', next: 'expose' }, { next: 'alone' }],
+      },
+      quinn: {
+        lines: [
+          { who: 'boss', text: 'Easy, easy, son! Tammany takes care of its own. I sent for Dr. Malone, and he\'s paid for.' },
+          { who: 'boss', text: 'And Halvorsen, the job is his again when the arm heals. Isn\'t that right, Halvorsen?' },
+          { who: 'foreman', text: '...If you say so, Mr. Quinn.' },
+          'You see? Quinn is a good man. ...Right?',
+        ],
+        end: true,
+      },
+      alone: {
+        lines: [
+          'I told Quinn no, this morning. When I fell, I sent a boy to his club. He sent back a message: "Ask your new friends for help."',
+          { who: 'societa', text: 'Coraggio, Giuseppe. The Società pays for the doctor. You paid your ten cents every week. Now we pay you.' },
+          'Ten cents a week, and they did not forget me. My own people.',
+        ],
+        end: true,
+      },
+      expose: {
+        lines: [
+          { who: 'oldrep', text: 'I\'ve got it all, son. Repeaters, dead men on the voting lists, Quinn\'s name. It runs in tomorrow\'s paper.' },
+          { who: 'societa', text: 'And the Società will pay for the doctor. Coraggio, Giuseppe.' },
+          'Tomorrow everyone knows I talked. Quinn will never give me work again.',
+          'But maybe no one else gets asked to be a dead man.',
+        ],
+        end: true,
+      },
+    },
+  },
+
+  editor: {
+    speaker: 'editor',
+    nodes: {
+      start: {
+        branch: [{ if: 'endorsed', next: 'done' }, { next: 'ask' }],
+      },
+      ask: {
+        lines: [
+          'There you are. I\'ve seen your plates. Good work. Hard work.',
+          'Tomorrow, New York picks a mayor. The Courier has to say who it backs, and I want to hear it from someone who has walked those streets.',
+          'Here is what each man stands for.',
+        ],
+        doc: 'candidates',
+        next: 'choose',
+      },
+      choose: {
+        lines: ['So. Who does the Evening Courier endorse?'],
+        choices: [
+          { text: 'Hugh J. Grant (Tammany Hall Democrat)', next: 'grant', key: true },
+          { text: 'Mayor Abram Hewitt (reform, Citizens\' ticket)', next: 'hewitt', key: true },
+          { text: 'Joel B. Erhardt (Republican)', next: 'erhardt', key: true },
+        ],
+      },
+      grant: {
+        set: ['endorse_grant', 'endorsed'],
+        lines: ['Tammany\'s man. He\'ll feed the hungry, and the treasury will feed Tammany. Bold. All right, we print it.'],
+        next: 'night',
+      },
+      hewitt: {
+        set: ['endorse_hewitt', 'endorsed'],
+        lines: ['Honest Abe Hewitt. Clean and careful, and he can\'t stand half the people you photographed. All right, we print it.'],
+        next: 'night',
+      },
+      erhardt: {
+        set: ['endorse_erhardt', 'endorsed'],
+        lines: ['The Republican. Law and order. Hester Street will laugh at us, but all right, we print it.'],
+        next: 'night',
+      },
+      night: {
+        lines: ['Go home and sleep. Tomorrow night, the whole city will be here on Park Row, waiting for the returns. Be here.'],
+        action: 'toNight',
+        end: true,
+      },
+      done: { lines: ['Tomorrow night. Park Row. Be here.'], action: 'toNight', end: true },
+    },
+  },
+
+  // ==========================================================================
+  // DAY 2 · VI. ELECTION NIGHT (Tuesday, November 6, 1888)
+  // ==========================================================================
+  returns: {
+    speaker: 'bulletin',
+    nodes: {
+      start: {
+        branch: [{ if: 'saw_results', next: 'again' }, { next: 'r1' }],
+      },
+      r1: {
+        lines: [
+          'RETURNS FROM THE FOURTH WARD! Grant, two thousand one hundred! Erhardt, eight hundred! Hewitt, six hundred!',
+          { who: 'narrator', text: 'A roar goes up from the Tammany men. Someone throws a hat in the air. It doesn\'t come back.' },
+          'SEVENTH WARD! Grant, three thousand! Hewitt, one thousand two hundred! Erhardt, nine hundred!',
+          { who: 'narrator', text: 'A man in a silk hat shakes his head and lights a cigar.' },
+          'WITH NEARLY ALL DISTRICTS REPORTING: Grant, one hundred fourteen thousand! Erhardt, seventy-three thousand! Hewitt, seventy-two thousand!',
+          'HUGH J. GRANT IS THE NEXT MAYOR OF NEW YORK!',
+          { who: 'narrator', text: 'The square explodes. Tammany wins. Mayor Hewitt, the honest man, has finished third.' },
+        ],
+        set: ['saw_results'],
+        action: 'results',
+        end: true,
+      },
+      again: { lines: ['GRANT ELECTED! TAMMANY CARRIES THE CITY!'], end: true },
+    },
+  },
+
+  rivka_night: {
+    speaker: 'rivka',
+    nodes: {
+      start: { set: ['met_rivka_night'], branch: [{ if: 'rivka_union', next: 'union' }, { next: 'wait' }] },
+      union: {
+        lines: [
+          'Kessler found my card on Wednesday. He threw me out in front of everyone.',
+          'So on Thursday, the whole shop walked out! All twenty of us! Esther says he will pay us everything by Monday. He has to. The orders are waiting.',
+          'I don\'t have a job. But I have nineteen sisters.',
+        ],
+        next: 'endorse',
+      },
+      wait: {
+        lines: [
+          'I still have my job. Kessler paid us half. Half!',
+          'Esther says next season every shop on the street will strike together. Next season, I sign.',
+        ],
+        next: 'endorse',
+      },
+      endorse: { branch: [{ if: 'endorse_grant', next: 'g' }, { if: 'endorse_hewitt', next: 'h' }, { next: 'e' }] },
+      g: { lines: ['Your newspaper backed Grant, and Grant won. I hope he remembers the girls who sew, not only the men who vote.'], next: 'end' },
+      h: { lines: ['Your newspaper backed Hewitt. He lost. But you said what you believed. That is something.'], next: 'end' },
+      e: { lines: ['Erhardt? Nobody on Hester Street even knows his face! You are a strange photographer.'], next: 'end' },
+      end: { lines: ['Someday women will vote too. And I will be first in line. Before Mrs. Brennan.'], end: true },
+    },
+  },
+
+  giuseppe_night: {
+    speaker: 'giuseppe',
+    nodes: {
+      start: { set: ['met_gius_night'], branch: [{ if: 'gius_repeat', next: 'repeat' }, { if: 'gius_expose', next: 'expose' }, { next: 'refuse' }] },
+      repeat: {
+        lines: [
+          'I did it. I walked in, I said "Patrick Moran," they gave me the ballot. Nobody even looked at my face.',
+          'Quinn paid the doctor. I have my job when the arm heals. So why do I feel like I stole something?',
+        ],
+        next: 'lemon',
+      },
+      refuse: {
+        lines: [
+          'No job, a broken arm, and Quinn\'s people look at me like a traitor.',
+          'But Patrick Moran can rest in peace. And so can I.',
+          'The Società says when the arm heals, there is work on the docks in Brooklyn. We will see.',
+        ],
+        next: 'lemon',
+      },
+      expose: {
+        lines: [
+          'Haskins\'s story is in this morning\'s Courier! Two of Quinn\'s repeaters were arrested at the polls today!',
+          'Quinn\'s men spat on my shoes. But this year, nobody voted as Patrick Moran.',
+        ],
+        next: 'lemon',
+      },
+      lemon: { branch: [{ if: 'lemon', next: 'l' }, { next: 'bye' }] },
+      l: { lines: ['You still carry my mother\'s lemon? ...Ha! It smells like nothing now. Keep it anyway.'], end: true },
+      bye: { lines: ['Go, go. Write your story. Make me look rich.'], end: true },
+    },
+  },
+
+  moishe_night: {
+    speaker: 'moishe',
+    nodes: {
+      start: {
+        set: ['met_moishe_night'],
+        lines: [
+          'I voted! Me! Moishe Abramowitz, tailor, from a town the Tsar didn\'t want me in.',
+          'I put a paper in a box, and they counted it. Like I count.',
+          'Who did I pick? I won\'t tell you. A citizen has secrets now!',
+        ],
+        next: 'sarah',
+      },
+      sarah: { branch: [{ if: 'printed_sarah', next: 'p' }, { next: 'n' }] },
+      p: { lines: ['And Sarah... the Guild teacher says she reads better than the big boys. Maybe your picture was worth it. Maybe.'], end: true },
+      n: { lines: ['Sarah sewed four hundred buttons this week. She is asleep on her mother\'s shoulder.'], end: true },
+    },
+  },
+
+  novak_night: {
+    speaker: 'novak',
+    nodes: {
+      start: {
+        set: ['met_novak_night'],
+        lines: [
+          'PHOTOGRAPHER! Here! Over here!',
+          { who: 'narrator', text: 'Mr. Novak is holding the arm of a tall man with a red mustache, who is holding him back from the crowd.' },
+          'This is Tomas! My son! He came on the train from Chicago, two days and two nights!',
+          { who: 'tomas', text: 'They told me a stranger paid for the telegram. Twenty-five cents. ...Thank you. I would never have known.' },
+          'Tomorrow, we go to Chicago. Tonight, I wanted to see an American election.',
+          'So loud! Everybody shouts and nobody gets shot!',
+        ],
+        end: true,
+      },
+    },
+  },
+
+  brennan_night: {
+    speaker: 'brennan',
+    nodes: {
+      start: { set: ['met_brennan_night'], lines: ['Grant won! Michael\'s dancing on a table in Clancy\'s saloon. One of our own, mayor of New York!'], next: 'e' },
+      e: { branch: [{ if: 'endorse_grant', next: 'yes' }, { next: 'no' }] },
+      yes: { lines: ['And your paper backed him. Maybe you\'re not so bad, for a newspaperman.'], end: true },
+      no: { lines: ['Your paper backed the other fellow. Well. You\'ll learn.'], end: true },
+    },
+  },
+
+  whitcomb_night: {
+    speaker: 'guild',
+    nodes: {
+      start: {
+        set: ['met_whitcomb_night'],
+        lines: [
+          'Third. The honest man came third.',
+          'Maybe we reformers talk too much and listen too little. Hester Street got coal from Tammany. From us, it got leaflets.',
+        ],
+        end: true,
+      },
+    },
+  },
+
+  quinn_night: {
+    speaker: 'boss',
+    nodes: {
+      start: { set: ['met_quinn_night'], lines: ['Every ward! Every single one! Tell your readers: Tammany takes care of its own!'], next: 'x' },
+      x: { branch: [{ if: 'gius_expose', next: 'angry' }, { if: 'endorse_grant', next: 'friend' }, { next: 'bye' }] },
+      angry: {
+        lines: [
+          'And YOU. You and your Mr. Haskins cost me two good men today.',
+          '...I won\'t forget it, photographer. Tammany has a long memory.',
+        ],
+        end: true,
+      },
+      friend: { lines: ['And your paper backed the winner! Drop by the club. There\'s always a cigar for a friend.'], end: true },
+      bye: { lines: ['Now if you\'ll excuse me, there\'s a parade to lead!'], end: true },
+    },
+  },
 };
 
 // ============================================================================
@@ -1425,6 +2225,16 @@ export const DIALOGUE = {
 // VO id: doc.<key>   Art: assets/art/doc_<key>.png (optional)
 // ============================================================================
 export const DOCS = {
+  novak_letter: {
+    title: 'A Letter From Mr. Novak',
+    text: 'Dear photographer,\n\nI write this on the steamship. Tomorrow they send me back to Hamburg. No word came from Tomas. Maybe he moved. Maybe the clerk never sent my message.\n\nDo not be sad for me. I saw America for two days. It was very loud.\n\nI left the little horse with Mrs. Abramowitz, for Shmuel. Tell him it can swim.\n\nYour friend,\nAnton Novak',
+    source: 'Fictional letter. Thousands of immigrants a year were turned away and sent back at the steamship company\'s cost.',
+  },
+  candidates: {
+    title: 'The Candidates for Mayor, 1888',
+    text: 'HUGH J. GRANT · Tammany Hall Democrat\nAge 30, the son of Irish immigrants. Tammany\'s clubs give out coal, jobs, and help with citizenship papers. Critics say Tammany steals from the city and buys votes.\n\nABRAM S. HEWITT · Mayor, running for re-election (Citizens\' ticket)\nA wealthy, honest businessman. Pushed for small parks in crowded neighborhoods and a public subway. In March he refused to review the St. Patrick\'s Day parade, and many Irish and immigrant voters turned against him.\n\nJOEL B. ERHARDT · Republican\nA lawyer and former city police commissioner. Promises honest, businesslike government and strict law enforcement. Has little support on the Lower East Side.',
+    source: 'Based on the real 1888 New York City mayoral election.',
+  },
   letter: {
     title: 'A Letter from Cousin Moishe',
     text: 'Dear Cousin Rivka,\n\nI am well, thank God. I live on Hester Street, New York, in two rooms with Chana and little Sarah. I sew coats. The work is hard, six days a week, but the pay is in dollars, and nobody burns your house.\n\nI am sending money for three tickets. Bring Mama and Shmuel. When you come to Castle Garden, show them this address. Trust nobody outside the gate.\n\nYour cousin,\nMoishe',
@@ -1512,6 +2322,18 @@ export const DOCS = {
 // TITLE CARDS between zones. Voiced by the narrator. VO id: card.<key>
 // ============================================================================
 export const CARDS = {
+  les2: {
+    num: 'DAY TWO · IV',
+    title: 'One Week Later',
+    sub: 'Hester Street · Monday, November 5, 1888',
+    text: 'A week has passed. Tomorrow, New York elects a mayor, and the Lower East Side is loud with it.\n\nGo back to Hester Street. Find out what happened to Rivka\'s family, and what your choices have done.',
+  },
+  night: {
+    num: 'VI',
+    title: 'Election Night',
+    sub: 'Printing House Square · Tuesday, November 6, 1888',
+    text: 'The polls have closed. Thousands of New Yorkers pack Park Row, waiting for the returns to be posted outside the newspaper offices.\n\nFind your friends in the crowd. Watch the results come in.',
+  },
   intro: {
     num: 'THE ASSIGNMENT',
     title: 'A Letter From Your Editor',
@@ -1537,9 +2359,9 @@ export const CARDS = {
     text: 'Rivka\'s family has reached Hester Street, one of the most crowded neighborhoods on Earth.\n\nFind Cousin Moishe\'s tenement. See how newcomers live, work, and help each other. Photograph what you find.',
   },
   city: {
-    num: 'IV',
-    title: 'The City',
-    sub: 'Park Row and City Hall Park',
-    text: 'One week later. In a few days, New York will elect a new mayor, and campaign banners hang over every street.\n\nYour editor has a new question: this city is growing faster than any in the world. Who runs it? Who builds it? And who does it serve?\n\nExplore Park Row, near City Hall. Look for the bosses, the builders, and the machines that move the city.',
+    num: 'V',
+    title: 'Park Row',
+    sub: 'Newspaper Row · Monday afternoon, November 5',
+    text: 'Election eve. Banners hang across Broadway, and the newspapers on Park Row are racing to print.\n\nGiuseppe is waiting at the Times Building. Your editor wants to see you at the Courier office before tonight\'s deadline.',
   },
 };

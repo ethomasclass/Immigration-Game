@@ -33,8 +33,15 @@ const along = (s, off = 0) => [TIP[0] + PR.d[0] * s + PR.n[0] * off, TIP[1] + PR
 
 export class CityZone extends Zone {
   build() {
-    this.setSky('#b8c4cc', 70, 1300, '#c8ccc8');
-    this.lights({ ambient: 0xa09888, ambientI: 1.3, sky: 0xf0f0f0, ground: 0x504a40, hemiI: 1.0, sun: { color: 0xfff2dc, i: 1.6, pos: [40, 60, 30] } });
+    this.night = flag('election_night');
+    this.title = this.night ? 'VI. Election Night' : 'V. Park Row';
+    if (this.night) {
+      this.setSky('#141826', 40, 700, '#1a1e2a');
+      this.lights({ ambient: 0x7a7090, ambientI: 1.15, sky: 0x8a86a8, ground: 0x302830, hemiI: 0.6, sun: { color: 0xb0b8d8, i: 0.35, pos: [40, 60, 30] } });
+    } else {
+      this.setSky('#b8c4cc', 70, 1300, '#c8ccc8');
+      this.lights({ ambient: 0xa09888, ambientI: 1.3, sky: 0xf0f0f0, ground: 0x504a40, hemiI: 1.0, sun: { color: 0xfff2dc, i: 1.6, pos: [40, 60, 30] } });
+    }
     this.boundsDown = { minX: BW - 24, maxX: 150, minZ: CHAMBERS - 18, maxZ: 232 };
     this.boundsPark = { minX: PX - 60, maxX: PX + 60, minZ: -80, maxZ: 70 };
     this.bounds = this.boundsDown;
@@ -51,17 +58,21 @@ export class CityZone extends Zone {
     this.bridge();
     this.parkLife();
     this.wires();
-    this.centralPark();
+    if (!this.night) this.centralPark();
     this.roof();
     this.sets();
     this.election();
     this.streetLife();
+    if (this.night) this.nightScene(); else this.story();
+    if (this.night) { this.skyCity.material.color.set(0x2a3048); }
     this.streetCols = this.colliders;
     this.where = flag('in_park') ? 'park' : 'street';
     this.updaters.push((dt) => this.rideStep(dt));
 
-    this.spawn = { x: -60, z: 120, yaw: 0.25 };
-    if (flag('in_park')) { this.spawn = { x: PX, z: 62, yaw: 0 }; this.bounds = this.boundsPark; }
+    const [spx, spz] = along(62, PR_W - 9);
+    this.spawn = { x: spx, z: spz, yaw: Math.atan2(-PR.d[0], -PR.d[1]) };
+    if (flag('in_park') && !this.night) { this.spawn = { x: PX, z: 62, yaw: 0 }; this.bounds = this.boundsPark; }
+    else this.where = 'street';
   }
 
   // ------------------------------------------------------------ ground: streets + the park triangle
@@ -537,8 +548,6 @@ export class CityZone extends Zone {
     this.updaters.push((dt, t) => { this.carriage.position.z = 60 - ((t * 3) % 140); });
     // back downtown / write the story
     this.interact({ x: X - 4, z: 66, r: 2.4, prompt: 'Ride the El back downtown', action: () => this.rideDown() });
-    const ex = this.exit(X + 4, 67, 'Go to the Courier office and write your story', () => this.ready(), () => this.game.openWrapup('B'));
-    ex.lockedMsg = 'Finish your goal first, and make sure you have 4 photographs.';
   }
 
   // ======================================================== ELEVATOR, ROOFTOP, EL CAR
@@ -616,8 +625,10 @@ export class CityZone extends Zone {
     const men = [[96.5, 6, 'worker0'], [101, 13, 'worker1'], [108, 7, 'worker0'], [99, 20, 'worker1'], [113, 17, 'worker0'], [105, 22, 'worker1']];
     men.forEach(([s, d, art], i) => { const [x, z] = P(s, d); this.crowd(i, x, z, 0, { y: 45.2, art }); });
     const [hx, hz] = P(94.6, 9);
-    this.person('hodcarrier', hx, hz, 0, { y: 45.2, talk: null });
-    this.interact({ x: hx, y: Y + 1.3, z: hz, r: 6.5, prompt: 'Call across to the hod carrier', action: () => this.game.talk('hodcarrier') });
+    this.deckGius = this.person('giuseppe', hx, hz, 0, { y: 45.2, talk: null, photo: 'hodcarrier' });
+    this.deckTalk = this.interact({ x: hx, y: Y + 1.3, z: hz, r: 7, prompt: 'Wave and call across to Giuseppe', action: () => this.game.talk('giuseppe_roof') });
+    const onDeck = !this.night && flag('gius_decided') && !flag('saw_fall');
+    this.deckGius.group.visible = onDeck; this.deckTalk.hidden = !onDeck;
     const [fx, fz] = P(104, 12); this.target('frame', fx, 45.5, fz, 45);
     const [sx, sz] = P(77, 14);
     this.roofSet = { cols, bounds: { minX: -1e5, maxX: 1e5, minZ: -1e5, maxZ: 1e5 }, y: Y + 0.05, spawn: [sx, sz, Math.atan2(-PR.d[0], -PR.d[1])] };
@@ -663,7 +674,159 @@ export class CityZone extends Zone {
     setTimeout(() => { fn(); f.classList.remove('on'); setTimeout(() => { f.style.background = ''; }, 600); if (msg) this.game.toast(msg, 5000); }, 900);
   }
 
-  onAction(name) { if (name === 'ridePark') this.ridePark(); }
+  onAction(name) {
+    if (name === 'ridePark') this.ridePark();
+    else if (name === 'giuseppeClimbs') {
+      this.streetGius.group.visible = false; this.streetTalk.hidden = true;
+      this.deckGius.group.visible = true; this.deckTalk.hidden = false;
+    } else if (name === 'fall') this.startFall();
+    else if (name === 'toNight') setTimeout(() => this.game.toNight(), 50);
+    else if (name === 'results') { this.drawBoards(true); this.game.controls.shake = 0.6; }
+    this.game.refreshObjectives();
+  }
+
+  // ======================================================== DAY 2 STORY (Monday afternoon)
+  story() {
+    // Giuseppe at the foot of the Times Building
+    const [gx, gz] = along(99, PR_W - 3.2);
+    this.streetGius = this.person('giuseppe', gx, gz, 0, { talk: null, photo: 'giuseppe2' });
+    this.streetTalk = this.interact({ x: gx, y: 1.4, z: gz, r: 2.4, prompt: 'Talk to Giuseppe', action: () => this.game.talk('giuseppe4') });
+    const atStreet = !flag('gius_decided');
+    this.streetGius.group.visible = atStreet; this.streetTalk.hidden = !atStreet;
+
+    // After the fall: Giuseppe on the curb, and whoever comes to help him
+    const [ax, az] = along(104, PR_W - 3.4);
+    this.afterPos = [ax, az];
+    const helper = flag('gius_repeat') ? 'boss' : 'societa';
+    const [hx, hz] = along(106, PR_W - 3.6);
+    this.afterGroup = [
+      this.person('giuseppe', ax, az, 0, { talk: 'aftermath', photo: null, seated: true, prompt: 'Talk to Giuseppe' }),
+      this.person(helper, hx, hz, 0, { talk: null, photo: null }),
+    ];
+    this.afterTalk = this.interactables.filter(it => /Talk to Giuseppe/.test(it.prompt) && Math.abs(it.pos.x - ax) < 0.1).pop();
+    this.showAftermath(flag('saw_fall'));
+
+    // The Editor, waiting at the Courier office
+    const [ex, ez] = along(164.2, PR_W - 2.2);
+    this.person('editor', ex, ez, 0, { talk: null, photo: null });
+    const it = this.interact({ x: ex, y: 1.4, z: ez, r: 2.4, prompt: 'Talk to the Editor', cond: () => flag('saw_aftermath') && this.photoCount() >= 3, action: () => this.game.talk('editor') });
+    it.lockedMsg = 'The Editor wants to see you after you\'ve visited Giuseppe, with at least 3 photographs from today.';
+  }
+
+  showAftermath(on) {
+    this.afterGroup.forEach(n => { n.group.visible = on; });
+    if (this.afterTalk) this.afterTalk.hidden = !on;
+  }
+
+  startFall() {
+    const g = this.deckGius.group, y0 = g.position.y;
+    this.deckTalk.hidden = true;
+    sfx('flash');
+    let t = 0;
+    const fall = (dt) => {
+      t += dt;
+      const k = Math.min(1, t / 0.5);
+      g.position.y = y0 - 4.2 * k * k;
+      g.rotation.z = k * 0.9;
+      if (k >= 1 && !fall.done) { fall.done = true; this.game.controls.shake = 1; sfx('shutter'); }
+    };
+    this.updaters.push(fall);
+    setTimeout(() => this.game.talk('fall', () => {
+      g.visible = false;
+      this.showAftermath(true);
+      this.game.refreshObjectives();
+    }), 1300);
+  }
+
+  // ======================================================== ELECTION NIGHT (Tuesday, November 6)
+  nightScene() {
+    // torches and lamps: the square is lit by gaslight and bonfire glow
+    for (const s0 of [100, 125, 150, 175]) {
+      const [x, z] = along(s0, PR_W - 6);
+      this.lamp(x, 3.6, z, 0xffb060, 14, 30);
+    }
+    for (let s0 = 95; s0 < 185; s0 += 9) {
+      const [x, z] = along(s0, PR_W - 1.6);
+      this.box(x, 0, z, 0.12, 2.4, 0.12, '#2a2018', { collide: false });
+      const f = new THREE.Mesh(new THREE.ConeGeometry(0.22, 0.6, 6), colorMat('#ffb040', { basic: true }));
+      f.position.set(x, 2.7, z); f.userData.keep = true; this.scene.add(f);
+      this.updaters.push((dt, t) => { f.scale.y = 1 + Math.sin(t * 13 + s0) * 0.2; });
+    }
+    // bulletin boards in front of the Tribune and the Times
+    this.boards = [];
+    for (const [s0, w] of [[135, 11], [106, 9]]) {
+      const cv = document.createElement('canvas'); cv.width = 512; cv.height = 320;
+      const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace;
+      const [x, z] = along(s0, PR_W - 0.2);
+      const m = new THREE.Mesh(new THREE.PlaneGeometry(w, w * 0.625), new THREE.MeshBasicMaterial({ map: tex, fog: false }));
+      m.position.set(x, 5.2, z); m.rotation.y = Math.atan2(-PR.n[0], -PR.n[1]); m.userData.keep = true; this.scene.add(m);
+      this.boards.push({ cv, tex });
+    }
+    this.drawBoards(flag('saw_results'));
+    this.updaters.push((dt, t) => { if (!flag('saw_results')) { this.boardT = (this.boardT || 0) + dt; if (this.boardT > 3) { this.boardT = 0; this.boardStep = ((this.boardStep || 0) + 1) % 4; this.drawBoards(false); } } });
+
+    // the bulletin man with his megaphone
+    const [bx, bz] = along(133, PR_W - 4.2);
+    this.box(bx, 0, bz, 1.4, 0.9, 1.0, ['wood_cart', { type: 'planks', color: '#6a4a2a', n: 4 }]);
+    this.person('bulletin', bx, bz, 0, { talk: null, photo: null, y: 0.9 });
+    this.bulletinPos = [bx, bz];
+    this.interact({ x: bx, y: 1.6, z: bz, r: 3.2, prompt: 'Push through the crowd to hear the returns', action: () => this.game.talk('returns') });
+
+    // your friends in the crowd (who is here depends on your choices)
+    const spot = (s0, off) => along(s0, PR_W - off);
+    const put = (id, s0, off, talk, opts = {}) => { const [x, z] = spot(s0, off); this.person(id, x, z, 0, { talk, photo: null, ...opts }); return [x, z]; };
+    this.friends = {};
+    this.friends.rivka = put('rivka', 146, 8, 'rivka_night', { prompt: 'Talk to Rivka' });
+    if (flag('rivka_union')) put('esther', 147.4, 9.6, null);
+    this.friends.giuseppe = put('giuseppe', 124, 9, 'giuseppe_night', { prompt: 'Talk to Giuseppe' });
+    put(flag('gius_repeat') ? 'crowd2' : 'societa', 125.4, 10.4, null);
+    this.friends.moishe = put('moishe', 154, 12, 'moishe_night', { prompt: 'Talk to Moishe' });
+    put('girl', 155.2, 12.8, null);
+    if (flag('paid_telegram')) { this.friends.novak = put('novak', 128, 15, 'novak_night', { prompt: 'Talk to Mr. Novak' }); put('tomas', 129.3, 15.6, null); }
+    this.friends.brennan = put('brennan', 140, 15, 'brennan_night', { prompt: 'Talk to Mrs. Brennan' });
+    this.friends.whitcomb = put('guild', 162, 7, 'whitcomb_night', { prompt: 'Talk to Mr. Whitcomb' });
+    const [qx, qz] = spot(116, 12);
+    this.box(qx, 0, qz, 2.2, 0.9, 3.4, ['wood_cart', { type: 'planks', color: '#6a4a2a', n: 4 }]);
+    this.person('boss', qx, qz, 0, { talk: 'quinn_night', photo: null, y: 0.9 });
+    this.interact({ x: qx, y: 1.6, z: qz - 1.9, r: 2.6, prompt: 'Talk to Mr. Quinn', action: () => this.game.talk('quinn_night') });
+    this.friends.quinn = [qx, qz];
+
+    // the crowd
+    let n = 0;
+    for (let s0 = 98; s0 < 172; s0 += 3.1) for (const off of [4.5, 10.5, 16.5, 21]) {
+      if ((s0 * 7 + off) % 5 < 1.6) continue;
+      const [x, z] = spot(s0 + (off % 3), off);
+      const near = Object.values(this.friends).some(([fx, fz]) => Math.hypot(fx - x, fz - z) < 2.4) || Math.hypot(bx - x, bz - z) < 2.6;
+      if (!near) this.crowd(n++, x, z, 0);
+    }
+
+    // into the Courier office to write the story
+    const [cx, cz] = along(161, PR_W - 1.3);
+    const ex = this.exit(cx, cz, 'Go into the Courier office and write your story', () => flag('saw_results') && this.friendsMet() >= 3, () => this.game.openWrapup('B'));
+    ex.lockedMsg = 'Not yet. Hear the returns and find at least 3 friends in the crowd.';
+    this.courierDoor = [cx, cz];
+  }
+
+  friendsMet() { return ['met_rivka_night', 'met_gius_night', 'met_moishe_night', 'met_novak_night', 'met_brennan_night', 'met_whitcomb_night', 'met_quinn_night'].filter(flag).length; }
+
+  drawBoards(final) {
+    for (const { cv, tex } of this.boards || []) {
+      const g = cv.getContext('2d'), W = cv.width, H = cv.height;
+      g.fillStyle = '#121410'; g.fillRect(0, 0, W, H);
+      g.strokeStyle = '#8a6a26'; g.lineWidth = 10; g.strokeRect(5, 5, W - 10, H - 10);
+      g.fillStyle = '#f0ead8'; g.textAlign = 'center';
+      g.font = 'bold 34px Georgia'; g.fillText('ELECTION RETURNS · MAYOR', W / 2, 50);
+      const step = final ? 3 : (this.boardStep || 0);
+      const tallies = [[0, 0, 0], [41200, 26800, 25900], [88400, 57100, 55800], [114111, 73037, 71979]][step];
+      const rows = [['GRANT (Tammany)', tallies[0]], ['ERHARDT (Rep.)', tallies[1]], ['HEWITT (Citizens)', tallies[2]]];
+      g.font = '30px Georgia'; g.textAlign = 'left';
+      rows.forEach(([nm, v], i) => { g.fillStyle = '#f0ead8'; g.fillText(nm, 30, 110 + i * 52); g.textAlign = 'right'; g.fillText(step ? v.toLocaleString('en-US') : '...', W - 30, 110 + i * 52); g.textAlign = 'left'; });
+      g.textAlign = 'center'; g.font = 'bold 32px Georgia'; g.fillStyle = final ? '#f2c230' : '#c8c0a8';
+      g.fillText(final ? 'GRANT ELECTED!' : (step ? 'MORE DISTRICTS COMING IN...' : 'POLLS CLOSED · AWAITING RETURNS'), W / 2, 285);
+      tex.needsUpdate = true;
+    }
+  }
+
 
   map() {
     if (this.where === 'cab' || this.where === 'car') return null;
@@ -697,26 +860,31 @@ export class CityZone extends Zone {
   }
 
   photoCount() { return state.photos.filter(p => p.zone === 'city' && p.subject).length; }
-  ready() { return flag('learned_park') && flag('learned_machine') && this.photoCount() >= 4; }
+  ready() { return false; }
 
   objectives() {
     const n = this.photoCount();
-    const [ox, oz] = along(161.5, PR_W - 2.2), [gx, gz] = along(291, PR_W - 3), [fx, fz] = along(100, PR_W - 2.5), [bx, bz] = along(281, PR_W + 20);
+    if (this.night) {
+      const f = this.friendsMet();
+      return [
+        { text: 'Push through the crowd to the bulletin man and hear the returns', done: flag('saw_results'), at: this.bulletinPos },
+        { text: `Find your friends in the crowd (${Math.min(f, 3)}/3)`, done: f >= 3, at: this.friends && (Object.entries(this.friends).find(([k]) => !flag({ rivka: 'met_rivka_night', giuseppe: 'met_gius_night', moishe: 'met_moishe_night', novak: 'met_novak_night', brennan: 'met_brennan_night', whitcomb: 'met_whitcomb_night', quinn: 'met_quinn_night' }[k])) || [0, this.bulletinPos])[1] },
+        { text: 'Go into the Courier office and write your story', done: false, at: this.courierDoor },
+      ];
+    }
     const up = this.where === 'roof' || this.where === 'cab';
+    const [ox, oz] = along(161.5, PR_W - 2.2), [fx, fz] = along(94, PR_W - 2.5), [bx, bz] = along(281, PR_W + 20), [ex, ez] = along(164.2, PR_W - 2.2);
     return [
-      { text: 'Find Mr. Plunkitt at the courthouse and ask how Tammany wins votes', done: flag('learned_machine'), at: [-14, -50.3] },
-      { text: 'Ride the elevator in the Potter Building up to the roof', done: flag('rode_elevator'), at: this.potterDoor },
-      { text: 'From the roof, photograph the men building the Times Building', done: state.photos.some(p => p.subject === 'frame' || p.subject === 'hodcarrier') },
-      { text: up ? 'Take the elevator back down, then find the El station on Park Row' : 'Ride the El from the Park Row station up to Central Park', done: flag('in_park') || flag('learned_park'), at: up ? this.potterDoor : [gx, gz] },
-      { text: 'Ask the park keeper who made this park', done: flag('learned_park'), at: [PX + 1.6, 56] },
-      { text: `Go to the Courier office and write your story (needs 4 photographs: ${Math.min(n, 4)}/4)`, done: false, at: [PX + 4, 67] },
-      { text: 'Ask the old reporter on Park Row about Boss Tweed', done: flag('learned_tweed'), at: [ox, oz], optional: true },
+      { text: 'Find Giuseppe at the foot of the new Times Building', done: flag('gius_decided'), at: along(99, PR_W - 3.2) },
+      { text: 'Ride the Potter Building elevator to the roof, next door', done: flag('rode_elevator') || flag('saw_fall'), at: this.potterDoor },
+      { text: 'From the roof, wave to Giuseppe on the open top floor', done: flag('saw_fall') },
+      { text: up ? 'Hurry! Take the elevator down to the street' : 'Get to Giuseppe on the sidewalk', done: flag('saw_aftermath'), at: up ? this.potterDoor : this.afterPos },
+      { text: `Bring the Editor at least 3 photographs from today (${Math.min(n, 3)}/3), at the Courier office`, done: flag('endorsed'), at: [ex, ez] },
+      { text: 'Ask Mr. Plunkitt at the courthouse how Tammany wins votes', done: flag('learned_machine'), at: [-14, -50.3], optional: true },
+      { text: 'Ask the old reporter about Boss Tweed', done: flag('learned_tweed'), at: [ox, oz], optional: true },
       { text: 'Ask the foreman why buildings are getting taller', done: flag('learned_skyscraper'), at: [fx, fz], optional: true },
-      { text: 'Ask the horsecar driver how people get around', done: flag('learned_transit'), at: [BW - 6.8, 33], optional: true },
-      { text: 'Photograph the Brooklyn Bridge', done: state.photos.some(p => p.subject === 'bridge'), at: [bx, bz], optional: true },
-      { text: 'Call across to a worker on the Times Building', done: flag('met_hodcarrier'), at: this.potterDoor, optional: true },
-      { text: 'Ask the park keeper who comes to the park', done: flag('learned_park_access'), at: [PX + 1.6, 56], optional: true },
-      { text: 'Look at an election banner', done: flag('read_banner'), at: [-21, -42.6], optional: true },
+      { text: 'Photograph the Brooklyn Bridge', done: flag('photo_bridge'), at: [bx, bz], optional: true },
+      { text: 'Ride the El uptown to Central Park', done: flag('in_park') || flag('learned_park'), at: along(291, PR_W - 3), optional: true },
     ];
   }
 }

@@ -1,6 +1,6 @@
 // Wrap-up: sort photos into the evidence chart, answer the supporting question,
 // and see the story printed. Students then copy their chart to the paper handout.
-import { state, save } from '../state.js';
+import { state, save, flag } from '../state.js';
 import { WRAPUPS } from '../data/evidence.js';
 import { esc } from './text.js';
 import { roman } from './journal.js';
@@ -23,8 +23,10 @@ export class Wrapup {
 
   photos() { return state.photos.filter(p => this.cfg.zones.includes(p.zone)); }
 
+  steps() { return this.part === 'A' ? [this.intro, this.frontPage, this.sort, this.answer, this.result] : [this.intro, this.sort, this.answer, this.result]; }
+
   render() {
-    [this.intro, this.sort, this.answer, this.result][this.step].call(this);
+    this.steps()[this.step].call(this);
     box.scrollTop = 0;
     box.querySelectorAll('textarea, input').forEach(i => i.addEventListener('keydown', e => e.stopPropagation()));
   }
@@ -100,15 +102,66 @@ export class Wrapup {
     this.wire();
   }
 
+  // ---- Day 1's hardest choice: Sarah's face on the front page ----
+  frontPage() {
+    const sarah = state.photos.find(p => p.subject === 'girl') || state.photos.find(p => p.subject === 'sweatshop');
+    if (!sarah || flag('printed_sarah') || flag('sarah_kept')) {
+      if (!sarah && !flag('printed_sarah')) state.flags.sarah_kept = true;
+      this.step++; return this.render();
+    }
+    box.innerHTML = `
+      <h2>The Front Page</h2>
+      <p style="text-align:center">Your editor holds up one plate to the light. It is the photograph of Sarah, ten years old, sewing buttons by lamplight.</p>
+      <div style="max-width:340px;margin:8px auto"><img src="${sarah.img}" alt="" style="width:100%;border:2px solid #8a6a26;border-radius:4px"></div>
+      <p style="text-align:center;font-size:1.15rem"><i>"This one. This is the front page. Nobody uptown will turn past this face."</i></p>
+      <div class="chart" style="grid-template-columns:1fr 1fr">
+        <div class="col"><h3>Moishe begged you</h3><p>"Not my Sarah's face. Mr. Kessler reads the papers. If he sees a child working in his coats, the work goes to the next family."</p></div>
+        <div class="col"><h3>Jacob Riis told you</h3><p>"A child's face at a sewing machine, nobody forgets. Faces change laws. And sometimes faces cost a family its work."</p></div>
+      </div>
+      <p style="text-align:center"><b>What will you do?</b> You cannot take it back.</p>
+      <div class="row">
+        <button class="btn big" data-act="printSarah">Print Sarah's face on the front page</button>
+        <button class="btn big" data-act="keepSarah">Keep your promise. Leave her out.</button>
+      </div>`;
+    this.wire();
+  }
+
+  epilogue() {
+    const f = (k) => flag(k);
+    const fates = [];
+    fates.push(['Rivka Abramowitz', f('rivka_union')
+      ? 'Rivka never went back to Kessler\'s shop. The strike won back most of the pay, and Esther found her work in a union shop on Grand Street. Twenty-one years later, in 1909, she marched with more than 20,000 shirtwaist workers in the "Uprising of the 20,000," the largest strike of women workers in America up to that time.'
+      : 'Rivka kept her job at Kessler\'s, and kept the union card in her shoe for a long time. In 1909 she took it out, and walked out with more than 20,000 other shirtwaist workers in the "Uprising of the 20,000."']);
+    fates.push(['Sarah', f('printed_sarah')
+      ? 'Sarah\'s face was one of the pictures uptown readers could not forget. She stayed in the Guild\'s classes and became a teacher. New York passed a stronger child-labor law in 1903, but work done at home stayed hard to police for years.'
+      : 'Sarah sewed buttons until she was fourteen. New York passed a stronger child-labor law in 1903. Her own children never sewed for a contractor.']);
+    fates.push(['Giuseppe Russo', f('gius_repeat')
+      ? 'Giuseppe went back to the Times Building when his arm healed, and voted as Patrick Moran again in 1890. In 1893 he sailed home to Calabria and bought a small lemon grove next to his mother\'s.'
+      : f('gius_expose')
+        ? 'Giuseppe never worked for Tammany again. Through the Società he found work on the Brooklyn docks. Haskins\'s story about the repeaters was read all over the city.'
+        : 'Through the Società, Giuseppe found work on the Brooklyn docks. He became a citizen in 1896 and voted under his own name.']);
+    fates.push(['Anton Novak', f('paid_telegram')
+      ? 'Mr. Novak lived with Tomas\'s family in Chicago until 1897. He carved wooden horses for every child on Halsted Street.'
+      : 'Mr. Novak was sent back to Europe and lived with his sister in Bohemia. Every Christmas he wrote to Tomas, and once, to a photographer in New York.']);
+    fates.push(['The Abramowitz family', (f('swindled') || f('shortchanged'))
+      ? 'They paid back the Kiever Society\'s loan, ten cents at a time, in a little over a year. Shmuel finished public school, the first in the family to do it.'
+      : 'Shmuel finished public school, the first in the family to do it. Mama kept Mr. Novak\'s wooden horse on the windowsill for the rest of her life.']);
+    fates.push(['New York', 'Hugh J. Grant served as mayor from 1889 to 1892. Tammany Hall stayed powerful in New York politics for decades. Women won the vote in New York in 1917. Chinese immigrants were not allowed to become citizens until 1943.']);
+    return fates.map(([who, txt]) => `<p><b>${esc(who)}.</b> ${esc(txt)}</p>`).join('');
+  }
+
   result() {
     sfx('chime');
     const a = state.answers[this.part];
     const ph = this.photos();
     const chart = state.chart[this.part];
-    const lead = ph.find(p => chart[p.id]) || ph[0];
+    const sarahPhoto = state.photos.find(p => p.subject === 'girl') || state.photos.find(p => p.subject === 'sweatshop');
+    const notSarah = ph.filter(p => p.subject !== 'girl' && p.subject !== 'sweatshop');
+    const lead = this.part === 'A' && flag('printed_sarah') && sarahPhoto ? sarahPhoto
+      : ((this.part === 'A' ? notSarah : ph).find(p => chart[p.id]) || (this.part === 'A' ? notSarah : ph)[0]);
     const headline = this.part === 'A'
       ? (a.stance === 'Yes' ? 'A Land of Opportunity' : a.stance === 'No' ? 'A Hard Welcome' : 'Opportunity, For Some')
-      : (a.stance === 'Helped them' ? 'The Machine That Feeds the City' : a.stance === 'Took advantage of them' ? 'Bosses Grow Fat on the Poor' : 'The City Gives, The City Takes');
+      : (flag('endorse_grant') ? 'We Backed Grant, and Tammany Won' : flag('endorse_hewitt') ? 'We Backed the Honest Man. He Came Third.' : flag('endorse_erhardt') ? 'We Backed Erhardt. The City Backed Grant.' : 'Grant Elected Mayor');
     const rows = this.cfg.columns.map(c => {
       const items = ph.filter(p => chart[p.id] === c.key);
       return `<tr><th>${esc(c.title)}</th><td>${items.map(p => `<b>${esc(p.title)}</b>: ${esc(p.caption || p.desc)}`).join('<br>') || '<i>(nothing yet)</i>'}</td></tr>`;
@@ -122,6 +175,7 @@ export class Wrapup {
         ${lead ? `<img src="${lead.img}" alt=""><p style="text-align:center;font-style:italic;margin:4px 0 12px">${esc(lead.title)}: ${esc(lead.caption || lead.desc)}</p>` : ''}
         <div class="cols"><p><b>${esc(this.cfg.question)}</b></p><p>${esc(a.text || '(Your answer goes here.)')}</p></div>
       </div>
+      ${this.part === 'B' ? `<div class="handout" style="margin-top:20px"><h2>What Became of Them</h2>${this.epilogue()}</div>` : ''}
       <div class="handout" style="margin-top:20px">
         <h2>Copy This to Your Handout</h2>
         <p><b>Question:</b> ${esc(this.cfg.question)}<br><b>My answer:</b> ${esc(a.stance || '(not chosen)')}</p>
@@ -130,7 +184,7 @@ export class Wrapup {
       <div class="row">
         <button class="btn" data-act="prev">&#9666; Edit my answer</button>
         <button class="btn" data-act="print">Print</button>
-        ${this.part === 'A' ? '<button class="btn big" data-act="city">Continue to Chapter IV: The City &#9656;</button>' : ''}
+        ${this.part === 'A' ? '<button class="btn big" data-act="day2">Continue to Day 2: Election Week &#9656;</button>' : ''}
         <button class="btn" data-act="menu">Main Menu</button>
       </div>`;
     this.wire();
@@ -143,7 +197,9 @@ export class Wrapup {
       else if (act === 'prev') { this.step--; this.render(); }
       else if (act === 'print') window.print();
       else if (act === 'back') { this.close(); this.game.resumeFromWrapup(); }
-      else if (act === 'city') { this.close(); this.game.loadZone('city'); }
+      else if (act === 'day2') { this.close(); this.game.startDay2(); }
+      else if (act === 'printSarah') { state.flags.printed_sarah = true; save(); this.step++; this.render(); }
+      else if (act === 'keepSarah') { state.flags.sarah_kept = true; save(); this.step++; this.render(); }
       else if (act === 'menu') { this.close(); this.game.showMenu(); }
     }));
   }

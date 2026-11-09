@@ -55,7 +55,8 @@ export const SUBJECTS = {
   horsecar:   { title: 'The Horsecar', desc: 'A horse-drawn streetcar on rails.', col: 'growth', zone: 'city' },
   el:         { title: 'The Iron Road', desc: 'The elevated railway ("the El") runs steam trains above the street.', col: 'growth', zone: 'city' },
   rooftop:    { title: 'The View', desc: 'Lower Manhattan from eleven stories up, reached by elevator.', col: 'growth', zone: 'city' },
-  hodcarrier: { title: 'The Hod Carrier', desc: 'Dominic carries bricks up eleven stories of ladders for $1.50 a day.', col: 'growth', zone: 'city' },
+  hodcarrier: { title: 'The Hod Carrier', desc: 'Giuseppe carries bricks up eleven stories of ladders, with no rope or net, for $1.50 a day.', col: 'growth', zone: 'city' },
+  esther:     { title: 'The Organizer', desc: 'Esther Lipsky of the United Hebrew Trades calls on shop girls to join the union.', col: 'people', zone: 'les2' },
   banner2:    { title: 'The Campaign', desc: 'Election banners for mayor on Park Row, November 1888.', col: 'machine', zone: 'city' },
   park:       { title: 'The Green', desc: 'Central Park, designed by Olmsted and Vaux as "lungs" for the city.', col: 'life', zone: 'city' },
   parkrules:  { title: 'The Rule', desc: '"Keep Off the Grass": park rules that kept the park "proper."', col: 'life', zone: 'city' },
@@ -77,7 +78,7 @@ export const WRAPUPS = {
     stances: ['Yes', 'No', 'For some people, not others'],
   },
   B: {
-    zones: ['city'],
+    zones: ['les2', 'city'],
     question: 'Did the growing city and its political machines help newcomers, or take advantage of them?',
     columns: [
       { key: 'machine', title: 'Political Machines', hint: 'Tammany, bosses, and favors' },

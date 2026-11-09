@@ -46,7 +46,8 @@ export class Dialogue {
     const node = this.tree.nodes[nodeId];
     if (!node) return this.close();
     if (node.branch) {
-      const b = node.branch.find(br => !br.if || flag(br.if));
+      (node.set || []).forEach(setFlag);
+      const b = node.branch.find(br => (!br.if || flag(br.if)) && (!br.ifNot || !flag(br.ifNot)));
       return this.goto(b.next);
     }
     this.nodeId = nodeId; this.node = node;

@@ -101,6 +101,7 @@ export class PhotoMode {
       caption: '',
     };
     if (subjectId) {
+      state.flags['photo_' + subjectId] = true;   // the story remembers who you photographed
       const i = state.photos.findIndex(p => p.subject === subjectId);
       if (i >= 0) { photo.caption = state.photos[i].caption; state.photos[i] = photo; g.toast(`Retook <b>${photo.title}</b>`); }
       else { state.photos.push(photo); g.toast(`Photograph: <b>${photo.title}</b><br><span class="muted">${photo.desc}</span>`); }

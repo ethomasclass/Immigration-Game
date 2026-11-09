@@ -11,6 +11,7 @@ A 3D exploration game about the immigrant experience in 1888 New York, for middl
 ## Guides
 
 - **[Teacher Guide](docs/TEACHER_GUIDE.md):** timing, controls, answer key, history notes
+- **[Story Bible](docs/STORY.md):** the two-day story, characters, the six choices and their consequences
 - **[Art Guide](docs/ART_GUIDE.md):** every texture name, and sizes for your tarot art
 - **[Voiceover Guide](docs/VOICEOVER_GUIDE.md):** ElevenLabs workflow; the script is in `assets/audio/vo_script.csv`
 - **[Character Art Prompts](docs/CHARACTER_ART_PROMPTS.md):** Google Flow prompts for every character, in the tarot style

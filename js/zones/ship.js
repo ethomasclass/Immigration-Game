@@ -94,12 +94,13 @@ export class ShipZone extends Zone {
     // ---- people ----
     // Family compartment
     this.person('steward', -1.0, -2.6, 0);
+    this.person('novak', 2.7, -7.4, 0, { talk: 'novak_ship', photo: null, seated: true });
     this.person('weber', -2.3, -6.2, 0);
     this.person('fraweber', -2.9, -5.0, 0, { photo: null });
     this.person('rivka', 2.4, -11.5, 0);
     this.person('mama', 3.0, -12.5, 0, { photo: 'family' });
     this.person('shmuel', 2.1, -12.7, 0, { photo: 'family' });
-    [[-2.6, -9.2, 1], [2.6, -7.0, 6], [-0.6, -13.8, 3], [-2.8, -12.0, 2]].forEach(([x, z, n]) => this.crowd(n, x, z, 0));
+    [[-2.6, -9.2, 1], [-0.6, -13.8, 3], [-2.8, -12.0, 2]].forEach(([x, z, n]) => this.crowd(n, x, z, 0));
     // Single men, forward
     this.person('giuseppe', -2.2, -19.5, 0);
     [[2.6, -18.0, 0], [-2.7, -23.0, 4], [2.4, -26.8, 7], [-0.6, -24.6, 2], [0.9, -28.4, 0]].forEach(([x, z, n]) => this.crowd(n, x, z, 0));
@@ -180,6 +181,8 @@ export class ShipZone extends Zone {
       { text: 'Ask Giuseppe why he left Italy', done: flag('heard_giuseppe_push'), at: [-2.2, -19.5], optional: true },
       { text: 'Ask Herr Weber why he left Germany', done: flag('heard_weber_push'), at: [-2.3, -6.2], optional: true },
       { text: 'Ask the steward about life in steerage', done: flag('heard_conditions'), at: [-1, -2.6], optional: true },
+      { text: 'Sit with old Mr. Novak while he carves', done: flag('met_novak_ship'), at: [2.7, -7.4], optional: true },
+      { text: 'Offer to take Rivka\'s picture for her grandmother', done: flag('photo_rivka'), at: [2.4, -11.5], optional: true },
     ];
   }
 }

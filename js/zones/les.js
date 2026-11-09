@@ -180,8 +180,9 @@ export class LowerEastSideZone extends Zone {
     for (const lx of [5.4, 6.4]) this.box(X(lx), 0.76, Z(16.6), 0.4, 0.28, 0.28, '#1d1d1d', { collide: false });
     this.box(X(7.15), 0, Z(15.6), 0.6, 0.9, 0.6, '#2c2a30'); // pile of coats
     this.person('chana', X(5.2), Z(17.4), 0, { seated: true, photo: 'sweatshop' });
-    this.person('girl', X(6.6), Z(17.4), 0, { seated: true });
-    this.person('moishe', X(4.9), Z(15.8), 0);
+    if (!this.day2 || !flag('printed_sarah')) this.person('girl', X(6.6), Z(17.4), 0, { seated: true });   // Day 2, if printed: Sarah is at the Guild class
+    this.person('moishe', X(4.9), Z(15.8), 0, { talk: this.day2 ? 'moishe2' : 'moishe' });
+    if (!this.day2) this.person('kessler', X(7.0), Z(13.4), 0, { talk: 'kessler1', photo: null });
     this.target('sweatshop', X(5.9), 1.0, Z(16.6), 6);
     // kitchen: stove + washtub
     this.box(X(7.1), 0, Z(14.4), 0.7, 0.85, 0.7, '#1a1a1a');
@@ -194,9 +195,14 @@ export class LowerEastSideZone extends Zone {
     this.target('tenement', X(LOT / 2), 6, Z(0) + 0.6, 30);
 
     // Rivka's family at the hall door
-    this.person('rivka', X(2.6), Z(0) + 2.0, 0, { talk: 'rivka_les' });
-    this.person('mama', X(1.6), Z(0) + 2.4, 0, { talk: 'mama', photo: null });
-    this.person('shmuel', X(5.6), Z(0) + 2.2, 0, { talk: 'shmuel', photo: null });
+    if (!this.day2) {
+      this.person('rivka', X(2.6), Z(0) + 2.0, 0, { talk: 'rivka_les' });
+      this.person('mama', X(1.6), Z(0) + 2.4, 0, { talk: 'mama', photo: null });
+      this.person('shmuel', X(5.6), Z(0) + 2.2, 0, { talk: 'shmuel', photo: null });
+    } else {
+      this.person('mama', X(5.4), Z(13.9), 0, { talk: 'mama2', photo: null });
+      this.person('shmuel', X(6.0), Z(12.9), 0, { talk: 'shmuel2', photo: null, scale: 1 });
+    }
 
     // ---- back yard ----
     const yz = Z(BLD), yz1 = Z(BLD + YARD);
@@ -211,7 +217,7 @@ export class LowerEastSideZone extends Zone {
       line.position.set(X(2 + i * 1.2), y, (yz + yz1) / 2); this.scene.add(line);
       for (let k = 0; k < 3; k++) this.panel(X(2 + i * 1.2), y - 0.45, yz - 1 - k * 1.8, 0.8, 0.9, ['laundry_' + ((i + k) % 3), { type: 'solid', color: ['#d8d0c0', '#9a8a7a', '#b0a8c0'][(i + k) % 3] }], Math.PI / 2, true);
     }
-    this.person('riis', X(3.2), yz - 3.0, 0);
+    if (!this.day2) this.person('riis', X(3.2), yz - 3.0, 0);
     this.crowd(5, X(1.2), yz - 4.6, 0, { scale: 0.72 });
     this.flash = new THREE.PointLight(0xffffff, 0, 14, 1.2);
     this.flash.position.set(X(3.8), 2.4, yz - 2.4); this.scene.add(this.flash);
@@ -313,18 +319,35 @@ export class LowerEastSideZone extends Zone {
 
     // Newsboy at Hester & Allen
     this.box(18.6, 0, 5.8, 1.3, 0.95, 0.7, WOOD);
-    this.person('newsboy', 18.8, 4.6, 0);
+    this.person('newsboy', 18.8, 4.6, 0, { talk: this.day2 ? 'newsboy2' : 'newsboy' });
 
     // Nativism: Mrs. Brennan and a handbill, north side between Forsyth and Eldridge
     this.panel(-26, 1.7, EW.Hester[0] + 0.03, 0.8, 1.1, ['handbill_nativist', { type: 'card', title: 'Americans, Wake Up!', lines: 'America for Americans!', color: '#e8dcc0', w: 160, h: 224 }]);
     this.readable('handbill', -26, 1.7, EW.Hester[0] + 0.7, { prompt: 'Read the handbill', photo: 'handbill' });
-    this.person('brennan', -28.2, -5.6, 0);
+    this.person('brennan', -28.2, -5.6, 0, { talk: this.day2 ? 'brennan2' : 'brennan' });
 
     // Ward boss with coal, outside a corner saloon (Hester & Eldridge, SE corner)
     this.sign(3.6, EW.Hester[1], 'n', 'SALOON · DEMOCRATIC CLUB', 6.6, 'saloon');
     for (let i = 0; i < 4; i++) this.box(5 + i * 0.55, 0, 6.5, 0.5, 0.5 + (i % 2) * 0.1, 0.5, '#1d1b1a');
-    this.person('boss', 3.2, 5.6, 0);
-    this.crowd(5, 4.6, 4.3, 0);
+    if (!this.day2) { this.person('boss', 3.2, 5.6, 0); this.crowd(5, 4.6, 4.3, 0); }
+    else {
+      // Election eve rally: Quinn on a coal wagon, a crowd around him
+      this.box(4.2, 0, 3.0, 2.2, 0.9, 3.6, ['wood_cart', { type: 'planks', color: '#6a4a2a', n: 4 }]);
+      this.person('boss', 4.2, 3.0, 0, { talk: 'boss2', y: 0.9 });
+      this.interact({ x: 4.2, y: 1.6, z: 1.2, r: 2.6, prompt: 'Listen to Mr. Quinn', action: () => this.game.talk('boss2') });
+      [[1.8, 0.4, 0], [6.4, 0.6, 2], [3.0, -1.2, 4], [5.6, -1.0, 7], [2.2, 2.2, 1], [7.2, 2.6, 3]].forEach(([x, z, n]) => this.crowd(n, x, z, 0));
+      // Kessler's cloak shop, Rivka outside, Esther on a crate across the street
+      this.sign(-20, EW.Hester[0], 's', 'KESSLER · CLOAKS & SUITS', 6.4, 'kessler');
+      this.person('kessler', -21.6, -5.9, 0, { talk: 'kessler2', photo: null });
+      this.person('rivka', -18.0, -5.4, 0, { talk: 'rivka2' });
+      this.box(-19.5, 0, 5.6, 0.9, 0.5, 0.7, ['trunk', { type: 'planks', color: '#6a4426', n: 3 }]);
+      this.person('esther', -19.5, 5.6, 0, { talk: 'esther', photo: 'esther', y: 0.5 });
+      this.interact({ x: -19.5, y: 1.3, z: 4.4, r: 2.4, prompt: 'Listen to Esther Lipsky', action: () => this.game.talk('esther') });
+      [[-21, 3.6, 1], [-18, 3.4, 6], [-20.2, 2.4, 3]].forEach(([x, z, n]) => this.crowd(n, x, z, 0));
+      // Whitcomb handing out Hewitt leaflets; Giuseppe waiting for the horsecar
+      this.person('guild', 13.5, 5.8, 0, { talk: 'guild2', photo: null });
+      this.person('giuseppe', -106.5, 6.4, 0, { talk: 'giuseppe3', photo: 'giuseppe2' });
+    }
 
     // gas lamps (cast-iron post, ladder bar, 4-sided lantern)
     for (const [x, z, lit] of [[-12, -5.4, true], [16, 5.4, false], [40, 5.4, true], [57, -5.4, true], [-34, 5.4, false], [-60, -5.4, false], [-100, 5.4, false]]) this.gaslamp(x, z, lit);
@@ -333,8 +356,10 @@ export class LowerEastSideZone extends Zone {
     this.box(-108.6, 0, 9.5, 0.1, 2.6, 0.1, '#222');
     this.panel(-108.6, 2.7, 9.56, 1.6, 0.5, ['sign_horsecar_stop', { type: 'sign', title: 'BOWERY CARS · PARK ROW', w: 224, h: 72 }], 0);
     this.horsecarStatic(-112, 16);
-    const ex = this.exit(-109.5, 9.5, 'Take the horsecar down the Bowery to the Courier office (finish the story)', () => this.ready(), () => this.game.openWrapup('A'));
-    ex.lockedMsg = 'Find Moishe\'s tenement and take at least 5 photographs here first.';
+    const ex = this.day2
+      ? this.exit(-109.5, 9.5, 'Take the horsecar down the Bowery to Park Row', () => this.ready(), () => this.game.goParkRow())
+      : this.exit(-109.5, 9.5, 'Take the horsecar down the Bowery to the Courier office (finish the story)', () => this.ready(), () => this.game.openWrapup('A'));
+    ex.lockedMsg = 'Not yet. Finish your goal (top left) first.';
 
     // street name signs at corners
     for (const [nm, x] of Object.entries(NS)) this.streetSign(nm.toUpperCase() === 'BOWERY' ? 'BOWERY' : nm.toUpperCase() + ' ST', x[1] + 1.2, -6.2);
@@ -357,13 +382,13 @@ export class LowerEastSideZone extends Zone {
     const cap = new THREE.Mesh(new THREE.ConeGeometry(1.6, 3, 8), colorMat('#5a6a5a')); cap.position.set(-155, 22.5, 75); this.scene.add(cap);
     this.target('parish', -160.5, 7, 75, 30);
     this.person('priest', -162.4, 76, 0);
-    this.person('giuseppe', -163.4, 71.5, 0, { talk: 'giuseppe2', photo: 'giuseppe2' });
+    if (!this.day2) this.person('giuseppe', -163.4, 71.5, 0, { talk: 'giuseppe2', photo: 'giuseppe2' });
     // Chinese shops on Mott south of Pell, and on Pell
     this.panel(-160.47, 3.4, 100, 6, 0.9, ['sign_lee_shop', { type: 'sign', title: 'LEE FONG & CO. · 茶 TEAS · GROCERIES', color: '#6a1f1a', w: 448, h: 64 }], -Math.PI / 2);
     this.panel(-160.62, 1.4, 103.5, 2.6, 2.2, ['window_lee_shop', { type: 'card', title: 'Teas', lines: 'Rice · Dried fish · Medicine · Letters home', color: '#d8b070', w: 192, h: 176 }, { emissive: '#553300', emissiveIntensity: 0.5 }], -Math.PI / 2);
     for (const [z, t] of [[106, '雜貨'], [111, '中華']]) this.panel(-160.47, 4.5, z, 0.7, 2.4, ['sign_vert_' + z, { type: 'sign', title: t, color: '#7a1a14', ink: '#e8c060', w: 64, h: 220 }], -Math.PI / 2);
     for (let x = -158; x < -140; x += 6) this.sign(x, PELL[1], 'n', SIGNS.mott[Math.floor(this.rand() * SIGNS.mott.length)], 5, 'pell');
-    this.person('lee', -154.3, 101.5, 0);
+    this.person('lee', -154.3, 101.5, 0, { talk: this.day2 ? 'lee2' : 'lee' });
     this.leeShop();
     for (let i = 0; i < 3; i++) { const l = new THREE.Mesh(new THREE.SphereGeometry(0.25, 8, 6), colorMat('#e04a2a', { emissive: '#801a0a' })); l.position.set(-161.2, 4.3, 98 + i * 1.6); this.scene.add(l); }
     this.crowd(7, -167, 95, 0); this.crowd(4, -150, 92, 0); this.crowd(2, -166, 60, 0); this.crowd(0, -168, 30, 0);
@@ -372,7 +397,7 @@ export class LowerEastSideZone extends Zone {
     // ---- The Neighborhood Guild, 146 Forsyth Street (compressed north of Grand) ----
     this.panel(-37.47, 2.8, -84, 6, 5, ['facade_neighborhood_guild', { type: 'card', title: 'The Neighborhood Guild', lines: '146 Forsyth St. · Founded 1886\nClubs · Reading Room · Kindergarten', color: '#d8ccb0', w: 288, h: 240 }], Math.PI / 2);
     this.readable('guildsign', -38.2, 2, -80.5, { prompt: 'Read the Guild sign' });
-    this.person('guild', -39.6, -84, 0);
+    if (!this.day2) this.person('guild', -39.6, -84, 0);
     this.target('guild', -37.5, 3, -84, 22);
     this.crowd(5, -41, -86.5, 0, { scale: 0.75 }); this.crowd(0, -42, -85, 0, { scale: 0.72 });
     this.gaslamp(-38.4, -78, true);
@@ -598,25 +623,49 @@ export class LowerEastSideZone extends Zone {
 
   photoCount() { return state.photos.filter(p => p.zone === 'les' && p.subject).length; }
   aidCount() { return ['learned_society', 'learned_parish', 'learned_papers', 'learned_guild'].filter(flag).length; }
-  ready() { return flag('met_moishe') && this.photoCount() >= 5; }
+  ready() {
+    if (this.day2) return flag('rivka_decided') && flag('met_moishe2') && this.votesHeard() >= 2;
+    return flag('met_moishe') && (flag('photo_sweatshop') || flag('photo_girl')) && this.photoCount() >= 4;
+  }
+  votesHeard() { return ['heard_quinn2', 'heard_brennan2', 'heard_whitcomb2', 'heard_lee2', 'heard_moishe_vote'].filter(flag).length; }
 
   objectives() {
+    if (this.day2) return this.objectives2();
     const n = this.photoCount();
     return [
       { text: 'Follow Hester Street east, under the El, to Moishe\'s tenement. Go in and find Moishe.', done: flag('met_moishe'), at: [MX + 3.8, MZ - 15] },
-      { text: `Photograph 5 pieces of evidence around the neighborhood (${Math.min(n, 5)}/5). Follow the red dots on your map.`, done: n >= 5 },
+      { text: 'Photograph Chana and Sarah at their sewing', done: flag('photo_sweatshop') || flag('photo_girl'), at: [MX + 5.9, MZ - 16.6] },
+      { text: `Photograph more evidence around the neighborhood (${Math.min(n, 4)}/4). Red dots on the map are good places.`, done: n >= 4 },
       { text: 'Take the Bowery horsecar to the Courier office', done: false, at: [-109.5, 9.5] },
-      { text: 'Ask Moishe about the apartment', done: flag('learned_tenement'), at: [MX + 4.9, MZ - 15.8], optional: true },
-      { text: 'Ask Moishe about his work', done: flag('learned_sweatshop'), at: [MX + 4.9, MZ - 15.8], optional: true },
-      { text: 'Visit the back yard behind the tenement', done: flag('met_riis'), at: [MX + 3.2, MZ - 21], optional: true },
+      { text: 'Ask Moishe if you may photograph Sarah', done: flag('heard_sarah_plea'), at: [MX + 4.9, MZ - 15.8], optional: true },
+      { text: 'Ask Mr. Riis, in the back yard, about photographing faces', done: flag('heard_riis_faces'), at: [MX + 3.2, MZ - 21], optional: true },
+      { text: 'Watch Mr. Kessler collect the coats', done: flag('met_kessler'), at: [MX + 7, MZ - 13.4], optional: true },
       { text: 'Talk to a pushcart peddler', done: flag('learned_pushcart'), at: [-4, -5.2], optional: true },
       { text: `Find how neighbors help each other (${this.aidCount()}/4)`, done: this.aidCount() >= 3, at: [-2.6, 76.8], optional: true },
       { text: 'Walk west past the Bowery to Mott Street and visit Mr. Lee\'s shop', done: flag('learned_lee') || flag('learned_exclusion'), at: [-156, 101.5], optional: true },
       { text: 'Hear what Mrs. Brennan thinks of newcomers', done: flag('learned_nativism'), at: [-28.2, -5.6], optional: true },
       { text: 'Look inside the saloon where Mr. Quinn has his club', done: flag('read_club'), at: [1.3, 9], optional: true },
-      { text: 'Look up at an election banner', done: flag('read_banner'), at: [13.5, 0], optional: true },
     ];
   }
+
+  objectives2() {
+    const v = this.votesHeard();
+    return [
+      { text: 'Find Rivka outside Kessler\'s shop on Hester Street', done: flag('rivka_decided'), at: [-18, -5.4] },
+      { text: 'Go up to Moishe\'s apartment and see the family', done: flag('met_moishe2'), at: [MX + 4.9, MZ - 15.8] },
+      { text: `Hear what people think of tomorrow's election (${Math.min(v, 2)}/2): Mr. Quinn, Mrs. Brennan, Mr. Whitcomb, Mr. Lee, or Moishe`, done: v >= 2, at: [4.2, 1.2] },
+      { text: 'Take the Bowery horsecar to Park Row', done: false, at: [-109.5, 9.5] },
+      { text: 'Listen to Esther Lipsky, the union organizer', done: flag('met_esther'), at: [-19.5, 4.4], optional: true },
+      { text: 'Talk to Mr. Kessler at his shop door', done: flag('met_kessler2'), at: [-21.6, -5.9], optional: true },
+      { text: 'Say hello to Shmuel', done: flag('met_shmuel2'), at: [MX + 6, MZ - 12.9], optional: true },
+      { text: 'Find Giuseppe waiting for the horsecar', done: flag('met_gius3'), at: [-106.5, 6.4], optional: true },
+      { text: 'Ask Mr. Lee on Mott Street about the election', done: flag('heard_lee2'), at: [-156, 101.5], optional: true },
+    ];
+  }
+}
+
+export class LowerEastSideDay2 extends LowerEastSideZone {
+  build() { this.day2 = true; super.build(); }
 }
 
 function mulberry(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }

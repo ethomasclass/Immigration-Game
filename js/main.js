@@ -18,11 +18,11 @@ import { DOCS, CARDS } from './data/dialogue.js';
 import { CHARACTERS } from './data/characters.js';
 import { ShipZone } from './zones/ship.js';
 import { CastleZone } from './zones/castle.js';
-import { LowerEastSideZone } from './zones/les.js';
+import { LowerEastSideZone, LowerEastSideDay2 } from './zones/les.js';
 import { CityZone } from './zones/city.js';
 
-const ZONES = { ship: ShipZone, castle: CastleZone, les: LowerEastSideZone, city: CityZone };
-const ZONE_TITLES = { ship: 'I. Steerage', castle: 'II. Castle Garden', les: 'III. The Lower East Side', city: 'IV. The City' };
+const ZONES = { ship: ShipZone, castle: CastleZone, les: LowerEastSideZone, les2: LowerEastSideDay2, city: CityZone };
+const ZONE_TITLES = { ship: 'I. Steerage', castle: 'II. Castle Garden', les: 'III. The Lower East Side', les2: 'IV. One Week Later', city: 'V. Park Row' };
 const $ = (id) => document.getElementById(id);
 
 class Game {
@@ -75,6 +75,10 @@ class Game {
       unlockAudio();
       const z = b.dataset.zone;
       if (z === 'wrapup') this.openWrapup('A');
+      else if (z === 'wrapupB') { this.day2Defaults(); this.openWrapup('B'); }
+      else if (z === 'les2') this.startDay2();
+      else if (z === 'city') { this.day2Defaults(); this.goParkRow(); }
+      else if (z === 'night') { this.day2Defaults(true); this.toNight(); }
       else this.loadZone(z);
     });
     // settings
@@ -146,7 +150,7 @@ class Game {
         const sp = spawn || this.zone.spawn;
         this.controls.setPose(sp.x, sp.z, sp.yaw);
         this.controls.roll = 0; this.controls.floorY = 0;
-        $('zone-name').textContent = ZONE_TITLES[id];
+        $('zone-name').textContent = this.zone.title || ZONE_TITLES[id];
         $('loading').classList.add('hidden');
         $('menu').classList.add('hidden');
         $('card').classList.add('hidden');
@@ -269,6 +273,45 @@ class Game {
   resumeFromWrapup() {
     const z = this.wrapup.part === 'A' ? 'les' : 'city';
     this.loadZone(z, { skipCard: true });
+  }
+
+  // ---------------------------------------------------------------- Day 2 flow
+  /**
+   * Fill in Day 1 (and, if needed, Day 2) choices for a student whose
+   * computer has no save from before. Returns the list of assumptions made.
+   */
+  day2Defaults(throughPark = false) {
+    const f = state.flags, made = [];
+    if (!f.met_moishe) {
+      Object.assign(f, { met_moishe: true, gate_done: true, safe: true, novak_decided: true, sarah_kept: true, lemon: true, heard_sarah_plea: true });
+      made.push('Miss Carver at the information desk helped Rivka\'s family, so they kept their savings.', 'You could not pay for Mr. Novak\'s telegram.', 'You kept your promise and did not print Sarah\'s face.');
+    }
+    if (throughPark && !f.endorsed) {
+      Object.assign(f, { rivka_decided: true, rivka_wait: true, met_moishe2: true, gius_decided: true, gius_refuse: true, saw_fall: true, saw_aftermath: true, endorsed: true, endorse_hewitt: true });
+      made.push('Rivka waited to join the union.', 'Giuseppe refused to vote under a dead man\'s name.', 'The Courier endorsed Mayor Hewitt.');
+    }
+    save();
+    return made;
+  }
+
+  startDay2() {
+    unlockAudio();
+    const made = this.day2Defaults();
+    const go = () => this.showCard('les2', () => this.loadZone('les2', { skipCard: true }));
+    if (made.length) {
+      CARDS.previously = { num: 'DAY TWO', title: 'Previously…', sub: 'This computer does not have your Day 1 game saved', text: 'The story will continue as if:\n\n• ' + made.join('\n• ') + '\n\n(To keep your own choices, play both days on the same computer and browser.)' };
+      this.showCard('previously', go);
+    } else go();
+  }
+
+  goParkRow() {
+    state.flags.election_night = false; state.flags.in_park = false; save();
+    this.loadZone('city');
+  }
+
+  toNight() {
+    state.flags.election_night = true; state.flags.in_park = false; save();
+    this.showCard('night', () => this.loadZone('city', { skipCard: true }));
   }
 
   portraitURL(who) {
