@@ -17,7 +17,9 @@ Follow Rivka's family through inspection. Find out who gets in, and who does not
 "card.les.mp3","The Editor","Warm, measured adult narrator. 1880s newspaper editor reading a letter.","Rivka's family has reached Hester Street, one of the most crowded neighborhoods on Earth.
 
 Find Cousin Moishe's tenement. See how newcomers live, work, and help each other. Photograph what you find."
-"card.city.mp3","The Editor","Warm, measured adult narrator. 1880s newspaper editor reading a letter.","One week later. Your editor has a new question: New York is growing faster than any city in the world. Who runs it? Who builds it? And who does it serve?
+"card.city.mp3","The Editor","Warm, measured adult narrator. 1880s newspaper editor reading a letter.","One week later. In a few days, New York will elect a new mayor, and campaign banners hang over every street.
+
+Your editor has a new question: this city is growing faster than any in the world. Who runs it? Who builds it? And who does it serve?
 
 Explore Park Row, near City Hall. Look for the bosses, the builders, and the machines that move the city."
 "rivka.start.1.mp3","Rivka Abramowitz","Girl, about 16. Jewish, from near Kiev. Light Yiddish/Russian accent. Brave but tired.","You are the one with the camera box? Mama says not to stare. But everyone stares at it."
@@ -285,6 +287,11 @@ Explore Park Row, near City Hall. Look for the bosses, the builders, and the mac
 "elguard.under.2.mp3","El Guard","Man, 30s, gruff New Yorker, shouting over the trains.","Progress, they call it."
 "elguard.ride.1.mp3","El Guard","Man, 30s, gruff New Yorker, shouting over the trains.","All aboard! Hold onto your hat!"
 "elguard.bye.1.mp3","El Guard","Man, 30s, gruff New Yorker, shouting over the trains.","Suit yourself!"
+"hodcarrier.start.1.mp3","Dominic","Man, 30s, Italian accent, out of breath, wry.","Hey, camera man! You want a picture? Take it quick. The foreman docks my pay if I stand still."
+"hodcarrier.start.2.mp3","Dominic","Man, 30s, Italian accent, out of breath, wry.","I carry bricks up the ladders, eleven stories, all day. No rope. No net. A dollar and a half."
+"hodcarrier.start.3.mp3","Dominic","Man, 30s, Italian accent, out of breath, wry.","Last month a man fell from the ninth floor. The next morning, another man had his job."
+"elevator.start.1.mp3","Elevator Operator","Young man, 18, New York accent, cheerful, rehearsed patter.","Going up! Mr. Otis's safety elevator, sir. If the rope breaks, the brakes catch us. Probably."
+"elevator.start.2.mp3","Elevator Operator","Young man, 18, New York accent, cheerful, rehearsed patter.","Eleven floors in under a minute. Nobody would rent an office up there if they had to climb."
 "keeper.start.1.mp3","Park Keeper","Man, 50s, Scottish accent, strict but kind.","Welcome to Central Park! Kindly stay on the paths."
 "keeper.who.1.mp3","Park Keeper","Man, 50s, Scottish accent, strict but kind.","Mr. Frederick Law Olmsted and Mr. Calvert Vaux designed it. They started back in 1858. Took twenty years."
 "keeper.who.2.mp3","Park Keeper","Man, 50s, Scottish accent, strict but kind.","Mr. Olmsted said a city needs lungs. A place where rich and poor alike can breathe fresh air."
@@ -363,6 +370,24 @@ Much of that money went into the pockets of the Tweed Ring, through fake and pad
 "doc.bridge.mp3","The Editor","Warm, measured adult narrator. 1880s newspaper editor reading a letter.","Opened in 1883, the Brooklyn Bridge was the longest suspension bridge in the world. Its stone towers rise above every building in the city.
 
 It connects New York to Brooklyn, which is still a separate city. Many of the workers who built it were immigrants. Some died building it."
+"doc.banner.mp3","The Editor","Warm, measured adult narrator. 1880s newspaper editor reading a letter.","FOR MAYOR
+HUGH J. GRANT
+Regular Democratic Nominee · Tammany Hall
+
+Election Day: Tuesday, November 6, 1888.
+
+Three men are running for mayor. Tammany Hall's clubs in every neighborhood are working to get out the vote for Grant."
+"doc.club.mp3","The Editor","Warm, measured adult narrator. 1880s newspaper editor reading a letter.","TAMMANY HALL · DISTRICT CLUB
+
+Men wanted for the city street crews. See Mr. Quinn.
+Help with citizenship papers, Thursday evenings.
+Free coal for families in need.
+Grand picnic and boat ride for the children, tickets free.
+
+VOTE THE STRAIGHT TICKET, NOVEMBER 6."
+"doc.rooftop.mp3","The Editor","Warm, measured adult narrator. 1880s newspaper editor reading a letter.","Eleven stories up, the whole city spreads out below. To the east, the towers of the Brooklyn Bridge. To the south, the harbor and the masts of ships. Only church steeples and a few new office buildings stand taller than you.
+
+Next door, men are building the new Times Building even higher."
 "doc.parkrules.mp3","The Editor","Warm, measured adult narrator. 1880s newspaper editor reading a letter.","CENTRAL PARK: NOTICE
 
 KEEP OFF THE GRASS.

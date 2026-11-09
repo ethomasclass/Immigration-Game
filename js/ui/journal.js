@@ -56,8 +56,16 @@ export class Journal {
   }
 
   renderNotes() {
-    if (!state.notes.length) { content.innerHTML = '<div class="empty">Talk to people to fill your notebook.</div>'; return; }
     let html = '<div class="notes-list">';
+    const zone = this.game.zone;
+    if (zone) {
+      const list = zone.objectives(), cur = this.game.currentGoal;
+      const li = (o) => `<li class="${o.done ? 'done' : ''} ${cur && o.text === cur.text && !o.done ? 'now' : ''}">${o.text}</li>`;
+      html += `<h3>Goals</h3><ul class="goal-list">${list.filter(o => !o.optional).map(li).join('')}</ul>`;
+      const leads = list.filter(o => o.optional);
+      if (leads.length) html += `<h3>Leads to follow (optional, good for evidence)</h3><ul class="goal-list">${leads.map(li).join('')}</ul>`;
+    }
+    if (!state.notes.length) html += '<div class="empty">Talk to people to fill your notebook.</div>';
     for (const z of Object.keys(ZONE_NAMES)) {
       const notes = state.notes.filter(n => n.zone === z);
       if (!notes.length) continue;

@@ -11,6 +11,7 @@ import { Dialogue } from './ui/dialogue.js';
 import { PhotoMode } from './ui/photo.js';
 import { Journal } from './ui/journal.js';
 import { Wrapup } from './ui/wrapup.js';
+import { Minimap } from './ui/minimap.js';
 import { richText } from './ui/text.js';
 import { DOCS, CARDS } from './data/dialogue.js';
 import { CHARACTERS } from './data/characters.js';
@@ -34,6 +35,8 @@ class Game {
     this.photo = new PhotoMode(this);
     this.journal = new Journal(this);
     this.wrapup = new Wrapup(this);
+    this.minimap = new Minimap(this);
+    this.currentGoal = null;
     this.mode = 'menu';
     this.zone = null;
     this.zoneId = null;
@@ -114,6 +117,11 @@ class Game {
     $('card-title').textContent = c.title;
     $('card-sub').textContent = c.sub;
     $('card-text').textContent = c.text;
+    // Optional tarot card art / video for this title card: assets/art/card_<key>.png, assets/video/card_<key>.mp4
+    const art = $('card-art'); art.innerHTML = '';
+    const img = new Image(); img.onload = () => { if (!art.firstChild) art.appendChild(img); }; img.src = `assets/art/card_${key}.png`;
+    const vid = document.createElement('video'); vid.muted = true; vid.loop = true; vid.playsInline = true;
+    vid.oncanplay = () => { art.innerHTML = ''; art.appendChild(vid); vid.play().catch(() => {}); }; vid.src = `assets/video/card_${key}.mp4`;
     $('card').classList.remove('hidden');
     this.cardCb = cb;
     playVoice(`card.${key}`, c.text, 'narrator');
@@ -133,7 +141,7 @@ class Game {
         this.zone.optimize();
         const sp = spawn || this.zone.spawn;
         this.controls.setPose(sp.x, sp.z, sp.yaw);
-        this.controls.roll = 0;
+        this.controls.roll = 0; this.controls.floorY = 0;
         $('zone-name').textContent = ZONE_TITLES[id];
         $('loading').classList.add('hidden');
         $('menu').classList.add('hidden');
@@ -159,8 +167,17 @@ class Game {
 
   refreshObjectives() {
     if (!this.zone) return;
+    // Show ONE goal at a time: the first required goal that isn't done.
     const list = this.zone.objectives();
-    $('objectives').innerHTML = list.map(o => `<li class="${o.done ? 'done' : ''}">${o.text}</li>`).join('');
+    const req = list.filter(o => !o.optional), leads = list.filter(o => o.optional);
+    const goal = req.find(o => !o.done) || req[req.length - 1];
+    const n = req.indexOf(goal) + 1;
+    if (!this.currentGoal || this.currentGoal.text !== goal.text) { const el = $('goal'); el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); }
+    this.currentGoal = goal;
+    $('goal-label').textContent = `GOAL ${n} OF ${req.length}`;
+    $('goal-text').innerHTML = goal.text;
+    const found = leads.filter(o => o.done).length;
+    $('goal-leads').textContent = leads.length ? `Leads to follow: ${found}/${leads.length} (J to see)` : '';
   }
 
   // ------------------------------------------------------------------ modes
@@ -306,7 +323,7 @@ class Game {
       if (it.used || it.hidden) continue;
       v.copy(it.pos).sub(cam);
       const flat = Math.hypot(v.x, v.z);
-      if (flat > it.r) continue;
+      if (flat > it.r || Math.abs(it.pos.y - cam.y) > 3.5) continue;
       const d = v.length();
       const dot = v.normalize().dot(fwd);
       if (dot < 0.8 && flat > 0.9) continue;
@@ -332,6 +349,7 @@ class Game {
     this.zone.update(dt);
     this.controls.update(dt, this.zone.colliders, this.zone.bounds);
     this.photo.update(dt);
+    this.minimap.update(dt);
     const f = this.findFocus();
     if (f !== this.focus) {
       this.focus = f;

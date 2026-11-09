@@ -56,6 +56,7 @@ export class Dialogue {
     this.lineIndex = -1;
     this.choiceList = null;
     save();
+    this.game.refreshObjectives();
     this.nextLine();
   }
 
@@ -106,7 +107,7 @@ export class Dialogue {
     list.forEach((c, i) => {
       const b = document.createElement('button');
       const visited = this.seen.has(this.treeId + '.' + c.next) && c.next !== 'bye';
-      b.innerHTML = `<span class="num">${i + 1}.</span>${esc(c.text)}`;
+      b.innerHTML = `<span class="num">${i + 1}.</span>${c.key && !visited ? '<span class="keyq">&#9733;</span> ' : ''}${esc(c.text)}`;
       if (visited) b.classList.add('seen');
       b.addEventListener('click', (e) => { e.stopPropagation(); this.choose(c); });
       el.choices.appendChild(b);

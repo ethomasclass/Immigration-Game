@@ -60,13 +60,24 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #000; font-f
 /* ---------- HUD ---------- */
 #hud { position: fixed; inset: 0; pointer-events: none; z-index: 5; }
 #zone-name { position: absolute; top: 14px; left: 18px; color: var(--parch); font-variant: small-caps; font-size: 1.15rem; text-shadow: 0 1px 3px #000; letter-spacing: .05em; }
-#objectives { position: absolute; top: 44px; left: 18px; margin: 0; padding: 10px 14px 10px 30px; background: rgba(20,16,26,.62); color: var(--parch); border-left: 3px solid var(--gold); font-size: .92rem; max-width: 330px; line-height: 1.45; }
-#objectives li.done { color: #9fb58c; text-decoration: line-through; }
+#goal { position: absolute; top: 44px; left: 18px; padding: 9px 14px; background: rgba(20,16,26,.66); color: var(--parch); border-left: 3px solid var(--gold); max-width: 340px; line-height: 1.4; }
+#goal-label { color: var(--gold); font-size: .72rem; letter-spacing: .18em; }
+#goal-text { font-size: 1.02rem; }
+#goal-leads { font-size: .8rem; color: #c9bfa6; margin-top: 3px; }
+#goal.flash { animation: goalFlash 1s ease-out; }
+@keyframes goalFlash { from { background: rgba(201,162,74,.85); } }
+#minimap { position: absolute; top: 12px; right: 12px; width: 168px; height: 168px; border-radius: 50%; box-shadow: 0 2px 10px rgba(0,0,0,.6); }
+.goal-list { list-style: none; padding: 0; margin: 0 0 14px; line-height: 1.6; }
+.goal-list li::before { content: "\2610  "; color: var(--gold-2); }
+.goal-list li.done::before { content: "\2611  "; }
+.goal-list li.done { color: var(--muted); }
+.goal-list li.now { font-weight: bold; color: var(--red); }
+#card-art img, #card-art video { max-width: 100%; max-height: 38vh; border-radius: 8px; border: 2px solid var(--gold-2); margin-bottom: 10px; }
 #crosshair { position: absolute; left: 50%; top: 50%; width: 6px; height: 6px; margin: -3px 0 0 -3px; border-radius: 50%; background: rgba(255,240,210,.85); box-shadow: 0 0 2px #000; }
 #prompt { position: absolute; left: 50%; top: 56%; transform: translateX(-50%); background: rgba(20,16,26,.8); color: var(--parch); padding: 6px 14px; border: 1px solid var(--gold); border-radius: 3px; font-size: 1rem; }
 #prompt b { color: var(--gold); }
 #hud-keys { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); color: rgba(239,227,198,.75); font-size: .8rem; text-shadow: 0 1px 2px #000; white-space: nowrap; }
-#toasts { position: fixed; top: 16px; right: 16px; z-index: 30; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+#toasts { position: fixed; top: 192px; right: 12px; z-index: 30; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
 .toast { background: var(--parch); border: 2px solid var(--gold-2); padding: 8px 14px; border-radius: 4px; max-width: 320px; box-shadow: 0 4px 14px rgba(0,0,0,.5); animation: toastIn .3s ease-out; font-size: .95rem; }
 .toast b { color: var(--red); }
 @keyframes toastIn { from { transform: translateX(30px); opacity: 0; } }
@@ -177,4 +188,8 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #000; font-f
   .chart { grid-template-columns: 1fr; }
   #dlg-portrait { display: none; }
   #hud-keys { display: none; }
+  #minimap { width: 110px; height: 110px; }
+  #toasts { top: 132px; }
 }
+
+.keyq { color: #c98a10; }

@@ -18,6 +18,8 @@ export class Controls {
     this.dragging = false;
     this.bob = 0;
     this.roll = 0;  // ship sway, set by zone
+    this.floorY = 0; // height of the floor the player stands on (roofs)
+    this.shake = 0;  // 0..1, e.g. an El train overhead
     this.onClick = null;      // left click while playing
     this.onRightClick = null; // right click while playing
     this.onLockChange = null;
@@ -119,7 +121,9 @@ export class Controls {
     this.bob += dt * moving * 2.4;
     const bobY = Math.sin(this.bob) * 0.03 * Math.min(1, moving / 3);
 
-    this.camera.position.set(this.pos.x, this.eye + bobY, this.pos.z);
+    const sh = this.shake; this.shake = Math.max(0, sh - dt * 1.5);
+    const jx = sh ? (Math.random() - 0.5) * 0.035 * sh : 0, jy = sh ? (Math.random() - 0.5) * 0.035 * sh : 0;
+    this.camera.position.set(this.pos.x + jx, this.floorY + this.eye + bobY + jy, this.pos.z);
     this.camera.rotation.set(this.pitch, this.yaw, this.roll, 'YXZ');
   }
 

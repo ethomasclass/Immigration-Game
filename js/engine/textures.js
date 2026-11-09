@@ -272,6 +272,78 @@ const DRAW = {
     DRAW.planks(ctx, w, h, { color: '#6a4a30', n: 8 }, r);
     for (let i = 0; i < 2500; i++) { ctx.fillStyle = `rgba(${200 + r() * 40},${170 + r() * 30},${110 + r() * 30},${0.25 + r() * 0.4})`; ctx.fillRect(r() * w, r() * h, 1 + r() * 2, 1 + r() * 2); }
   },
+  // Wraparound skyline placeholder. The horizon sits 30% up from the bottom.
+  // kind: 'rooftops' | 'harbor' | 'park'. Tiles seamlessly when mirrored.
+  skyline(ctx, w, h, s, r) {
+    const hz = h * 0.7;
+    const g = ctx.createLinearGradient(0, 0, 0, hz);
+    g.addColorStop(0, s.top || '#8fa0ae'); g.addColorStop(1, s.haze || '#d8cdb4');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, w, hz);
+    ctx.fillStyle = s.ground || s.haze || '#d8cdb4'; ctx.fillRect(0, hz, w, h - hz);
+    // soft clouds / smoke
+    for (let i = 0; i < 14; i++) { ctx.fillStyle = `rgba(255,255,255,${0.05 + r() * 0.08})`; ctx.beginPath(); ctx.ellipse(r() * w, hz * (0.15 + r() * 0.5), 60 + r() * 120, 10 + r() * 16, 0, 0, 7); ctx.fill(); }
+    const layer = (col, minH, maxH, spires) => {
+      ctx.fillStyle = col;
+      let x = 0;
+      while (x < w) {
+        const bw = 10 + r() * 34, bh = minH + r() * (maxH - minH);
+        ctx.fillRect(x, hz - bh, bw + 1, bh + 2);
+        if (r() < 0.35) ctx.fillRect(x + bw * 0.3, hz - bh - 5 - r() * 6, 3, 12);                       // chimney
+        if (r() < 0.12) { ctx.fillRect(x + bw * 0.5, hz - bh - 9, 9, 9); ctx.fillRect(x + bw * 0.5 + 3, hz - bh - 12, 3, 4); } // water tank
+        if (spires && r() < 0.06) { ctx.beginPath(); ctx.moveTo(x + 2, hz - bh); ctx.lineTo(x + 7, hz - bh - 30 - r() * 30); ctx.lineTo(x + 12, hz - bh); ctx.fill(); } // steeple
+        if (r() < 0.2) { ctx.fillStyle = 'rgba(230,225,215,.18)'; ctx.beginPath(); ctx.ellipse(x + bw * 0.3 + 8, hz - bh - 24, 14, 6, -0.4, 0, 7); ctx.fill(); ctx.fillStyle = col; } // smoke
+        x += bw;
+      }
+    };
+    if (s.kind === 'harbor') {
+      ctx.fillStyle = s.ground || '#2c4a5a'; ctx.fillRect(0, hz, w, h - hz);
+      ctx.fillStyle = '#7d8478'; ctx.beginPath(); ctx.moveTo(0, hz);
+      for (let x = 0; x <= w; x += 20) ctx.lineTo(x, hz - 3 - Math.abs(Math.sin(x * 0.013)) * 9 - r() * 2);
+      ctx.lineTo(w, hz); ctx.fill();
+      for (let i = 0; i < 9; i++) {        // sailing ships and steamers far out
+        const x = r() * w, k = 0.5 + r();
+        ctx.fillStyle = '#3a3a3a'; ctx.fillRect(x - 12 * k, hz - 2 * k, 24 * k, 3 * k);
+        ctx.fillRect(x - 6 * k, hz - 16 * k, 1.5, 15 * k); ctx.fillRect(x + 5 * k, hz - 13 * k, 1.5, 12 * k);
+        if (r() < 0.5) { ctx.fillStyle = 'rgba(240,235,220,.7)'; ctx.fillRect(x - 5 * k, hz - 13 * k, 8 * k, 8 * k); }
+      }
+    } else if (s.kind === 'park') {
+      layer('#8a8d86', 4, 14, true);
+      ctx.fillStyle = '#4a5f3a';
+      for (let x = 0; x < w; x += 9) { ctx.beginPath(); ctx.arc(x, hz - 4 - r() * 6, 8 + r() * 9, 0, 7); ctx.fill(); }
+      ctx.fillRect(0, hz - 4, w, 6);
+    } else {
+      layer(s.far || '#9a978f', 8, 26, true);
+      layer(s.near || '#6e665f', 5, 16, false);
+    }
+  },
+  // What you see through an elevator's gate as the floors slide past.
+  shaft(ctx, w, h, s, r) {
+    DRAW.brick(ctx, w, h, { color: '#6a4a3a', mortar: '#3a2e28' }, r);
+    ctx.fillStyle = '#1a1614'; ctx.fillRect(0, h * 0.9, w, h * 0.1);                       // floor slab
+    ctx.fillStyle = '#c8b890'; ctx.fillRect(w * 0.2, h * 0.3, w * 0.6, h * 0.6);           // hallway beyond the landing door
+    ctx.fillStyle = '#8a7a5a'; ctx.fillRect(w * 0.2, h * 0.75, w * 0.6, h * 0.15);
+    ctx.fillStyle = '#3a2a1c'; ctx.fillRect(w * 0.42, h * 0.42, w * 0.16, h * 0.33);       // an office door down the hall
+    ctx.strokeStyle = '#2a2018'; ctx.lineWidth = 8; ctx.strokeRect(w * 0.2, h * 0.3, w * 0.6, h * 0.6);
+    ctx.fillStyle = '#e8d8a8'; ctx.font = `bold ${Math.round(h * 0.09)}px Georgia`; ctx.textAlign = 'center'; ctx.fillText('FLOOR', w / 2, h * 0.2);
+  },
+  awning(ctx, w, h, s) {
+    const a = s.color || '#8a2e2a', b = s.color2 || '#e8dcc0';
+    for (let x = 0; x < w; x += w / 8) { ctx.fillStyle = (Math.round(x / (w / 8)) % 2) ? a : b; ctx.fillRect(x, 0, w / 8 + 1, h); }
+    ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.fillRect(0, h * 0.86, w, h * 0.14);
+  },
+  // Cloth election banner hung across a street.
+  banner(ctx, w, h, s, r) {
+    ctx.fillStyle = s.color || '#efe6cf'; ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle = '#a3312a'; ctx.fillRect(0, 0, w, h * 0.1); ctx.fillStyle = '#2f4a7a'; ctx.fillRect(0, h * 0.9, w, h * 0.1);
+    ctx.fillStyle = '#1d1a16'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    const lines = String(s.title || '').split('\n');
+    lines.forEach((ln, i) => {
+      let size = h * (i === 1 ? 0.34 : 0.17); ctx.font = `bold ${size}px Georgia`;
+      while (ctx.measureText(ln).width > w * 0.9 && size > 6) { size -= 1; ctx.font = `bold ${size}px Georgia`; }
+      ctx.fillText(ln, w / 2, h * (lines.length === 1 ? 0.5 : [0.24, 0.52, 0.78][i] || 0.5));
+    });
+    noise(ctx, w, h, r, 10, 500);
+  },
   sky(ctx, w, h, s) {
     const g = ctx.createLinearGradient(0, 0, 0, h);
     g.addColorStop(0, s.top || '#8a9aa8'); g.addColorStop(0.6, s.mid || '#cdbf9e'); g.addColorStop(1, s.bottom || '#e8d6b0');

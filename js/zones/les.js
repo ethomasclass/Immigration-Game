@@ -48,6 +48,7 @@ export class LowerEastSideZone extends Zone {
     this.rand = mulberry(1888);
     this.signTexN = 0;
 
+    this.skyline('les', { kind: 'rooftops', top: '#6b5866', haze: '#5c4d58', far: '#4e4350', near: '#3a323c' });
     this.streets();
     this.blocks();
     this.tenement();
@@ -56,6 +57,9 @@ export class LowerEastSideZone extends Zone {
     this.hester();
     this.landmarks();
     this.wires();
+    this.saloon();
+    this.election();
+    this.streetLife();
 
     this.spawn = { x: -8, z: 1.5, yaw: -Math.PI / 2 };
   }
@@ -90,7 +94,8 @@ export class LowerEastSideZone extends Zone {
         // Carve out landmarks and Pell Street, then fill the rest with tenements.
         let rects = [[x0, x1, z0, z1]];
         if (bi === 5 && bj === 3) rects = [[x0, x1, z0, 66], [x0, x1, 82, z1], [20, x1, 66, 82]];             // synagogue
-        if (bi === 1 && bj === 3) rects = [[x0, x1, z0, 66], [-146, x1, 66, 84], [x0, x1, 84, PELL[0]], [x0, x1, PELL[1], z1]]; // church + Pell
+        if (bi === 1 && bj === 3) rects = [[x0, x1, z0, 66], [-146, x1, 66, 84], [x0, x1, 84, PELL[0]], [x0, x1, PELL[1], 98], [-153, x1, 98, 105], [x0, x1, 105, z1]]; // church + Pell + Lee's shop
+        if (bi === 5 && bj === 2) rects = [[x0, x1, 14, z1], [7, x1, z0, 14]];                                // saloon / Democratic club
         for (const [rx0, rx1, rz0, rz1] of rects) {
           // Split west->east into buildings of 2-3 lots with varied heights.
           let x = rx0;
@@ -103,6 +108,7 @@ export class LowerEastSideZone extends Zone {
             if (x === rx0) fr.w = facade(v + 2, tall);
             if (xe >= rx1 - 0.1) fr.e = facade(v + 3, tall);
             this.building(x, xe, rz0, rz1, h, fr, null);
+            this.dress(x, xe, rz0, rz1, h);
             x = xe;
           }
         }
@@ -111,8 +117,11 @@ export class LowerEastSideZone extends Zone {
   }
 
   /** Painted signboard over a shop. side: 's' faces +z, 'n' faces -z, 'e' faces +x, 'w' faces -x */
-  sign(x, z, side, text, w = 5) {
-    const key = 'sign_shop_' + (this.signTexN++);
+  sign(x, z, side, text, w = 5, group = 'shop') {
+    // Stable art names: sign_<street>_<number>.png replaces the painted text with your own sign art.
+    this.signN = this.signN || {};
+    const n = this.signN[group] = (this.signN[group] || 0) + 1;
+    const key = `sign_${group}_${String(n).padStart(2, '0')}`;
     const ry = { s: 0, n: Math.PI, e: Math.PI / 2, w: -Math.PI / 2 }[side];
     const off = 0.06;
     const px = side === 'e' ? x + off : side === 'w' ? x - off : x;
@@ -254,6 +263,7 @@ export class LowerEastSideZone extends Zone {
       train.rotation.y = north ? 0 : Math.PI;
       const p = this.game.controls.pos;
       if (Math.abs(p.x - mid) < 40 && Math.abs(train.position.z - p.z) < 18 && !train.userData.heard) { sfx('train'); train.userData.heard = true; }
+      if (Math.abs(p.x - mid) < 14 && Math.abs(train.position.z - 15 * (north ? -1 : 1) - p.z) < 22) this.game.controls.shake = 1;
       if (Math.abs(train.position.z - p.z) > 40) train.userData.heard = false;
     });
     this.target('el', mid, deckY, name === 'Allen' ? 0 : 0, 30);
@@ -265,12 +275,12 @@ export class LowerEastSideZone extends Zone {
     // shop signs along Hester (both sides) and the Bowery and Mott
     for (const [bx0, bx1] of BX.slice(2, 7)) for (let x = bx0 + 3.8; x < bx1 - 2; x += LOT) {
       if (x > MX - 1 && x < MX + LOT + 1) continue;
-      this.sign(x, EW.Hester[0], 's', SIGNS.hester[Math.floor(r() * SIGNS.hester.length)], 5.6);
-      this.sign(x, EW.Hester[1], 'n', SIGNS.hester[Math.floor(r() * SIGNS.hester.length)], 5.6);
+      this.sign(x, EW.Hester[0], 's', SIGNS.hester[Math.floor(r() * SIGNS.hester.length)], 5.6, 'hester_north');
+      this.sign(x, EW.Hester[1], 'n', SIGNS.hester[Math.floor(r() * SIGNS.hester.length)], 5.6, 'hester_south');
     }
     for (let z = -45; z < 45; z += LOT) if (Math.abs(z) > 8) {
-      this.sign(NS.Bowery[0], z, 'e', SIGNS.bowery[Math.floor(r() * SIGNS.bowery.length)], 5.4);
-      this.sign(NS.Bowery[1], z, 'w', SIGNS.bowery[Math.floor(r() * SIGNS.bowery.length)], 5.4);
+      this.sign(NS.Bowery[0], z, 'e', SIGNS.bowery[Math.floor(r() * SIGNS.bowery.length)], 5.4, 'bowery_west');
+      this.sign(NS.Bowery[1], z, 'w', SIGNS.bowery[Math.floor(r() * SIGNS.bowery.length)], 5.4, 'bowery_east');
     }
     // pushcarts along both curbs, Eldridge to Orchard
     const goods = ['#6a7a3a', '#a05a3a', '#d0c080', '#8a8a8a', '#5a3a6a', '#c86a2a', '#3a4a6a', '#9a3a2a'];
@@ -292,7 +302,7 @@ export class LowerEastSideZone extends Zone {
     this.person('peddler2', 71.8, -24, 0, { photo: null });
     for (let z = -40; z < 40; z += 9) if (Math.abs(z + 24) > 4) { this.cart(70.2, z, Math.PI / 2, goods[(z + 40) % 8]); this.crowd(Math.abs(z), 68, z + 1, 0); }
     // shoppers
-    for (let i = 0; i < 26; i++) {
+    for (let i = 0; i < 9; i++) {
       const x = -6 + r() * 64, z = (r() - 0.5) * 6;
       if (x > MX - 1 && x < MX + LOT + 1 && z < -2) continue;
       if (Math.abs(x + 4) < 2.2 && z < 0) continue;
@@ -311,10 +321,10 @@ export class LowerEastSideZone extends Zone {
     this.person('brennan', -28.2, -5.6, 0);
 
     // Ward boss with coal, outside a corner saloon (Hester & Eldridge, SE corner)
-    this.sign(3.6, EW.Hester[1], 'n', 'SALOON · DEMOCRATIC CLUB', 6.6);
+    this.sign(3.6, EW.Hester[1], 'n', 'SALOON · DEMOCRATIC CLUB', 6.6, 'saloon');
     for (let i = 0; i < 4; i++) this.box(5 + i * 0.55, 0, 6.5, 0.5, 0.5 + (i % 2) * 0.1, 0.5, '#1d1b1a');
     this.person('boss', 3.2, 5.6, 0);
-    this.crowd(5, 4.6, 4.3, 0); this.crowd(1, 1.8, 4.4, 0);
+    this.crowd(5, 4.6, 4.3, 0);
 
     // gas lamps (cast-iron post, ladder bar, 4-sided lantern)
     for (const [x, z, lit] of [[-12, -5.4, true], [16, 5.4, false], [40, 5.4, true], [57, -5.4, true], [-34, 5.4, false], [-60, -5.4, false], [-100, 5.4, false]]) this.gaslamp(x, z, lit);
@@ -350,10 +360,11 @@ export class LowerEastSideZone extends Zone {
     this.person('giuseppe', -163.4, 71.5, 0, { talk: 'giuseppe2', photo: 'giuseppe2' });
     // Chinese shops on Mott south of Pell, and on Pell
     this.panel(-160.47, 3.4, 100, 6, 0.9, ['sign_lee_shop', { type: 'sign', title: 'LEE FONG & CO. · 茶 TEAS · GROCERIES', color: '#6a1f1a', w: 448, h: 64 }], -Math.PI / 2);
-    this.panel(-160.47, 1.5, 101.5, 2, 1.8, ['window_lee_shop', { type: 'card', title: 'Teas', lines: 'Rice · Dried fish · Medicine · Letters home', color: '#d8b070', w: 192, h: 176 }, { emissive: '#553300', emissiveIntensity: 0.5 }], -Math.PI / 2);
+    this.panel(-160.62, 1.4, 103.5, 2.6, 2.2, ['window_lee_shop', { type: 'card', title: 'Teas', lines: 'Rice · Dried fish · Medicine · Letters home', color: '#d8b070', w: 192, h: 176 }, { emissive: '#553300', emissiveIntensity: 0.5 }], -Math.PI / 2);
     for (const [z, t] of [[106, '雜貨'], [111, '中華']]) this.panel(-160.47, 4.5, z, 0.7, 2.4, ['sign_vert_' + z, { type: 'sign', title: t, color: '#7a1a14', ink: '#e8c060', w: 64, h: 220 }], -Math.PI / 2);
-    for (let x = -158; x < -140; x += 6) this.sign(x, PELL[1], 'n', SIGNS.mott[Math.floor(this.rand() * SIGNS.mott.length)], 5);
-    this.person('lee', -162.6, 100.5, 0);
+    for (let x = -158; x < -140; x += 6) this.sign(x, PELL[1], 'n', SIGNS.mott[Math.floor(this.rand() * SIGNS.mott.length)], 5, 'pell');
+    this.person('lee', -154.3, 101.5, 0);
+    this.leeShop();
     for (let i = 0; i < 3; i++) { const l = new THREE.Mesh(new THREE.SphereGeometry(0.25, 8, 6), colorMat('#e04a2a', { emissive: '#801a0a' })); l.position.set(-161.2, 4.3, 98 + i * 1.6); this.scene.add(l); }
     this.crowd(7, -167, 95, 0); this.crowd(4, -150, 92, 0); this.crowd(2, -166, 60, 0); this.crowd(0, -168, 30, 0);
     this.gaslamp(-161.6, 94, true);
@@ -381,6 +392,136 @@ export class LowerEastSideZone extends Zone {
       const pts = []; for (let t = 0; t <= 6; t++) { const u = t / 6; pts.push(new THREE.Vector3(a[0] + (b[0] - a[0]) * u, y - Math.sin(u * Math.PI) * 0.5, a[1] + dz)); }
       this.scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), mat));
     }
+  }
+
+  // ------------------------------------------------------------ building detail (real depth, not paint)
+  dress(x0, x1, z0, z1, h) {
+    const r = this.rand;
+    const lots = Math.max(1, Math.round((x1 - x0) / LOT)), lw = (x1 - x0) / lots;
+    for (const [z, dir] of [[z0, -1], [z1, 1]]) {
+      // projecting pressed-metal cornice with brackets
+      this.box((x0 + x1) / 2, h - 0.75, z + dir * 0.32, x1 - x0, 0.75, 0.64, '#3b3530', { collide: false });
+      for (let x = x0 + 0.5; x < x1; x += 1.9) this.box(x, h - 1.25, z + dir * 0.22, 0.22, 0.5, 0.44, '#2e2a26', { collide: false });
+      const onHester = (dir === 1 && z === EW.Hester[0]) || (dir === -1 && z === EW.Hester[1]);
+      if (!onHester) continue;
+      for (let i = 0; i < lots; i++) {
+        const u = (f) => dir === 1 ? x0 + (i + f) * lw : x1 - (i + f) * lw;   // facade texture runs right-to-left on north faces
+        // stoop at the tenement hall door
+        this.box(u(0.89), 0, z + dir * 0.45, 1.1, 0.22, 0.9, '#6a645a', { collide: false });
+        // canvas awning over the shop window
+        if (r() < 0.55) {
+          const k = Math.floor(r() * 3);
+          const aw = this.box(u(0.31), 2.55, z + dir * 0.85, lw * 0.5, 0.05, 1.8, ['awning_' + k, { type: 'awning', color: ['#8a2e2a', '#3a5a3a', '#7a6a4a'][k], w: 128, h: 64 }], { collide: false });
+          aw.rotation.x = dir * 0.42;
+          for (const e of [-1, 1]) this.box(u(0.31) + e * lw * 0.24, 0, z + dir * 1.6, 0.05, 2.25, 0.05, '#2a2a2a', { collide: false });
+        }
+        // iron fire escape: balconies with railings, joined by ladders
+        if (r() < 0.6) {
+          for (let f = 0; f < 4; f++) {
+            const y = h * (0.2 + 0.1525 * f) + h * 0.035;
+            this.box(u(0.5), y, z + dir * 0.5, lw * 0.56, 0.06, 0.95, '#151515', { collide: false });
+            this.box(u(0.5), y + 0.85, z + dir * 0.95, lw * 0.56, 0.04, 0.04, '#151515', { collide: false });
+            for (const e of [-1, 0, 1]) this.box(u(0.5) + e * lw * 0.27, y, z + dir * 0.95, 0.04, 0.85, 0.04, '#151515', { collide: false });
+            if (f < 3) this.box(u(0.5) + (f % 2 ? 1 : -1) * lw * 0.18, y, z + dir * 0.6, 0.35, h * 0.1525, 0.04, '#151515', { collide: false });
+            if (r() < 0.3) this.box(u(0.5) + lw * 0.1, y + 0.85, z + dir * 0.98, 1.2, 0.5, 0.05, ['laundry_' + (f % 3), { type: 'solid', color: ['#d8d0c0', '#9a8a7a', '#b0a8c0'][f % 3] }], { collide: false }); // bedding airing
+          }
+        }
+      }
+    }
+  }
+
+  /** Upper floors over a walk-in ground floor. */
+  upper(x0, x1, z0, z1, y0, h, fronts) {
+    const m = this.building(x0, x1, z0, z1, h - y0, fronts, null, { collide: false });
+    m.position.y = y0 + (h - y0) / 2;
+    this.box((x0 + x1) / 2, h - 0.75, (z0 + z1) / 2, x1 - x0 + 0.6, 0.75, z1 - z0 + 0.6, '#3b3530', { collide: false });
+    return m;
+  }
+
+  // ------------------------------------------------------------ walk-in: Mr. Lee's shop on Mott Street
+  leeShop() {
+    const x0 = -160.5, x1 = -153, z0 = 98, z1 = 105, H = 3;
+    const RED = ['wall_lee_shop', { type: 'plaster', color: '#7a3a2c' }];
+    const up = ['facade_upper', { type: 'facade', color: '#7a3a2c', floors: 4, bays: 4, storeFrac: 0.02, escape: true, lit: 0.3, w: 256, h: 448 }];
+    this.upper(x0, x1, z0, z1, H, 17, { w: up });
+    this.room(x0, x1, z0, z1, H, RED, [{ side: 'w', from: 100.6, to: 102, lintel: true }], 0.14);
+    this.floor((x0 + x1) / 2, (z0 + z1) / 2, x1 - x0, z1 - z0, [FLOOR[0], FLOOR[1], { repeat: [3, 3] }], 0.02);
+    this.ceiling((x0 + x1) / 2, (z0 + z1) / 2, x1 - x0, z1 - z0, ['ceiling_tenement', { type: 'plaster', color: '#5f5444' }], H - 0.01);
+    this.panel(x0 - 0.1, 1.4, 99.3, 2.4, 2.2, ['storefront_lee_south', { type: 'card', title: '雜貨', lines: 'Rice · Dried fish · Ginger', color: '#d8b070', w: 192, h: 176 }], -Math.PI / 2);
+    // counter, shelves of tea tins, scale, abacus, hanging lanterns
+    this.box(-155.6, 0, 101.5, 0.7, 1.0, 4.4, WOOD);
+    this.panel(x1 - 0.12, 1.7, 101.5, 5.6, 2.2, ['shelves_lee_shop', { type: 'card', title: '茶', lines: 'Tea tins · Jars of herbs · Porcelain · Paper lanterns', color: '#6a4a2a', ink: '#e8c060', w: 320, h: 160 }], -Math.PI / 2);
+    this.box(-155.6, 1.0, 100.2, 0.4, 0.3, 0.4, '#b8913a', { collide: false });
+    for (const [x, z] of [[-158.6, 99], [-158.9, 104], [-157.4, 104.2]]) { const b = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.7, 10), colorMat('#6a5a3a')); b.position.set(x, 0.35, z); this.scene.add(b); this.colliders.push({ minX: x - 0.3, maxX: x + 0.3, minZ: z - 0.3, maxZ: z + 0.3, see: true }); }
+    for (const z of [99.5, 103.5]) { const l = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 6), colorMat('#e04a2a', { emissive: '#801a0a' })); l.position.set(-157.5, 2.55, z); this.scene.add(l); }
+    this.lamp(-157.2, 2.5, 101.5, 0xffb070, 4, 8);
+  }
+
+  // ------------------------------------------------------------ walk-in: saloon / Tammany district club
+  saloon() {
+    const x0 = -0.5, x1 = 7, z0 = 7.5, z1 = 14, H = 3.2;
+    const PANEL = ['wall_saloon', { type: 'planks', color: '#4a3424', n: 6 }];
+    const up = ['facade_upper', { type: 'facade', color: '#7a3a2c', floors: 4, bays: 4, storeFrac: 0.02, escape: true, lit: 0.3, w: 256, h: 448 }];
+    this.upper(x0, x1, z0, z1, H, 18, { n: up, w: up });
+    this.room(x0, x1, z0, z1, H, PANEL, [{ side: 'n', from: 0.6, to: 2.0, lintel: true }], 0.14);
+    this.floor((x0 + x1) / 2, (z0 + z1) / 2, x1 - x0, z1 - z0, ['floor_steerage_sawdust', { type: 'sawdust' }, { repeat: [3, 3] }], 0.02);
+    this.ceiling((x0 + x1) / 2, (z0 + z1) / 2, x1 - x0, z1 - z0, ['ceiling_tenement', { type: 'plaster', color: '#5f5444' }], H - 0.01);
+    this.panel(4.5, 1.6, z0 - 0.1, 5, 3.2, ['storefront_saloon', { type: 'storefront', sign: 'LAGER BIER · 5¢', w: 256, h: 220 }], Math.PI);
+    this.panel(x0 - 0.1, 1.6, (z0 + z1) / 2, z1 - z0, 3.2, ['wall_brick_side', { type: 'brick', color: '#6e3426' }], -Math.PI / 2);
+    // bar, back bar, barrels, tables
+    this.box(4.6, 0, 12.3, 4.2, 1.1, 0.7, WOOD);
+    this.panel(4.6, 1.9, z1 - 0.12, 4.4, 1.6, ['backbar_saloon', { type: 'card', title: 'Lager', lines: 'Bottles · Mirror · Free lunch counter', color: '#3a2a1c', ink: '#d8c48a', w: 256, h: 96 }], Math.PI);
+    for (const [x, z] of [[0.3, 13.2], [1.1, 13.3]]) { const b = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 0.9, 10), colorMat('#5a4630')); b.position.set(x, 0.45, z); this.scene.add(b); this.colliders.push({ minX: x - 0.35, maxX: x + 0.35, minZ: z - 0.35, maxZ: z + 0.35, see: true }); }
+    this.box(5.4, 0, 9.4, 1.0, 0.75, 1.0, WOOD);
+    // campaign posters and the club notice board
+    this.panel(x1 - 0.12, 1.8, 10, 1.3, 1.8, ['poster_grant', { type: 'card', title: 'For Mayor', lines: 'HUGH J. GRANT\nTammany Hall', color: '#efe6cf', w: 160, h: 224 }], -Math.PI / 2);
+    this.panel(x0 + 0.12, 1.7, 11.2, 1.3, 1.6, ['board_club', { type: 'card', title: 'District Club', lines: 'Jobs · Papers · Coal · Picnic', w: 176, h: 208 }], Math.PI / 2);
+    this.readable('club', x0 + 0.7, 1.6, 11.2, { prompt: 'Read the club notice board', photo: 'club' });
+    this.crowd(4, 3.6, 11.3, 0); this.crowd(2, 5.6, 11.3, 0); this.crowd(0, 4.6, 13.2, 0); this.crowd(7, 6.2, 9.0, 0);
+    this.lamp(3, 2.7, 10.5, 0xffb860, 5, 9);
+  }
+
+  // ------------------------------------------------------------ the 1888 mayoral election
+  election() {
+    const banner = (x, z, ry, key, text, len = 13) => {
+      // two faces back to back, so the lettering reads correctly from both directions
+      const dx = Math.sin(ry) * 0.02, dz = Math.cos(ry) * 0.02;
+      this.panel(x + dx, 7.6, z + dz, 9, 1.9, [key, { type: 'banner', title: text, w: 512, h: 112 }], ry);
+      this.panel(x - dx, 7.6, z - dz, 9, 1.9, [key, { type: 'banner', title: text, w: 512, h: 112 }], ry + Math.PI);
+      const rope = this.box(x, 8.5, z, ry ? 0.03 : len, 0.03, ry ? len : 0.03, '#3a3a3a', { collide: false });
+      return rope;
+    };
+    const GRANT = 'FOR MAYOR\nHUGH J. GRANT\nREGULAR DEMOCRATIC NOMINEE · TAMMANY HALL';
+    banner(11, 0, Math.PI / 2, 'banner_grant', GRANT, 15);
+    banner(-64, 0, Math.PI / 2, 'banner_grant', GRANT, 15);
+    banner(-122, -30, 0, 'banner_erhardt', 'FOR MAYOR\nJOEL B. ERHARDT\nREPUBLICAN TICKET', 30);
+    banner(-122, 40, 0, 'banner_hewitt', 'RE-ELECT\nMAYOR HEWITT\nCITIZENS\' TICKET', 30);
+    this.target('banner', 11, 7.6, 0, 26);
+    this.readable('banner', 13.5, 1.6, 0, { prompt: 'Look up at the election banner', r: 2.6 });
+  }
+
+  // ------------------------------------------------------------ people and traffic in motion
+  streetLife() {
+    const lanes = [-6.3, 6.2, -1.3, 1.5];
+    // Hester Street walkers (sidewalks and the roadway, as people really walked)
+    for (let i = 0; i < 16; i++) {
+      const z = lanes[i % 4], a = -100 + (i * 37) % 60, b = a + 60 + (i * 13) % 50;
+      this.walker(i, [[a, z], [(a + b) / 2, z + (i % 2 ? 0.5 : -0.5)], [Math.min(b, 57), z]], { speed: 0.9 + (i % 3) * 0.2 });
+    }
+    // Bowery sidewalks, Mott Street, Allen Street, Eldridge down to the synagogue
+    for (let i = 0; i < 6; i++) this.walker(i + 2, [[i % 2 ? -109 : -135, -60 + i * 6], [i % 2 ? -109.4 : -134.6, 80 - i * 5]], { speed: 1.1 });
+    for (let i = 0; i < 4; i++) this.walker(i + 5, [[-163 - i * 2.5, 20 + i * 8], [-163 - i * 2.5, 110]], { speed: 1 });
+    for (let i = 0; i < 3; i++) this.walker(i, [[23 + i * 6, -55], [23 + i * 6, 45]], { speed: 1 });
+    for (let i = 0; i < 3; i++) this.walker(i + 3, [[-3 - i * 4, 10], [-3 - i * 4, 82]], { speed: 0.9 });
+    // children chasing each other around the pushcarts
+    const loop = [[44, 2], [50, 3], [53, 0], [49, -2.5], [43, -1.5]];
+    for (let i = 0; i < 3; i++) this.walker(5, loop, { speed: 2.4, scale: 0.72, id: 'child0', loop: true });
+    // the lamplighter making his evening round along Hester Street
+    this.walker(0, [[-70, 5.4], [-34, 5.4], [-12, -5.2], [16, 5.2], [40, 5.2], [57, -5.2]], { speed: 0.8, id: 'lamplighter' });
+    // wagons on the Bowery and Canal Street, a horsecar on the Bowery tracks
+    this.mover(this.wagon('#5a4630', '#8a7a5a'), [[-131, -100], [-131, 104], [-134, 104], [-134, -100]], 2.6);
+    this.mover(this.wagon('#3a4a3a', '#c8b080'), [[-90, 52], [70, 52], [70, 58], [-90, 58]], 2.3);
+    this.mover(this.wagon('#6a2a20', '#5a4a3a'), [[-110, -60.5], [70, -60.5], [70, -55.5], [-110, -55.5]], 2.2);
   }
 
   // ------------------------------------------------------------ props
@@ -460,17 +601,20 @@ export class LowerEastSideZone extends Zone {
   ready() { return flag('met_moishe') && this.photoCount() >= 5; }
 
   objectives() {
+    const n = this.photoCount();
     return [
-      { text: 'Bring Rivka\'s family to Moishe\'s tenement (Hester St, past the El)', done: flag('met_moishe') },
-      { text: 'Learn how families live in the tenement', done: flag('learned_tenement') },
-      { text: 'Learn how families work at home', done: flag('learned_sweatshop') },
-      { text: 'Visit the back yard', done: flag('met_riis') },
-      { text: 'Talk to a pushcart peddler', done: flag('learned_pushcart') },
-      { text: `Find how neighbors help each other (${this.aidCount()}/3)`, done: this.aidCount() >= 3 },
-      { text: 'Walk west past the Bowery to Mott Street', done: flag('learned_lee') || flag('learned_exclusion') },
-      { text: 'Hear what some neighbors think of newcomers', done: flag('learned_nativism') },
-      { text: `Photograph evidence (${this.photoCount()}/8)`, done: this.photoCount() >= 8 },
-      { text: 'Take the Bowery horsecar to the Courier office', done: false },
+      { text: 'Follow Hester Street east, under the El, to Moishe\'s tenement. Go in and find Moishe.', done: flag('met_moishe'), at: [MX + 3.8, MZ - 15] },
+      { text: `Photograph 5 pieces of evidence around the neighborhood (${Math.min(n, 5)}/5). Follow the red dots on your map.`, done: n >= 5 },
+      { text: 'Take the Bowery horsecar to the Courier office', done: false, at: [-109.5, 9.5] },
+      { text: 'Ask Moishe about the apartment', done: flag('learned_tenement'), at: [MX + 4.9, MZ - 15.8], optional: true },
+      { text: 'Ask Moishe about his work', done: flag('learned_sweatshop'), at: [MX + 4.9, MZ - 15.8], optional: true },
+      { text: 'Visit the back yard behind the tenement', done: flag('met_riis'), at: [MX + 3.2, MZ - 21], optional: true },
+      { text: 'Talk to a pushcart peddler', done: flag('learned_pushcart'), at: [-4, -5.2], optional: true },
+      { text: `Find how neighbors help each other (${this.aidCount()}/4)`, done: this.aidCount() >= 3, at: [-2.6, 76.8], optional: true },
+      { text: 'Walk west past the Bowery to Mott Street and visit Mr. Lee\'s shop', done: flag('learned_lee') || flag('learned_exclusion'), at: [-156, 101.5], optional: true },
+      { text: 'Hear what Mrs. Brennan thinks of newcomers', done: flag('learned_nativism'), at: [-28.2, -5.6], optional: true },
+      { text: 'Look inside the saloon where Mr. Quinn has his club', done: flag('read_club'), at: [1.3, 9], optional: true },
+      { text: 'Look up at an election banner', done: flag('read_banner'), at: [13.5, 0], optional: true },
     ];
   }
 }

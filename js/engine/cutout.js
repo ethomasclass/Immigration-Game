@@ -140,7 +140,7 @@ function fit(s) {
 }
 
 /** Called every frame for each cutout. */
-export function animateCutout(group, t, camera, talking) {
+export function animateCutout(group, t, camera, talking, walking = null) {
   const s = group.userData.cutout;
   // Upgrade to a sprite strip if anim_<id>.png exists.
   if (!s.sheet && hasRealArt('anim_' + s.artId)) {
@@ -157,7 +157,13 @@ export function animateCutout(group, t, camera, talking) {
 
   const o = s.o; o.x = 0; o.y = 0; o.sx = 1; o.sy = 1; o.rz = 0;
   const tt = t + s.phase;
-  (talking ? s.talk : s.idle)(o, tt, s.speed);
+  if (walking) {
+    // walk cycle: step bob + a little side-to-side lean; face the way they're going
+    const k = tt * 7 * (walking.speed || 1);
+    o.y = Math.abs(Math.sin(k)) * 0.045; o.rz = Math.sin(k) * 0.035;
+    const rx = Math.cos(group.rotation.y), rz = -Math.sin(group.rotation.y);   // camera-right in world
+    o.sx = (walking.vx * rx + walking.vz * rz) < -0.15 ? -1 : 1;
+  } else (talking ? s.talk : s.idle)(o, tt, s.speed);
   s.plane.position.set(o.x, o.y, 0);
   s.plane.rotation.z = o.rz;
   s.plane.scale.set(s.baseW * o.sx, s.baseH * o.sy, 1);

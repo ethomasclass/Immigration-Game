@@ -12,7 +12,7 @@
 // Grid frame: Broadway runs north (-z). 1 unit = 1 m (distances to the bridge compressed).
 import * as THREE from 'three';
 import { Zone } from '../engine/world.js';
-import { colorMat, material } from '../engine/textures.js';
+import { colorMat, material, texture } from '../engine/textures.js';
 import { state, flag } from '../state.js';
 import { sfx } from '../engine/audio.js';
 
@@ -39,6 +39,8 @@ export class CityZone extends Zone {
     this.boundsPark = { minX: PX - 60, maxX: PX + 60, minZ: -80, maxZ: 70 };
     this.bounds = this.boundsDown;
 
+    this.skyCity = this.skyline('city', { kind: 'rooftops', top: '#9fb0bc', haze: '#c8ccc8', far: '#a5a29a', near: '#817a72' });
+    this.skyPark = this.skyline('park', { kind: 'park', top: '#9fb0bc', haze: '#c8d0c0', ground: '#6a8050' });
     this.ground();
     this.cityHall();
     this.courthouse();
@@ -50,6 +52,13 @@ export class CityZone extends Zone {
     this.parkLife();
     this.wires();
     this.centralPark();
+    this.roof();
+    this.sets();
+    this.election();
+    this.streetLife();
+    this.streetCols = this.colliders;
+    this.where = flag('in_park') ? 'park' : 'street';
+    this.updaters.push((dt) => this.rideStep(dt));
 
     this.spawn = { x: -60, z: 120, yaw: 0.25 };
     if (flag('in_park')) { this.spawn = { x: PX, z: 62, yaw: 0 }; this.bounds = this.boundsPark; }
@@ -214,6 +223,12 @@ export class CityZone extends Zone {
       for (const zz of [-depth / 2, depth / 2]) { const b = new THREE.Mesh(new THREE.BoxGeometry(w, 0.3, 0.3), iron); b.position.set(0, y, zz); g.add(b); }
       for (const xx of [-w / 2, w / 2]) { const b = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.3, depth), iron); b.position.set(xx, y, 0); g.add(b); }
     }
+    // open working deck near the top, a derrick, and a brick wall rising on the far side
+    const deckTop = new THREE.Mesh(new THREE.BoxGeometry(w - 0.6, 0.2, depth - 0.6), material('floor_construction', { type: 'planks', color: '#7a6040', n: 6 }, { repeat: [6, 6] })); deckTop.position.set(0, 45.1, 0); g.add(deckTop);
+    const mast = new THREE.Mesh(new THREE.BoxGeometry(0.4, 16, 0.4), wood); mast.position.set(w / 4, 52, 4); g.add(mast);
+    const boom = new THREE.Mesh(new THREE.BoxGeometry(0.3, 13, 0.3), wood); boom.position.set(w / 4 - 4.5, 55, 4); boom.rotation.z = 0.85; g.add(boom);
+    const rising = new THREE.Mesh(new THREE.BoxGeometry(w, 5, 0.7), material('wall_brick_side', { type: 'brick', color: '#6e3426' }, { repeat: [5, 1] })); rising.position.set(0, 47.7, depth / 2); g.add(rising);
+    for (let i = 0; i < 5; i++) { const pile = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.7, 0.8), colorMat('#8e3b2e')); pile.position.set(-w / 2 + 3 + i * 4.6, 45.55, (i % 2 ? 6 : -4)); g.add(pile); }
     // new brick walls going up on the lower floors (Romanesque granite base)
     const base = new THREE.Mesh(new THREE.BoxGeometry(w + 1, 24, 1), material('wall_times_granite', { type: 'stone', color: '#a8a296', rows: 10 }, { repeat: [4, 3] })); base.position.set(0, 12, depth / 2 + 0.6); g.add(base);
     const [fx, fz] = along((s0 + s1) / 2, PR_W);
@@ -335,14 +350,21 @@ export class CityZone extends Zone {
     const ramp = new THREE.Mesh(new THREE.BoxGeometry(16, 2, 330), granite);
     const [mx, mz] = P(175); ramp.position.set(mx, 16, mz); ramp.rotation.set(0, rot, 0); ramp.rotateX(-0.11); this.scene.add(ramp);
     // the towers: gray granite, twin pointed arches (Manhattan tower ~ compressed distance)
+    // Each tower: one block of granite pierced by two pointed Gothic arches above the roadway.
+    const sh = new THREE.Shape(); sh.moveTo(-13, 0); sh.lineTo(13, 0); sh.lineTo(13, 84); sh.lineTo(-13, 84); sh.closePath();
+    for (const cx of [-5.6, 5.6]) {
+      const h = new THREE.Path();
+      h.moveTo(cx - 3.3, 42); h.lineTo(cx - 3.3, 58); h.quadraticCurveTo(cx - 3.3, 66, cx, 72); h.quadraticCurveTo(cx + 3.3, 66, cx + 3.3, 58); h.lineTo(cx + 3.3, 42); h.closePath();
+      sh.holes.push(h);
+    }
+    const towerGeo = new THREE.ExtrudeGeometry(sh, { depth: 9, bevelEnabled: false, curveSegments: 6 });
+    towerGeo.translate(0, 0, -4.5);
+    const tuv = towerGeo.attributes.uv; for (let i = 0; i < tuv.count; i++) tuv.setXY(i, tuv.getX(i) / 14, tuv.getY(i) / 14);
     for (const d of [360, 846]) {
       const [tx, tz] = P(d);
-      const tw = new THREE.Group();
-      for (const dz of [-7, 7]) { const leg = new THREE.Mesh(new THREE.BoxGeometry(10, 84, 6), granite); leg.position.set(0, 42, dz); tw.add(leg); }
-      const top = new THREE.Mesh(new THREE.BoxGeometry(10, 18, 20), granite); top.position.set(0, 75, 0); tw.add(top);
-      const mid = new THREE.Mesh(new THREE.BoxGeometry(10, 14, 20), granite); mid.position.set(0, 7, 0); tw.add(mid);
-      for (const dz of [-3.4, 3.4]) { const arch = new THREE.Mesh(new THREE.ConeGeometry(3.4, 8, 4), granite); arch.position.set(0, 68, dz); arch.rotation.y = Math.PI / 4; tw.add(arch); }
-      tw.position.set(tx, 0, tz); tw.rotation.y = rot + Math.PI / 2; this.scene.add(tw); this.bake(tw);
+      const tw = new THREE.Mesh(towerGeo, granite); tw.position.set(tx, 0, tz); tw.rotation.y = rot; this.scene.add(tw);
+      const capTop = new THREE.Mesh(new THREE.BoxGeometry(28, 3, 10.5), granite); capTop.position.set(tx, 85.5, tz); capTop.rotation.y = rot; this.scene.add(capTop);
+      const foot = new THREE.Mesh(new THREE.BoxGeometry(30, 10, 12), granite); foot.position.set(tx, 5, tz); foot.rotation.y = rot; this.scene.add(foot);
     }
     const [d0x, d0z] = P(360), [d1x, d1z] = P(846);
     const deck = new THREE.Mesh(new THREE.BoxGeometry(18, 2, 486 + 300), colorMat('#5a5248'));
@@ -420,6 +442,47 @@ export class CityZone extends Zone {
     if (this.bucket) this.bucket.position.y = 3 + (Math.sin(t * 0.3) * 0.5 + 0.5) * 40;
   }
 
+  rideStep(dt) {
+    const w = this.where;
+    this.skyCity.visible = w !== 'park'; this.skyPark.visible = w === 'park';
+    const r = this.ride; if (!r) return;
+    if (this.game.mode === 'play') r.t -= dt;   // the ride waits while you talk or read
+    if (r.kind === 'cab') this.shaftTex.offset.y -= r.dir * dt * 0.42;
+    else { this.carTex[0].offset.x += r.dir * dt * 0.75; this.carTex[1].offset.x -= r.dir * dt * 0.75; this.game.controls.shake = 0.35; }
+    if (r.t <= 0) { this.ride = null; this.arrive(r.dest); }
+  }
+
+  // ------------------------------------------------------------ the 1888 mayoral election
+  election() {
+    const two = (x, y, z, w, h, ry, key, text) => {
+      const dx = Math.sin(ry) * 0.03, dz = Math.cos(ry) * 0.03;
+      this.panel(x + dx, y, z + dz, w, h, [key, { type: 'banner', title: text, w: 512, h: 112 }], ry);
+      this.panel(x - dx, y, z - dz, w, h, [key, { type: 'banner', title: text, w: 512, h: 112 }], ry + Math.PI);
+    };
+    const GRANT = 'FOR MAYOR\nHUGH J. GRANT\nREGULAR DEMOCRATIC NOMINEE · TAMMANY HALL';
+    // across Broadway, on poles in the park by the courthouse, and along Park Row
+    two(BW - 12, 8, 70, 12, 2.4, 0, 'banner_grant', GRANT); this.box(BW - 12, 9.3, 70, 24, 0.04, 0.04, '#3a3a3a', { collide: false });
+    two(BW - 12, 8, -20, 12, 2.4, 0, 'banner_hewitt', 'RE-ELECT\nMAYOR HEWITT\nCITIZENS\' TICKET'); this.box(BW - 12, 9.3, -20, 24, 0.04, 0.04, '#3a3a3a', { collide: false });
+    for (const x of [-26, -16]) this.box(x, 0, -44, 0.16, 6.5, 0.16, '#4a3a2a');
+    two(-21, 5.4, -44, 9.4, 1.9, 0, 'banner_grant', GRANT);
+    this.target('banner2', -21, 5.4, -44, 28);
+    this.readable('banner', -21, 1.6, -42.6, { prompt: 'Look at the election banner', r: 2.4 });
+    const [ex, ez] = along(215, PR_W - 0.4); const e = this.panel(ex, 6.5, ez, 10, 2, ['banner_erhardt', { type: 'banner', title: 'FOR MAYOR\nJOEL B. ERHARDT\nREPUBLICAN TICKET', w: 512, h: 112 }]); e.rotation.y = Math.atan2(-PR.n[0], -PR.n[1]);
+  }
+
+  // ------------------------------------------------------------ people and traffic in motion
+  streetLife() {
+    for (let i = 0; i < 6; i++) this.walker(i, [[BW - 4 - (i % 2), 200 - i * 20], [BW - 4 - (i % 2), -100 + i * 12]], { speed: 1.1 });          // Broadway sidewalk
+    for (let i = 0; i < 5; i++) this.walker(i + 3, [[-43.7 + (i % 2) * 7.4, 130 - i * 8], [-43.7 + (i % 2) * 7.4, 22 + i * 4]], { speed: 0.9 });  // park walk
+    for (let i = 0; i < 4; i++) this.walker(i + 1, [[-58 + i * 6, -45.3], [58 - i * 5, -45.3]], { speed: 1 });                                  // in front of the courthouse
+    for (let i = 0; i < 8; i++) this.walker(i + 2, [along(15 + i * 12, PR_W - 4.6 + (i % 2)), along(250 - i * 9, PR_W - 4.6 + (i % 2))], { speed: 1.15 }); // Newspaper Row
+    for (let i = 0; i < 3; i++) this.walker(5, [along(150 + i * 3, PR_W - 6), along(120 - i * 5, PR_W - 6.5)], { speed: 2.2, scale: 0.75, id: 'newsboy' }); // newsboys running papers
+    this.mover(this.wagon('#5a4630', '#c8c0a8'), [along(10, 9), along(255, 9), along(255, 15), along(10, 15)], 2.6);
+    this.mover(this.wagon('#2e3a4a', '#8a7a5a'), [[BW - 21, -100], [BW - 21, 215], [BW - 18.5, 215], [BW - 18.5, -100]], 2.4);
+    // Central Park strollers on the Mall
+    for (let i = 0; i < 7; i++) this.walker(i, [[PX - 3.5 + i, 58 - i * 3], [PX - 3.5 + i, -30 + i * 2]], { speed: 0.75 });
+  }
+
   // ======================================================== CENTRAL PARK (1888)
   centralPark() {
     const X = PX;
@@ -475,42 +538,149 @@ export class CityZone extends Zone {
     // back downtown / write the story
     this.interact({ x: X - 4, z: 66, r: 2.4, prompt: 'Ride the El back downtown', action: () => this.rideDown() });
     const ex = this.exit(X + 4, 67, 'Go to the Courier office and write your story', () => this.ready(), () => this.game.openWrapup('B'));
-    ex.lockedMsg = 'Talk to the park keeper and learn more downtown first (see objectives).';
+    ex.lockedMsg = 'Finish your goal first, and make sure you have 4 photographs.';
   }
 
-  ridePark() {
-    state.flags.in_park = true;
-    this.bounds = this.boundsPark;
-    this.fade(() => this.game.controls.setPose(PX, 62, 0), 'You ride the El uptown past the tenement windows, then walk west to the park and up the Mall.');
+  // ======================================================== ELEVATOR, ROOFTOP, EL CAR
+  sets() {
+    // --- Otis passenger elevator cab (built far away; the "ride" is the shaft sliding past the gate) ---
+    const E = { x: -6000, z: 0 };
+    const PANEL = ['wall_elevator_cab', { type: 'planks', color: '#5a3a24', n: 5 }];
+    this.floor(E.x, E.z, 2.5, 2.5, ['floor_elevator', { type: 'planks', color: '#6a4a2e', n: 6 }], 0.01);
+    this.ceiling(E.x, E.z, 2.5, 2.5, PANEL, 2.5);
+    this.box(E.x, 0, E.z - 1.3, 2.7, 2.5, 0.1, PANEL, { collide: false });
+    for (const sx of [-1, 1]) this.box(E.x + sx * 1.3, 0, E.z, 0.1, 2.5, 2.7, PANEL, { collide: false });
+    for (let x = -1.2; x <= 1.21; x += 0.2) this.box(E.x + x, 0, E.z + 1.25, 0.025, 2.5, 0.025, '#b8913a', { collide: false });   // brass folding gate
+    for (const y of [0.9, 1.7]) this.box(E.x, y, E.z + 1.25, 2.5, 0.03, 0.03, '#b8913a', { collide: false });
+    this.shaftTex = texture('elevator_shaft', { type: 'shaft', w: 256, h: 256 }, [1, 3]);
+    const shaft = new THREE.Mesh(new THREE.PlaneGeometry(4.5, 10.5), new THREE.MeshLambertMaterial({ map: this.shaftTex }));
+    shaft.position.set(E.x, 1.6, E.z + 1.75); shaft.rotation.y = Math.PI; shaft.userData.keep = true; this.scene.add(shaft);
+    this.person('elevator', E.x - 0.8, E.z - 0.6, 0, { photo: null });
+    this.lamp(E.x, 2.25, E.z, 0xffd8a0, 3, 5);
+    this.cab = { x: E.x, z: E.z, cols: [{ minX: E.x - 1.1, maxX: E.x - 0.5, minZ: E.z - 0.9, maxZ: E.z - 0.3 }], bounds: { minX: E.x - 1.15, maxX: E.x + 1.15, minZ: E.z - 1.15, maxZ: E.z + 1.1 } };
+
+    // --- Elevated railway car (the tenement fronts slide past the windows at third-floor height) ---
+    const C = { x: -6000, z: 300 };
+    const CAR = ['wall_el_car_inside', { type: 'planks', color: '#6a4a30', n: 5 }];
+    this.floor(C.x, C.z, 2.7, 10, ['floor_elevator', {}], 0.01);
+    this.ceiling(C.x, C.z, 2.7, 10, CAR, 2.3);
+    for (const sx of [-1, 1]) {
+      this.box(C.x + sx * 1.33, 0, C.z, 0.08, 0.95, 10, CAR, { collide: false });
+      this.box(C.x + sx * 1.33, 2.0, C.z, 0.08, 0.3, 10, CAR, { collide: false });
+      this.box(C.x + sx * 1.0, 0, C.z, 0.5, 0.45, 9.4, ['seat_el_car', { type: 'solid', color: '#7a2a24' }], { collide: false });   // rattan/plush bench
+      for (let z = -5; z <= 5.01; z += 1.25) this.box(C.x + sx * 1.33, 0.95, C.z + z, 0.08, 1.05, 0.1, CAR, { collide: false });
+    }
+    for (const ez of [-5, 5]) this.box(C.x, 0, C.z + ez, 2.7, 2.3, 0.08, CAR, { collide: false });
+    const fac = { type: 'facade', color: '#8e3b2e', floors: 5, bays: 4, escape: true, lit: 0.3, cornice: '#3b3530', w: 256, h: 512 };
+    this.carTex = [];
+    for (const sx of [-1, 1]) {
+      const t = texture('facade_tenement_0', fac, [9, 1]); this.carTex.push(t);
+      const m = new THREE.Mesh(new THREE.PlaneGeometry(68, 19), new THREE.MeshLambertMaterial({ map: t }));
+      m.position.set(C.x + sx * 4.6, 2.9, C.z); m.rotation.y = -sx * Math.PI / 2; m.userData.keep = true; this.scene.add(m);
+    }
+    this.floor(C.x, C.z, 12, 70, '#3a3630', -6.6);
+    for (const [dx, dz, n] of [[-0.95, -3, 1], [0.95, -1.5, 4], [-0.95, 1, 6], [0.95, 3.2, 3], [0.95, -3.8, 5]]) this.crowd(n, C.x + dx, C.z + dz, 0, { scale: 0.8, y: 0.2 });
+    this.car = { x: C.x, z: C.z, cols: [], bounds: { minX: C.x - 0.62, maxX: C.x + 0.62, minZ: C.z - 4.6, maxZ: C.z + 4.6 } };
   }
-  rideDown() {
-    state.flags.in_park = false;
-    this.bounds = this.boundsDown;
-    const [x, z] = along(290, PR_W - 5);
-    this.fade(() => this.game.controls.setPose(x, z + 2, Math.PI * 0.6), 'You ride the El back down to City Hall.');
+
+  roof() {
+    // Potter Building roof (11 stories, 45 m up) and the open top floors of the Times Building next door
+    const Y = 45, S0 = 62, S1 = 92, D = 26;
+    const P = (s, d) => along(s, PR_W + d);
+    const BRICK = ['wall_brick_side', { type: 'brick', color: '#6e3426' }];
+    const cols = [];
+    const blob = (x, z) => cols.push({ minX: x - 0.38, maxX: x + 0.38, minZ: z - 0.38, maxZ: z + 0.38 });
+    const edge = (a, b, hgt = 0.95) => { const [ax, az] = a, [bx, bz] = b, L = Math.hypot(bx - ax, bz - az); this.wallLine(ax, az, bx, bz, hgt, BRICK, 0.45, Y); for (let d = 0; d <= L; d += 0.5) blob(ax + (bx - ax) * d / L, az + (bz - az) * d / L); };
+    edge(P(S0, 0), P(S1, 0)); edge(P(S1, 0), P(S1, D), 0.45); edge(P(S1, D), P(S0, D)); edge(P(S0, D), P(S0, 0));
+    this.floorAt = (pts, mat, y) => { const sh = new THREE.Shape(); pts.forEach(([x, z], i) => i ? sh.lineTo(x, -z) : sh.moveTo(x, -z)); const m = new THREE.Mesh(new THREE.ShapeGeometry(sh), mat); m.rotation.x = -Math.PI / 2; m.position.y = y; this.scene.add(m); };
+    this.floorAt([P(S0, 0), P(S1, 0), P(S1, D), P(S0, D)], colorMat('#4a4640'), Y + 0.04);
+    // elevator bulkhead with the door back down
+    const [b0x, b0z] = P(75.4, 21), [b1x, b1z] = P(78.6, 21);
+    this.wallLine(b0x, b0z, b1x, b1z, 2.9, BRICK, 3.2, Y);
+    for (let s = 75.4; s <= 78.6; s += 0.5) for (let d = 19.4; d <= 22.6; d += 0.5) blob(...P(s, d));
+    const [dx, dz] = P(77, 19.34);
+    const door = this.panel(dx, Y + 1.15, dz, 1.3, 2.2, ['door_elevator', { type: 'planks', color: '#3a2a1c', n: 2 }]); door.rotation.y = Math.atan2(-PR.n[0], -PR.n[1]);
+    const [ix, iz] = P(77, 18.2);
+    this.interact({ x: ix, y: Y + 1.2, z: iz, r: 2.2, prompt: 'Take the elevator back down', action: () => this.startRide('cab', 'street') });
+    // rooftop water tank and chimneys
+    const [wx, wz] = P(67, 21); const tank = new THREE.Mesh(new THREE.CylinderGeometry(1.5, 1.5, 3, 12), material('wood_water_tank', { type: 'planks', color: '#5a4630', n: 8 })); tank.position.set(wx, Y + 3, wz); this.scene.add(tank);
+    const cone = new THREE.Mesh(new THREE.ConeGeometry(1.7, 1.1, 12), colorMat('#3a3028')); cone.position.set(wx, Y + 5.05, wz); this.scene.add(cone);
+    for (const [ds, dd] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) { const [lx, lz] = P(67 + ds, 21 + dd); this.box(lx, Y, lz, 0.2, 1.5, 0.2, '#3a3028', { collide: false }); }
+    for (let s = 65.5; s <= 68.5; s += 0.5) for (let d = 19.5; d <= 22.5; d += 0.5) blob(...P(s, d));
+    for (const [cs, cd] of [[86, 22], [70, 6]]) { const [cx, cz] = P(cs, cd); this.box(cx, Y, cz, 0.9, 1.8, 0.9, BRICK, { collide: false }); blob(cx, cz); }
+    // the view
+    const [vx, vz] = P(64.5, 1.6);
+    this.readable('rooftop', vx, Y + 1.2, vz, { prompt: 'Look out over the city' });
+    const [tx, tz] = along(30, -40); this.target('rooftop', tx, 30, tz, 140);
+    // men at work on the exposed upper floors of the Times Building, at eye level across the gap
+    const men = [[96.5, 6, 'worker0'], [101, 13, 'worker1'], [108, 7, 'worker0'], [99, 20, 'worker1'], [113, 17, 'worker0'], [105, 22, 'worker1']];
+    men.forEach(([s, d, art], i) => { const [x, z] = P(s, d); this.crowd(i, x, z, 0, { y: 45.2, art }); });
+    const [hx, hz] = P(94.6, 9);
+    this.person('hodcarrier', hx, hz, 0, { y: 45.2, talk: null });
+    this.interact({ x: hx, y: Y + 1.3, z: hz, r: 6.5, prompt: 'Call across to the hod carrier', action: () => this.game.talk('hodcarrier') });
+    const [fx, fz] = P(104, 12); this.target('frame', fx, 45.5, fz, 45);
+    const [sx, sz] = P(77, 14);
+    this.roofSet = { cols, bounds: { minX: -1e5, maxX: 1e5, minZ: -1e5, maxZ: 1e5 }, y: Y + 0.05, spawn: [sx, sz, Math.atan2(-PR.d[0], -PR.d[1])] };
+    // street door of the Potter Building
+    const [px, pz] = along(77, PR_W - 0.07);
+    const sd = this.panel(px, 1.5, pz, 2.2, 3, ['door_potter', { type: 'planks', color: '#3a2a1c', n: 2 }]); sd.rotation.y = Math.atan2(-PR.n[0], -PR.n[1]);
+    const [qx, qz] = along(77, PR_W - 1.3);
+    this.potterDoor = [qx, qz];
+    this.interact({ x: qx, z: qz, r: 2.4, prompt: 'Ride the elevator to the roof', action: () => this.startRide('cab', 'roof') });
   }
+
+  /** kind: 'cab' (elevator) or 'car' (El). dest: 'roof' | 'street' | 'park' | 'downtown' */
+  startRide(kind, dest) {
+    const c = this.game.controls, set = kind === 'cab' ? this.cab : this.car;
+    this.fade(() => {
+      this.where = kind; this.ride = { kind, dest, t: kind === 'cab' ? 7 : 9, dir: (dest === 'roof' || dest === 'park') ? 1 : -1 };
+      this.colliders = set.cols; this.bounds = set.bounds; c.floorY = 0;
+      c.setPose(set.x + 0.3, set.z + (kind === 'cab' ? 0.2 : 2), kind === 'cab' ? Math.PI : Math.PI / 2);
+      if (dest === 'roof') state.flags.rode_elevator = true;
+      this.game.refreshObjectives();
+    }, kind === 'cab' ? (dest === 'roof' ? 'Going up! Watch the floors slide past the gate.' : 'Going down.') : 'The El rattles past third-floor windows, close enough to see into the tenements.');
+  }
+
+  arrive(dest) {
+    const c = this.game.controls;
+    this.fade(() => {
+      this.colliders = this.streetCols; c.floorY = 0;
+      if (dest === 'roof') { this.where = 'roof'; this.colliders = this.roofSet.cols; this.bounds = this.roofSet.bounds; c.floorY = this.roofSet.y; c.setPose(...this.roofSet.spawn); }
+      else if (dest === 'street') { this.where = 'street'; this.bounds = this.boundsDown; c.setPose(this.potterDoor[0], this.potterDoor[1], Math.atan2(PR.n[0], PR.n[1])); }
+      else if (dest === 'park') { this.where = 'park'; state.flags.in_park = true; this.bounds = this.boundsPark; c.setPose(PX, 62, 0); }
+      else { this.where = 'street'; state.flags.in_park = false; this.bounds = this.boundsDown; const [x, z] = along(290, PR_W - 5); c.setPose(x, z + 2, Math.PI * 0.6); }
+      this.game.refreshObjectives();
+    }, { roof: 'The roof of the Potter Building, eleven stories up.', street: 'Back on Park Row.', park: '59th Street. You walk west into Central Park and up the Mall.', downtown: 'City Hall station, Park Row.' }[dest]);
+  }
+
+  ridePark() { this.startRide('car', 'park'); }
+  rideDown() { this.startRide('car', 'downtown'); }
+
   fade(fn, msg) {
     const f = document.getElementById('flash');
     f.style.background = '#000'; f.classList.add('on');
     sfx('train');
-    setTimeout(() => { fn(); f.classList.remove('on'); setTimeout(() => { f.style.background = ''; }, 600); this.game.toast(msg, 5000); }, 900);
+    setTimeout(() => { fn(); f.classList.remove('on'); setTimeout(() => { f.style.background = ''; }, 600); if (msg) this.game.toast(msg, 5000); }, 900);
   }
 
   onAction(name) { if (name === 'ridePark') this.ridePark(); }
 
   map() {
-    if (flag('in_park')) {
+    if (this.where === 'cab' || this.where === 'car') return null;
+    if (this.where === 'park') {
       return {
-        bounds: { minX: PX - 60, maxX: PX + 60, minZ: -80, maxZ: 70 },
-        streets: [{ x0: PX - 6, x1: PX + 6, z0: -35, z1: 65, name: 'The Mall' }, { x0: PX + 41, x1: PX + 49, z0: -75, z1: 65, name: 'The Drive' }],
-        parks: [{ x0: PX - 60, x1: PX - 20, z0: -30, z1: 50 }],
+        bounds: { minX: PX - 60, maxX: PX + 60, minZ: -80, maxZ: 70 }, ground: '#6a8a4e', scale: 1.6,
+        streets: [{ x0: PX - 6, x1: PX + 6, z0: -35, z1: 65, name: 'The Mall' }, { x0: PX + 41, x1: PX + 49, z0: -75, z1: 65, name: 'The Drive' }, { x0: PX - 30, x1: PX + 30, z0: -67, z1: -49, name: 'Terrace' }],
+        water: [{ x0: PX - 66, x1: PX + 66, z0: -112, z1: -68 }],
         pois: [{ x: PX, z: -58, label: 'Bethesda Fountain' }, { x: PX - 40, z: 10, label: 'Sheep Meadow' }, { x: PX + 2, z: 56, label: 'Park keeper' }, { x: PX + 7, z: 22, label: 'Chana & Sarah' }, { x: PX, z: 66, label: 'El / Courier' }],
       };
     }
     const prA = along(0, PR_W / 2), prB = along(340, PR_W / 2);
     return {
-      bounds: { minX: BW - 30, maxX: 160, minZ: -135, maxZ: 235 },
+      bounds: { minX: BW - 30, maxX: 160, minZ: -135, maxZ: 235 }, ground: '#6a8a4e', scale: 1.0,
+      lines: [{ x0: prA[0], z0: prA[1], x1: prB[0], z1: prB[1], w: PR_W }],
       streets: [
+        { x0: 60, x1: 400, z0: -140, z1: 240, name: '' },
         { x0: BW - 24, x1: BW, z0: -135, z1: 235, name: 'Broadway' },
         { x0: BW - 24, x1: 160, z0: CHAMBERS - 18, z1: CHAMBERS, name: 'Chambers St' },
         { x0: CENTRE, x1: CENTRE + 20, z0: CHAMBERS, z1: -40, name: 'Centre' },
@@ -530,16 +700,23 @@ export class CityZone extends Zone {
   ready() { return flag('learned_park') && flag('learned_machine') && this.photoCount() >= 4; }
 
   objectives() {
+    const n = this.photoCount();
+    const [ox, oz] = along(161.5, PR_W - 2.2), [gx, gz] = along(291, PR_W - 3), [fx, fz] = along(100, PR_W - 2.5), [bx, bz] = along(281, PR_W + 20);
+    const up = this.where === 'roof' || this.where === 'cab';
     return [
-      { text: 'Ask the old reporter (at the Courier office on Park Row) about Boss Tweed', done: flag('learned_tweed') },
-      { text: 'Find Plunkitt at the courthouse: how does Tammany win votes?', done: flag('learned_machine') },
-      { text: 'Learn why buildings are getting taller', done: flag('learned_skyscraper') },
-      { text: 'Learn how people get around the city', done: flag('learned_transit') || flag('learned_el') },
-      { text: 'Photograph the Brooklyn Bridge', done: state.photos.some(p => p.subject === 'bridge') },
-      { text: 'Ride the El to Central Park', done: flag('in_park') || flag('learned_park') },
-      { text: 'Ask who the park is for', done: flag('learned_park') && flag('learned_park_access') },
-      { text: `Photograph evidence (${this.photoCount()}/6)`, done: this.photoCount() >= 6 },
-      { text: 'Go to the Courier office and write your story', done: false },
+      { text: 'Find Mr. Plunkitt at the courthouse and ask how Tammany wins votes', done: flag('learned_machine'), at: [-14, -50.3] },
+      { text: 'Ride the elevator in the Potter Building up to the roof', done: flag('rode_elevator'), at: this.potterDoor },
+      { text: 'From the roof, photograph the men building the Times Building', done: state.photos.some(p => p.subject === 'frame' || p.subject === 'hodcarrier') },
+      { text: up ? 'Take the elevator back down, then find the El station on Park Row' : 'Ride the El from the Park Row station up to Central Park', done: flag('in_park') || flag('learned_park'), at: up ? this.potterDoor : [gx, gz] },
+      { text: 'Ask the park keeper who made this park', done: flag('learned_park'), at: [PX + 1.6, 56] },
+      { text: `Go to the Courier office and write your story (needs 4 photographs: ${Math.min(n, 4)}/4)`, done: false, at: [PX + 4, 67] },
+      { text: 'Ask the old reporter on Park Row about Boss Tweed', done: flag('learned_tweed'), at: [ox, oz], optional: true },
+      { text: 'Ask the foreman why buildings are getting taller', done: flag('learned_skyscraper'), at: [fx, fz], optional: true },
+      { text: 'Ask the horsecar driver how people get around', done: flag('learned_transit'), at: [BW - 6.8, 33], optional: true },
+      { text: 'Photograph the Brooklyn Bridge', done: state.photos.some(p => p.subject === 'bridge'), at: [bx, bz], optional: true },
+      { text: 'Call across to a worker on the Times Building', done: flag('met_hodcarrier'), at: this.potterDoor, optional: true },
+      { text: 'Ask the park keeper who comes to the park', done: flag('learned_park_access'), at: [PX + 1.6, 56], optional: true },
+      { text: 'Look at an election banner', done: flag('read_banner'), at: [-21, -42.6], optional: true },
     ];
   }
 }

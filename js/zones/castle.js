@@ -30,6 +30,7 @@ export class CastleZone extends Zone {
     this.lights({ ambient: 0x9a9080, ambientI: 1.3, sky: 0xe8e4d4, ground: 0x4a4038, hemiI: 1.0, sun: { color: 0xfff0d8, i: 1.4, pos: [-30, 50, 40] } });
     this.bounds = { minX: -80, maxX: 90, minZ: -72, maxZ: 62 };
 
+    this.skyline('castle', { kind: 'harbor', top: '#a9b4b8', haze: '#c9c6b8', ground: '#2c4a5a' });
     this.harbor();
     this.fort();
     this.interior();
@@ -310,15 +311,19 @@ export class CastleZone extends Zone {
 
   objectives() {
     const talked = ['talked_runner', 'talked_changer', 'talked_agent'].filter(flag).length;
+    const d = this.exitDoor;
     return [
-      { text: 'From the pier, photograph the Statue of Liberty (look southwest)', done: state.photos.some(p => p.subject === 'statue') },
-      { text: 'Pass the doctor\'s inspection inside the door', done: flag('medical') },
-      { text: 'Watch Rivka register with the clerk', done: flag('registered') },
-      { text: 'Find out who gets turned away', done: flag('met_novak') },
-      { text: 'Read the newspaper on the bench', done: flag('read_newspaper') },
-      { text: `Hear from the people offering help (${talked}/3)`, done: talked >= 3 },
-      { text: 'Help Rivka\'s family decide who to trust', done: flag('gate_done') },
-      { text: `Photograph evidence (${this.photoCount()}/5)`, done: this.photoCount() >= 5 },
+      { text: 'Walk up the pier into Castle Garden and see the doctor', done: flag('medical'), at: [-4.2, 16.6] },
+      { text: 'Watch Rivka register with the clerk', done: flag('registered'), at: [2.4, 8] },
+      { text: 'Go through the gate marked "To New York"', done: flag('gate_opened'), at: [d.x, d.z] },
+      { text: 'Outside the fence, hear what a "helper" is offering', done: flag('talked_runner') || flag('talked_changer'), at: [34, -46] },
+      { text: 'Talk to Rivka: help her family decide who to trust', done: flag('gate_done'), at: [40.3, -43.6] },
+      { text: 'Walk up to Hester Street', done: false, at: [40, -66] },
+      { text: 'From the pier, photograph the Statue of Liberty (look southwest)', done: state.photos.some(p => p.subject === 'statue'), at: [0, 58], optional: true },
+      { text: 'Find out who gets turned away (the old man on the bench)', done: flag('met_novak'), at: [Math.sin(4.75) * 23, Math.cos(4.75) * 23], optional: true },
+      { text: 'Read the newspaper on the bench', done: flag('read_newspaper'), at: [Math.sin(4.62) * 24.6, Math.cos(4.62) * 24.6], optional: true },
+      { text: 'Ask Miss Carver at the information desk for advice', done: flag('talked_agent'), at: [7.3, -15.6], optional: true },
+      { text: `Hear all three offers of help (${talked}/3)`, done: talked >= 3, optional: true },
     ];
   }
 }

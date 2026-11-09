@@ -25,7 +25,8 @@
   <!-- HUD -->
   <div id="hud" class="hidden">
     <div id="zone-name"></div>
-    <ul id="objectives"></ul>
+    <div id="goal"><div id="goal-label"></div><div id="goal-text"></div><div id="goal-leads"></div></div>
+    <canvas id="minimap"></canvas>
     <div id="crosshair"></div>
     <div id="prompt" class="hidden"></div>
     <div id="hud-keys">WASD move &middot; Mouse look &middot; <b>E</b> talk/use &middot; <b>F</b> camera &middot; <b>J</b> journal &middot; <b>M</b> map &middot; <b>Esc</b> pause</div>
@@ -130,6 +131,7 @@
   <!-- Zone title card -->
   <div id="card" class="overlay hidden">
     <div class="title-card">
+      <div id="card-art"></div>
       <div class="tc-num" id="card-num"></div>
       <h1 id="card-title"></h1>
       <div class="tc-sub" id="card-sub"></div>

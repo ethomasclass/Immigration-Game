@@ -8,6 +8,8 @@ Students play a newspaper photographer in **1888**. They cross the Atlantic in s
 - Progress (photos, notes, answers) saves automatically **on that Chromebook only**. If a student switches computers, they can use **Chapter Select** to jump ahead.
 - If the mouse won't "lock" (some managed Chromebooks), turn on **Settings → Drag to look**.
 - If the game runs slowly, set **Settings → Graphics quality → Low**.
+- **One goal at a time:** the top-left box shows only the current goal. The round map (top right) shows the student as a blue arrow and the goal as a gold star. Red dots are optional "leads" worth photographing. The full list of goals and leads is in the journal (**J**, Notebook tab).
+- **Required steps are short on purpose.** The questions a goal needs are marked with a star in conversations. Everything else (Mott Street, Mrs. Brennan, the settlement house, Boss Tweed) is an optional lead, so tell students which leads you want them to follow for your lesson.
 - Controls: **WASD** move · **mouse** look · **E** talk/use · **F** (or right-click) raise camera, click to take a photo · **J** journal · **M** map · **Esc** pause.
 - The places are rebuilt from 1880s maps, photographs and records. See [HISTORICAL_REFERENCE.md](HISTORICAL_REFERENCE.md) for sources and the places where distances are compressed.
 
@@ -16,11 +18,11 @@ Students play a newspaper photographer in **1888**. They cross the Atlantic in s
 | Chapter | Time | Covers | Student must… |
 |---|---|---|---|
 | Intro letter | 1 min | The assignment | Read |
-| I. Steerage | ~5 min | Push and pull factors, steerage conditions, old vs. new immigrants, chain migration | Ask Rivka why she left; ask one more passenger; hear about conditions; read Rivka's letter |
+| I. Steerage | ~5 min | Push and pull factors, steerage conditions, old vs. new immigrants, chain migration | Ask Rivka why she left; read her letter; take 2 photos |
 | II. Castle Garden | ~7 min | Medical inspection, Immigration Act of 1882 (head tax, "public charge"), who is turned away, runners and swindlers (a choice), Statue of Liberty (1886) as a dating clue, Chinese Exclusion Act | Pass the doctor and clerk; then help Rivka decide who to trust at the gate |
 | III. Lower East Side | ~15 min | Tenements (1879 law, air shafts, privies), sweatshop piecework, pushcarts, mutual aid (landsmanshaft, synagogue, parish, ethnic newspapers, Neighborhood Guild), Mott Street and Chinese exclusion, nativism, a ward boss teaser, Jacob Riis | Reach Moishe's tenement; take 5 or more photos |
 | Wrap-Up A | ~3 min | **Was America a land of opportunity for newcomers?** | Sort photos into the evidence chart, choose a stance, write 2–3 sentences, and copy everything to the handout |
-| IV. The City *(6.3)* | ~10 min | Political machines (Tammany, Tweed's legacy, Plunkitt's "honest graft"), skyscrapers (land values, elevators, steel frames), mass transit (horsecars, the El, cable cars, electric trolleys), Brooklyn Bridge, Central Park and who it served | Learn about Tammany and the park; take 4 or more photos |
+| IV. The City *(6.3)* | ~10 min | Political machines (Tammany, Tweed's legacy, Plunkitt's "honest graft", the 1888 mayoral election), skyscrapers (an elevator ride to a rooftop beside men building the Times Building), mass transit (horsecars, a ride on the El), Brooklyn Bridge, Central Park and who it served | Ask Plunkitt about votes; ride the elevator and photograph the builders; ride the El; ask the park keeper; take 4 or more photos |
 | Wrap-Up B | ~3 min | **Did the growing city and its political machines help newcomers, or take advantage of them?** | Same as Wrap-Up A |
 
 Chapter IV starts from the end of Wrap-Up A, or from Chapter Select. You can run it as a separate class period for lesson 6.3.
@@ -52,6 +54,8 @@ Many photos reasonably fit more than one column. Ask students to justify their c
 
 - **Fictional people:** Rivka's family, Giuseppe, the Webers, the steward, the doctor, the clerk, Novak, the runners, Miss Carver, all the Lower East Side residents, Mr. Lee Fong, Mrs. Brennan, Mr. Whitcomb, Mr. Quinn, Haskins, the foreman, and the drivers. They are composites built from typical experiences.
 - **Real people:** Jacob Riis (a Danish immigrant and Tribune police reporter, who began using flash powder in 1887; *How the Other Half Lives* came out in 1890) and **George Washington Plunkitt** (a Tammany district leader who did hold court at a bootblack stand in the County Courthouse). His "honest graft… I seen my opportunities and I took 'em" lines are **paraphrased from *Plunkitt of Tammany Hall* (1905)**, which was published later than 1888.
+- **The election:** the game is set in late October 1888, days before the New York mayoral election of November 6. Hugh J. Grant (Tammany Hall) defeated Joel B. Erhardt (Republican) and Mayor Abram Hewitt. The banners use their real names; the wording is invented.
+- **The elevator:** the Potter Building (1886) stood next to the Times Building, which was being rebuilt in 1888. The rooftop view and the workers are a reconstruction.
 - **Tweed** died in 1878, so he appears only as a legacy (Nast's 1871 cartoon, the courthouse).
 - **Ship:** one ship carrying Russian Jews, southern Italians, and Germans together is a simplification. Most sailed from different ports (Hamburg, Bremen, Naples, Liverpool).
 - **Castle Garden** inspections were quicker and less medical than the later Ellis Island exams. The game avoids Ellis Island details like chalk marks.

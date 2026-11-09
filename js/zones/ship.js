@@ -116,7 +116,7 @@ export class ShipZone extends Zone {
     hatch.rotation.x = Math.PI / 2; hatch.position.set(lx, H - 0.01, lz - 0.4); this.scene.add(hatch);
     this.hatchLight = new THREE.PointLight(0xdfe8f0, 3, 6, 1.4); this.hatchLight.position.set(lx, H - 0.3, lz - 0.4); this.scene.add(this.hatchLight);
     const ex = this.exit(lx, lz + 0.4, 'Climb the ladder to the deck', () => this.ready(), () => this.game.loadZone('castle'), 1.8);
-    ex.lockedMsg = 'Before you go up, finish your interviews (see objectives).';
+    ex.lockedMsg = 'Before you go up, finish your goal (top left).';
 
     this.spawn = { x: 0, z: -1.2, yaw: 0 };
 
@@ -160,7 +160,7 @@ export class ShipZone extends Zone {
 
   pushCount() { return ['heard_giuseppe_push', 'heard_weber_push'].filter(flag).length; }
   photoCount() { return state.photos.filter(p => p.zone === 'ship' && p.subject).length; }
-  ready() { return flag('heard_rivka_push') && this.pushCount() >= 1 && flag('heard_conditions') && flag('read_letter'); }
+  ready() { return flag('heard_rivka_push') && flag('read_letter') && this.photoCount() >= 2; }
 
   map() {
     return {
@@ -171,13 +171,15 @@ export class ShipZone extends Zone {
   }
 
   objectives() {
+    const n = this.photoCount();
     return [
-      { text: 'Ask Rivka why her family left', done: flag('heard_rivka_push') },
-      { text: `Ask other passengers why they left (${this.pushCount()}/2)`, done: this.pushCount() >= 2 },
-      { text: 'Learn about life in steerage from the steward', done: flag('heard_conditions') },
-      { text: 'Read the letter Rivka carries', done: flag('read_letter') },
-      { text: `Photograph evidence: F to raise camera (${this.photoCount()}/4)`, done: this.photoCount() >= 4 },
-      { text: 'Climb the ladder to the deck', done: false },
+      { text: 'Find Rivka and ask why her family left', done: flag('heard_rivka_push'), at: [2.4, -11.5] },
+      { text: 'Ask Rivka about the paper she is holding', done: flag('read_letter'), at: [2.4, -11.5] },
+      { text: `Take 2 photographs: press F, aim at a person or thing, click (${Math.min(n, 2)}/2)`, done: n >= 2 },
+      { text: 'Climb the ladder to the deck', done: false, at: [2.4, -2.2] },
+      { text: 'Ask Giuseppe why he left Italy', done: flag('heard_giuseppe_push'), at: [-2.2, -19.5], optional: true },
+      { text: 'Ask Herr Weber why he left Germany', done: flag('heard_weber_push'), at: [-2.3, -6.2], optional: true },
+      { text: 'Ask the steward about life in steerage', done: flag('heard_conditions'), at: [-1, -2.6], optional: true },
     ];
   }
 }

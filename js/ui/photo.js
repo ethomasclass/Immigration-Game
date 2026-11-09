@@ -107,7 +107,7 @@ export class PhotoMode {
       const untitled = state.photos.filter(p => !p.subject);
       if (untitled.length >= 6) state.photos.splice(state.photos.indexOf(untitled[0]), 1);
       state.photos.push(photo);
-      g.toast('Photograph taken. <span class="muted">No subject in frame.</span>');
+      g.toast('Photograph taken, but nothing important was in frame. <span class="muted">Aim at a person or object until its title appears, then click.</span>');
     }
     if (state.photos.length > MAX_PHOTOS) state.photos.shift();
     save();

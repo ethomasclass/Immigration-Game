@@ -4,7 +4,8 @@
 // Each conversation is a "tree" of nodes. A node has:
 //   lines:   spoken lines. A string = the tree's speaker. {who, text} = someone else.
 //            who: 'narrator' = italic narration.
-//   choices: [{ text, next, if, ifNot }]  (player's questions; not voiced)
+//   choices: [{ text, next, if, ifNot, key }]  (player's questions; not voiced)
+//            key: true marks the question a goal needs (shown with a star)
 //   next:    node to go to after the lines (if no choices)
 //   end:     true to close the conversation after the lines
 //   set:     ['flag', ...]  flags to set when the node is reached
@@ -38,9 +39,9 @@ export const DIALOGUE = {
         lines: [],
         choices: [
           { text: 'Where are you from?', next: 'from' },
-          { text: 'Why did your family leave?', next: 'why' },
+          { text: 'Why did your family leave?', next: 'why', key: true },
           { text: 'How did you pay for the trip?', next: 'pay' },
-          { text: 'What is that paper you keep holding?', next: 'letter' },
+          { text: 'What is that paper you keep holding?', next: 'letter', key: true },
           { text: 'Goodbye for now.', next: 'bye' },
         ],
       },
@@ -1142,7 +1143,7 @@ export const DIALOGUE = {
       hub: {
         lines: [],
         choices: [
-          { text: 'How does Tammany win votes?', next: 'votes' },
+          { text: 'How does Tammany win votes?', next: 'votes', key: true },
           { text: 'What do you do for immigrants?', next: 'immigrants' },
           { text: 'What about Boss Tweed?', next: 'tweed', if: 'learned_tweed' },
           { text: 'I met a man named Quinn handing out coal.', next: 'quinn', if: 'met_quinn' },
@@ -1318,6 +1319,35 @@ export const DIALOGUE = {
     },
   },
 
+  hodcarrier: {
+    speaker: 'hodcarrier',
+    nodes: {
+      start: {
+        set: ['met_hodcarrier'],
+        note: 'BUILDERS: Immigrant laborers carried bricks and set iron high above the street with no ropes or nets, for about a dollar and a half a day.',
+        lines: [
+          'Hey, camera man! You want a picture? Take it quick. The foreman docks my pay if I stand still.',
+          'I carry bricks up the ladders, eleven stories, all day. No rope. No net. A dollar and a half.',
+          'Last month a man fell from the ninth floor. The next morning, another man had his job.',
+        ],
+        end: true,
+      },
+    },
+  },
+
+  elevator: {
+    speaker: 'elevator',
+    nodes: {
+      start: {
+        lines: [
+          'Going up! Mr. Otis\'s safety elevator, sir. If the rope breaks, the brakes catch us. Probably.',
+          'Eleven floors in under a minute. Nobody would rent an office up there if they had to climb.',
+        ],
+        end: true,
+      },
+    },
+  },
+
   keeper: {
     speaker: 'keeper',
     nodes: {
@@ -1328,7 +1358,7 @@ export const DIALOGUE = {
       hub: {
         lines: [],
         choices: [
-          { text: 'Who made this park?', next: 'who' },
+          { text: 'Who made this park?', next: 'who', key: true },
           { text: 'Who comes here?', next: 'visitors' },
           { text: 'Why can\'t people walk on the grass?', next: 'rules' },
           { text: 'Thank you.', next: 'bye' },
@@ -1457,6 +1487,20 @@ export const DOCS = {
     title: 'The Brooklyn Bridge',
     text: 'Opened in 1883, the Brooklyn Bridge was the longest suspension bridge in the world. Its stone towers rise above every building in the city.\n\nIt connects New York to Brooklyn, which is still a separate city. Many of the workers who built it were immigrants. Some died building it.',
   },
+  banner: {
+    title: 'An Election Banner',
+    text: 'FOR MAYOR\nHUGH J. GRANT\nRegular Democratic Nominee · Tammany Hall\n\nElection Day: Tuesday, November 6, 1888.\n\nThree men are running for mayor. Tammany Hall\'s clubs in every neighborhood are working to get out the vote for Grant.',
+    source: 'Based on the real 1888 New York mayoral election, which Hugh J. Grant won.',
+  },
+  club: {
+    title: 'Notice Board in the Democratic Club',
+    text: 'TAMMANY HALL · DISTRICT CLUB\n\nMen wanted for the city street crews. See Mr. Quinn.\nHelp with citizenship papers, Thursday evenings.\nFree coal for families in need.\nGrand picnic and boat ride for the children, tickets free.\n\nVOTE THE STRAIGHT TICKET, NOVEMBER 6.',
+    source: 'Fictional notice based on real services of Tammany district clubs.',
+  },
+  rooftop: {
+    title: 'The View From the Roof',
+    text: 'Eleven stories up, the whole city spreads out below. To the east, the towers of the Brooklyn Bridge. To the south, the harbor and the masts of ships. Only church steeples and a few new office buildings stand taller than you.\n\nNext door, men are building the new Times Building even higher.',
+  },
   parkrules: {
     title: 'Park Rules',
     text: 'CENTRAL PARK: NOTICE\n\nKEEP OFF THE GRASS.\nNo ball playing without permit.\nNo picnics upon the lawns.\nNo peddling.\nCarriages to keep to the drives.\n\nBy order of the Park Commissioners.',
@@ -1471,7 +1515,7 @@ export const CARDS = {
   intro: {
     num: 'THE ASSIGNMENT',
     title: 'A Letter From Your Editor',
-    sub: 'The New York Evening Courier, 1888',
+    sub: 'The New York Evening Courier, October 1888',
     text: 'To our photographer:\n\nThousands of newcomers arrive in New York every week. Our readers want to know: who are these people? Why do they come? And is America really a land of opportunity for them?\n\nI have bought you a steerage ticket on a steamship from Europe. Travel with them. Listen to them. Photograph everything.\n\nBring me the true story.\n\nYour Editor',
   },
   ship: {
@@ -1496,6 +1540,6 @@ export const CARDS = {
     num: 'IV',
     title: 'The City',
     sub: 'Park Row and City Hall Park',
-    text: 'One week later. Your editor has a new question: New York is growing faster than any city in the world. Who runs it? Who builds it? And who does it serve?\n\nExplore Park Row, near City Hall. Look for the bosses, the builders, and the machines that move the city.',
+    text: 'One week later. In a few days, New York will elect a new mayor, and campaign banners hang over every street.\n\nYour editor has a new question: this city is growing faster than any in the world. Who runs it? Who builds it? And who does it serve?\n\nExplore Park Row, near City Hall. Look for the bosses, the builders, and the machines that move the city.',
   },
 };

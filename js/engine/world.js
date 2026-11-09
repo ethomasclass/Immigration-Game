@@ -31,9 +31,12 @@ export class Zone {
     const cam = this.game.camera;
     const d = this.game.dialogue;
     const speaker = d && d.active ? d.currentWho : null;
+    const pp = this.game.controls.pos;
+    for (const m of this.movers || []) this.stepMover(m, dt, pp);
     for (const n of this.npcs) {
       if (!n.group.visible) continue;
-      animateCutout(n.group, this.time, cam, speaker && speaker === n.id && n.talking !== false && d.currentTree === n.talkTree);
+      if (n.path) this.stepWalker(n, dt, pp);
+      animateCutout(n.group, this.time, cam, speaker && speaker === n.id && n.talking !== false && d.currentTree === n.talkTree, n.path && !n.paused ? n : null);
     }
   }
 
@@ -208,29 +211,130 @@ export class Zone {
   }
 
   /** A person: an animated 2D cutout using assets/art/portrait_<id>.png. */
-  person(id, x, z, ry = 0, { talk = id, photo = id, prompt = null, scale = 1, seated = false } = {}) {
+  person(id, x, z, ry = 0, { talk = id, photo = id, prompt = null, scale = 1, seated = false, y = 0 } = {}) {
     const c = CHARACTERS[id] || {};
     const g = makeCutout(id, c, scale);
-    g.position.set(x, 0, z);
+    g.position.set(x, y, z);
     this.scene.add(g);
     const height = (c.height || 1.7) * scale;
     const npc = { id, group: g, height, talkTree: talk };
     this.npcs.push(npc);
-    if (seated) this.box(x - Math.sin(ry) * 0.25, 0, z - Math.cos(ry) * 0.25, 0.45, 0.45, 0.45, '#4a3420', { collide: false });
-    this.colliders.push({ minX: x - 0.3, maxX: x + 0.3, minZ: z - 0.3, maxZ: z + 0.3 });
-    if (talk) this.interact({ x, y: height * 0.8, z, r: 2.4, prompt: prompt || `Talk to ${c.name || id}`, action: () => this.game.talk(talk) });
-    if (photo) this.target(photo, x, height * 0.7, z, 9);
+    if (seated) this.box(x - Math.sin(ry) * 0.25, y, z - Math.cos(ry) * 0.25, 0.45, 0.45, 0.45, '#4a3420', { collide: false });
+    if (!y) this.colliders.push({ minX: x - 0.3, maxX: x + 0.3, minZ: z - 0.3, maxZ: z + 0.3 });
+    if (talk) this.interact({ x, y: y + height * 0.8, z, r: 2.4, prompt: prompt || `Talk to ${c.name || id}`, action: () => this.game.talk(talk) });
+    if (photo) this.target(photo, x, y + height * 0.7, z, 9);
     return npc;
   }
 
-  /** Background person (no dialogue). Art: portrait_crowd<N>.png */
-  crowd(n, x, z, ry = 0, { scale = 1 } = {}) {
+  /**
+   * A person who walks back and forth along a path of [x, z] points.
+   * Uses crowd art unless `id` names a character. They stop for the player.
+   */
+  walker(n, path, { speed = 1.1, scale = 1, id = null, loop = false } = {}) {
     const i = n % CROWD.length;
-    const g = makeCutout('crowd' + i, CROWD[i], scale);
-    g.position.set(x, 0, z);
+    const c = id ? (CHARACTERS[id] || CROWD[i]) : CROWD[i];
+    const g = makeCutout(id || 'crowd' + i, c, scale);
+    const start = Math.floor(this.rand2() * path.length) % path.length;
+    g.position.set(path[start][0], 0, path[start][1]);
+    this.scene.add(g);
+    const npc = { id: id || 'crowd' + i, group: g, path, seg: start, dir: 1, speed: speed * (0.85 + this.rand2() * 0.3), loop, vx: 0, vz: 0 };
+    this.npcs.push(npc);
+    return npc;
+  }
+  rand2() { this._r2 = ((this._r2 || 12345) * 1103515245 + 12345) & 0x7fffffff; return this._r2 / 0x7fffffff; }
+
+  stepWalker(n, dt, pp) {
+    const p = n.group.position;
+    let next = n.seg + n.dir;
+    if (next < 0 || next >= n.path.length) {
+      if (n.loop) next = (next + n.path.length) % n.path.length;
+      else { n.dir = -n.dir; next = n.seg + n.dir; }
+    }
+    const [tx, tz] = n.path[next];
+    const dx = tx - p.x, dz = tz - p.z, d = Math.hypot(dx, dz);
+    if (d < 0.15) { n.seg = next; return; }
+    // wait politely if the player is right in front
+    const px = pp.x - p.x, pz = pp.z - p.z, pd = Math.hypot(px, pz);
+    n.paused = pd < 1.3 && (px * dx + pz * dz) > 0;
+    if (n.paused) return;
+    const step = Math.min(d, n.speed * dt);
+    p.x += dx / d * step; p.z += dz / d * step;
+    n.vx = dx / d; n.vz = dz / d;
+  }
+
+  /** Drive a vehicle group around a closed loop of [x, z] points. It waits if the player is in the way. */
+  mover(group, path, speed = 2.4) {
+    (this.movers = this.movers || []).push({ group, path, seg: 0, speed, t: 0 });
+    group.position.set(path[0][0], 0, path[0][1]);
+    return group;
+  }
+  stepMover(m, dt, pp) {
+    const p = m.group.position, next = (m.seg + 1) % m.path.length;
+    const [tx, tz] = m.path[next];
+    const dx = tx - p.x, dz = tz - p.z, d = Math.hypot(dx, dz);
+    if (d < 0.2) { m.seg = next; return; }
+    const ux = dx / d, uz = dz / d;
+    const ax = (pp.x - p.x) * ux + (pp.z - p.z) * uz, lat = Math.abs((pp.x - p.x) * uz - (pp.z - p.z) * ux);
+    m.stopped = ax > -2 && ax < 9 && lat < 1.9;
+    if (m.stopped) return;
+    const step = Math.min(d, m.speed * dt);
+    p.x += ux * step; p.z += uz * step; m.t += dt;
+    let diff = Math.atan2(-ux, -uz) - m.group.rotation.y; diff = Math.atan2(Math.sin(diff), Math.cos(diff));
+    m.group.rotation.y += diff * Math.min(1, dt * 3);
+    for (const leg of m.group.userData.legs || []) leg.rotation.x = Math.sin(m.t * 8 + leg.userData.ph) * 0.45;
+    for (const wh of m.group.userData.wheels || []) wh.rotation.x -= step / 0.45;
+  }
+
+  /** A horse-drawn delivery wagon (front faces -z). */
+  wagon(color = '#5a4630', load = '#8a7a5a') {
+    const g = new THREE.Group(); const legs = [], wheels = [];
+    const bed = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.25, 3.4), colorMat(color)); bed.position.y = 0.95; g.add(bed);
+    for (const sx of [-1, 1]) { const side = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.5, 3.4), colorMat(color)); side.position.set(sx * 0.8, 1.3, 0); g.add(side); }
+    for (let i = 0; i < 3; i++) { const b = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.32, 0.8, 8), colorMat(load)); b.position.set((i % 2 ? 0.35 : -0.35), 1.5, 0.3 + i * 0.75 - 0.5); g.add(b); }
+    for (const wz of [-1.2, 1.2]) for (const sx of [-1, 1]) { const wh = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.45, 0.08, 10), colorMat('#2a1e14')); wh.rotation.z = Math.PI / 2; const h = new THREE.Group(); h.add(wh); h.position.set(sx * 0.88, 0.45, wz); g.add(h); wheels.push(h); }
+    const seat = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.5, 0.5), colorMat('#3a2a1c')); seat.position.set(0, 1.45, -1.5); g.add(seat);
+    const driver = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.8, 0.35), colorMat('#2e2a28')); driver.position.set(0, 2.1, -1.5); g.add(driver);
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.16, 8, 6), colorMat('#d9b08c')); head.position.set(0, 2.65, -1.5); g.add(head);
+    const horse = new THREE.Group();
+    const body = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.75, 1.8), colorMat('#4a3020')); body.position.y = 1.3; horse.add(body);
+    const neck = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.85, 0.42), colorMat('#4a3020')); neck.position.set(0, 1.8, -1.0); neck.rotation.x = -0.5; horse.add(neck);
+    const hd = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.32, 0.62), colorMat('#3a2416')); hd.position.set(0, 2.1, -1.42); horse.add(hd);
+    for (const lx of [-0.2, 0.2]) for (const lz of [-0.7, 0.7]) { const leg = new THREE.Group(); const l = new THREE.Mesh(new THREE.BoxGeometry(0.13, 0.95, 0.13), colorMat('#2e1c10')); l.position.y = -0.47; leg.add(l); leg.position.set(lx, 0.95, lz); leg.userData.ph = (lx > 0 ? 0 : Math.PI) + (lz > 0 ? 1.5 : 0); horse.add(leg); legs.push(leg); }
+    horse.position.z = -3.6; g.add(horse);
+    g.userData.legs = legs; g.userData.wheels = wheels;
+    this.scene.add(g);
+    return g;
+  }
+
+  /**
+   * Wraparound skyline: a huge cylinder that follows the camera, wearing the
+   * art `skyline_<key>` (a wide image, mirrored so it tiles seamlessly).
+   */
+  skyline(key, spec = {}) {
+    const R = 2300, tiles = 4, tileW = 2 * Math.PI * R / tiles, H = tileW * 9 / 16;
+    const tex = texture('skyline_' + key, { type: 'skyline', w: 1024, h: 576, ...spec }).clone();
+    tex.wrapS = THREE.MirroredRepeatWrapping; tex.wrapT = THREE.ClampToEdgeWrapping; tex.repeat.set(tiles, 1); tex.needsUpdate = true;
+    const artKey = 'skyline_' + key;
+    const m = new THREE.Mesh(new THREE.CylinderGeometry(R, R, H, 48, 1, true), new THREE.MeshBasicMaterial({ map: tex, side: THREE.BackSide, fog: false, depthWrite: false, depthTest: false }));
+    m.renderOrder = -10; m.frustumCulled = false; m.userData.keep = true;
+    m.position.y = H * 0.2;         // horizon line (30% up the image) sits at eye level
+    this.scene.add(m);
+    this.scene.background = new THREE.Color(spec.top || '#8fa0ae');
+    this.updaters.push(() => {
+      const c = this.game.camera.position; m.position.set(c.x, c.y + H * 0.2, c.z);
+      const real = texture(artKey).image; if (tex.image !== real) { tex.image = real; tex.needsUpdate = true; }
+    });
+    return m;
+  }
+
+  /** Background person (no dialogue). Art: portrait_crowd<N>.png */
+  crowd(n, x, z, ry = 0, { scale = 1, y = 0, art = null } = {}) {
+    const i = n % CROWD.length;
+    const g = makeCutout(art || 'crowd' + i, CROWD[i], scale);
+    g.position.set(x, y, z);
     this.scene.add(g);
     this.npcs.push({ id: 'crowd' + i, group: g });
-    this.colliders.push({ minX: x - 0.28, maxX: x + 0.28, minZ: z - 0.28, maxZ: z + 0.28 });
+    if (!y) this.colliders.push({ minX: x - 0.28, maxX: x + 0.28, minZ: z - 0.28, maxZ: z + 0.28 });
     return g;
   }
 

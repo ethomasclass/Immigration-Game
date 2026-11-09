@@ -42,6 +42,8 @@ export const SUBJECTS = {
   brennan:    { title: 'The Neighbor', desc: 'Mrs. Brennan, the child of Irish Famine immigrants, resents the newcomers.', col: 'people', zone: 'les' },
   guild:      { title: 'The Guild', desc: 'The Neighborhood Guild (1886), America\'s first settlement house.', col: 'people', zone: 'les' },
   boss:       { title: 'The Coal Sack', desc: 'A man from the Tammany club hands out free coal before an election.', col: 'government', zone: 'les' },
+  banner:     { title: 'The Banner', desc: 'A Tammany banner for the 1888 mayoral election hangs over Hester Street.', col: 'government', zone: 'les' },
+  club:       { title: 'The Club', desc: 'A Tammany district club offers jobs, coal, and help with citizenship papers.', col: 'government', zone: 'les' },
   // ---- Zone 4 ----
   nast:       { title: 'The Cartoon', desc: 'Thomas Nast\'s 1871 cartoon of the Tweed Ring.', col: 'machine', zone: 'city' },
   courthouse: { title: 'The Courthouse', desc: 'The "Tweed Courthouse," where the Tweed Ring stole millions.', col: 'machine', zone: 'city' },
@@ -52,6 +54,9 @@ export const SUBJECTS = {
   bridge:     { title: 'The Bridge', desc: 'The Brooklyn Bridge, opened in 1883.', col: 'growth', zone: 'city' },
   horsecar:   { title: 'The Horsecar', desc: 'A horse-drawn streetcar on rails.', col: 'growth', zone: 'city' },
   el:         { title: 'The Iron Road', desc: 'The elevated railway ("the El") runs steam trains above the street.', col: 'growth', zone: 'city' },
+  rooftop:    { title: 'The View', desc: 'Lower Manhattan from eleven stories up, reached by elevator.', col: 'growth', zone: 'city' },
+  hodcarrier: { title: 'The Hod Carrier', desc: 'Dominic carries bricks up eleven stories of ladders for $1.50 a day.', col: 'growth', zone: 'city' },
+  banner2:    { title: 'The Campaign', desc: 'Election banners for mayor on Park Row, November 1888.', col: 'machine', zone: 'city' },
   park:       { title: 'The Green', desc: 'Central Park, designed by Olmsted and Vaux as "lungs" for the city.', col: 'life', zone: 'city' },
   parkrules:  { title: 'The Rule', desc: '"Keep Off the Grass": park rules that kept the park "proper."', col: 'life', zone: 'city' },
   sunday:     { title: 'Sunday', desc: 'A tenement family on their one day off, visiting the park.', col: 'life', zone: 'city' },

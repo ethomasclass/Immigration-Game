@@ -74,117 +74,21 @@ An image named `doc_<key>.png` (about 800 × 600) appears at the top of that doc
 
 `doc_nast` is also the cartoon in the newspaper office window in Chapter IV. Thomas Nast's 1871 cartoon is public domain, so a scan of the original works.
 
-## 3. Buildings, signs, and surfaces
+## 3. Skylines, signs, storefronts, title cards
 
-These are optional; the placeholders are drawn to match 1888 photographs (see [HISTORICAL_REFERENCE.md](HISTORICAL_REFERENCE.md)).
-- **Tiling textures** (walls, floors, streets) should repeat seamlessly; 512 × 512.
-- **Facades** (`facade_*`) are one 25-ft lot wide, ground floor to cornice; about 256 × 512.
-- **Signs** match the shape of the sign.
+Prompts and sizes for all of these are in **[FLOW_ASSET_PROMPTS.md](FLOW_ASSET_PROMPTS.md)**.
 
+| Art | File names | Notes |
+|---|---|---|
+| Wraparound skyline | `skyline_castle`, `skyline_les`, `skyline_city`, `skyline_park` | One 16:9 image each, horizon one third up from the bottom. The game mirrors it around the whole horizon. |
+| Shop signs | `sign_hester_north_01`…`13`, `sign_hester_south_01`…`13`, `sign_bowery_east_01`…`10`, `sign_bowery_west_01`…`10`, `sign_pell_01`…`03`, `sign_saloon_01`, `sign_lee_shop` | Wide boards, about 8:1. To change only the words, edit the `SIGNS` list in `js/zones/les.js`. |
+| Storefronts | `storefront_saloon`, `storefront_moishe_w`, `storefront_moishe_e`, `storefront_lee_south`, `window_lee_shop` | Ground-floor shop fronts. |
+| Building fronts | `facade_tenement_0`…`5`, `facade_office_0`…`3`, `facade_potter`, `facade_tribune`, `facade_city_hall`, `facade_courthouse`, `facade_eldridge_synagogue`, `facade_transfiguration`, `facade_neighborhood_guild` | One lot wide, sidewalk to cornice, drawn straight on. |
+| Election banners | `banner_grant`, `banner_erhardt`, `banner_hewitt`, `poster_grant` | |
+| Interiors | `shelves_lee_shop`, `backbar_saloon`, `board_club`, `board_society` | Wall panels inside the walk-in shops. |
+| Chapter title cards | `card_intro`, `card_ship`, `card_castle`, `card_les`, `card_city` | Full tarot cards. Optional looping video: `assets/video/card_<name>.mp4`. |
+| Awnings | `awning_0`…`2` | Striped canvas. |
 
-- `barge_deck`
-- `berth_ticks`
-- `board_society`
-- `bridge_granite`
-- `ceiling_tenement`
-- `desk_wood`
-- `door_steerage`
-- `el_car`
-- `el_girder`
-- `facade_city_hall`
-- `facade_courthouse`
-- `facade_eldridge_synagogue`
-- `facade_neighborhood_guild`
-- `facade_office_0`
-- `facade_office_1`
-- `facade_office_2`
-- `facade_office_3`
-- `facade_potter`
-- `facade_rear`
-- `facade_tenement_0`
-- `facade_tenement_0_low`
-- `facade_tenement_1`
-- `facade_tenement_1_low`
-- `facade_tenement_2`
-- `facade_tenement_2_low`
-- `facade_tenement_3`
-- `facade_tenement_3_low`
-- `facade_tenement_4`
-- `facade_tenement_4_low`
-- `facade_tenement_5`
-- `facade_tenement_5_low`
-- `facade_tenement_moishe`
-- `facade_transfiguration`
-- `facade_tribune`
-- `fence_depot`
-- `flag_us_38_stars`
-- `floor_castle`
-- `floor_steerage_sawdust`
-- `floor_tenement`
-- `grass_park`
-- `ground_yard`
-- `handbill_nativist`
-- `horsecar_1d1d24`
-- `horsecar_bowery`
-- `horsecar_d8b23a`
-- `laundry_0`
-- `laundry_1`
-- `laundry_2`
-- `ledger`
-- `mattress_straw`
-- `newspaper_1888`
-- `path_gravel`
-- `pavement_battery`
-- `poster_steamship`
-- `privy_door`
-- `roof_castle`
-- `sidewalk_bluestone`
-- `sign_baggage`
-- `sign_bridge_terminal`
-- `sign_castle_garden`
-- `sign_city_hall`
-- `sign_courthouse`
-- `sign_el_station`
-- `sign_horsecar`
-- `sign_horsecar_bowery`
-- `sign_horsecar_stop`
-- `sign_keep_off`
-- `sign_labor_exchange`
-- `sign_lee_shop`
-- `sign_park_rules`
-- `sign_post_office`
-- `sign_single_men`
-- `sign_single_women`
-- `sign_vert_106`
-- `sign_vert_111`
-- `stone_bethesda`
-- `storefront_moishe_e`
-- `storefront_moishe_w`
-- `street_belgian_block`
-- `trunk`
-- `wall_brick_side`
-- `wall_castle_inner`
-- `wall_castle_sandstone`
-- `wall_church_side`
-- `wall_depot_wood`
-- `wall_el_station`
-- `wall_granite_po`
-- `wall_marble`
-- `wall_steerage_hull`
-- `wall_steerage_partition`
-- `wall_tenement_room`
-- `wall_times_granite`
-- `wall_tribune`
-- `water_harbor`
-- `window_airshaft`
-- `window_castle`
-- `window_lee_shop`
-- `window_po`
-- `window_yard`
-- `wood_cart`
-- `wood_rough`
-- `wood_ship_dark`
-- `wood_trestle`
+## 4. Other surfaces
 
-
-Shop signs (`sign_shop_N`), street signs (`sign_street_*`), and Castle Garden and Park Row signs (`sign_cg_*`, `sign_pr_*`) are generated from text in the zone files. Edit the text there instead of replacing the image.
+Walls, floors, and street textures also have names (for example `street_belgian_block`, `wall_castle_sandstone`, `floor_steerage_sawdust`). They should tile seamlessly at 512 × 512. Type `listArtKeys()` in the browser console to print every name in the zones you have loaded.

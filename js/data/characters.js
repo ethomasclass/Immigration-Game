@@ -47,5 +47,12 @@ export const CHARACTERS = {
   foreman:   { name: 'Mr. Halvorsen', role: 'Construction foreman', voice: 'Man, 40s, Norwegian accent, loud over noise, proud of the work.', coat: '#4a3a24', skin: '#ecc6a6', height: 1.84, hat: 'cap', anim: { idle: 'sway', talk: 'gesture', speed: 1.2 } },
   driver:    { name: 'Mike', role: 'Horsecar driver', voice: 'Man, 30s, Irish-New York accent, impatient and funny.', coat: '#2a3a4a', skin: '#e8c0a0', height: 1.74, hat: 'cap', anim: { idle: 'fidget', talk: 'gesture', speed: 1.3 } },
   elguard:   { name: 'El Guard', role: 'Elevated railway guard', voice: 'Man, 30s, gruff New Yorker, shouting over the trains.', coat: '#22304a', skin: '#d8b090', height: 1.76, hat: 'cap', anim: { idle: 'sway', talk: 'bounce' } },
+  hodcarrier:{ name: 'Dominic', role: 'Hod carrier on the new Times Building', voice: 'Man, 30s, Italian accent, out of breath, wry.', coat: '#6a5a44', skin: '#c99a70', height: 1.7, hat: 'cap', anim: { idle: 'breathe', talk: 'gesture', speed: 1.2 } },
+  elevator:  { name: 'Elevator Operator', role: 'Potter Building', voice: 'Young man, 18, New York accent, cheerful, rehearsed patter.', coat: '#3a2a4a', skin: '#e6c2a4', height: 1.68, hat: 'cap', anim: { idle: 'still', talk: 'nod' } },
+  // Background figures with their own art (no dialogue)
+  worker0:   { name: 'Bricklayer', role: 'Background', coat: '#7a6a54', skin: '#d6a982', height: 1.72, hat: 'cap', anim: { idle: 'fidget' } },
+  worker1:   { name: 'Ironworker', role: 'Background', coat: '#4a4a46', skin: '#e0bc98', height: 1.78, hat: 'cap', anim: { idle: 'sway' } },
+  lamplighter:{ name: 'Lamplighter', role: 'Background (carries a ladder and pole)', coat: '#2e3440', skin: '#e2bf9c', height: 1.74, hat: 'cap', anim: { idle: 'still' } },
+  child0:    { name: 'Child playing', role: 'Background', coat: '#5b4a3a', skin: '#e2bf9c', height: 1.15, hat: 'cap', anim: { idle: 'bounce' } },
   keeper:    { name: 'Park Keeper', role: 'Central Park keeper', voice: 'Man, 50s, Scottish accent, strict but kind.', coat: '#2c3b2a', skin: '#e9c7aa', height: 1.78, hat: 'cap', anim: { idle: 'still', talk: 'nod', speed: 0.8 } },
 };
