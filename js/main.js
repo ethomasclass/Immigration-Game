@@ -154,10 +154,7 @@ class Game {
     this.zone = null;
   }
 
-  updateFaces() {
-    if (!this.zone) return;
-    this.zone.scene.traverse(o => { if (o.userData.faceKey) o.visible = hasRealArt(o.userData.faceKey); });
-  }
+  updateFaces() {}
 
   refreshObjectives() {
     if (!this.zone) return;
@@ -253,11 +250,9 @@ class Game {
 
   portraitURL(who) {
     if (hasRealArt('portrait_' + who)) return artURL('portrait_' + who);
-    texture('portrait_' + who, { type: 'card', title: CHARACTERS[who]?.name || who, color: '#2a2735', ink: '#c9a24a' });
-    if (hasRealArt('char_' + who)) return artURL('char_' + who);
     return null;
   }
-  hasPortrait(who) { return hasRealArt('portrait_' + who) || hasRealArt('char_' + who); }
+  hasPortrait(who) { return hasRealArt('portrait_' + who); }
 
   toast(html, ms = 4200) {
     const t = document.createElement('div');
@@ -274,10 +269,11 @@ class Game {
       if (k === 'KeyE') this.useFocus();
       else if (k === 'KeyF' || k === 'KeyC') this.photo.toggle();
       else if (k === 'KeyJ' || k === 'Tab') { e.preventDefault(); this.openJournal(); }
+      else if (k === 'KeyM') { this.journal.tab = 'map'; this.openJournal(); }
       else if (k === 'Escape' && state.settings.drag) { this.setMode('pause'); $('pause').classList.remove('hidden'); }
       else if (k === 'Space' && this.photo.active) this.photo.snap();
     } else if (this.mode === 'journal') {
-      if (k === 'KeyJ' || k === 'Escape' || k === 'Tab') { e.preventDefault(); this.closeJournal(); }
+      if (k === 'KeyJ' || k === 'KeyM' || k === 'Escape' || k === 'Tab') { e.preventDefault(); this.closeJournal(); }
     } else if (this.mode === 'doc') {
       if ((k === 'KeyE' || k === 'Escape' || k === 'Space') && performance.now() - this.docOpenedAt > 300) { e.preventDefault(); this.closeDoc(); }
     } else if (this.mode === 'pause') {

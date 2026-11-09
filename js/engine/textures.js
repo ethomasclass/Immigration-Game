@@ -149,6 +149,104 @@ const DRAW = {
     for (let i = 0; i < 5; i++) { ctx.beginPath(); ctx.arc(w * 0.5, h * (0.32 + i * 0.1), w * 0.008, 0, 7); ctx.fill(); }
     noise(ctx, w, h, r, 12, 1200);
   },
+  // One 25-ft lot of an 1880s tenement front: ground-floor store, `floors`
+  // upper floors with `bays` windows each, stone lintels/sills, iron cornice.
+  facade(ctx, w, h, s, r) {
+    const floors = s.floors || 5, bays = s.bays || 4;
+    const brick = s.color || '#8a3e2c';
+    const storeH = h * (s.storeFrac || 0.2), corH = h * 0.05;
+    const flH = (h - storeH - corH) / floors;
+    // brick field
+    ctx.fillStyle = brick; ctx.fillRect(0, 0, w, h);
+    for (let y = 0; y < h; y += 6) for (let x = (y / 6) % 2 ? -8 : 0; x < w; x += 16) {
+      ctx.fillStyle = shade(brick, (r() - 0.5) * 28); ctx.fillRect(x + 1, y + 1, 14, 4);
+    }
+    // cornice (pressed metal, painted)
+    ctx.fillStyle = s.cornice || '#3b3530'; ctx.fillRect(0, 0, w, corH);
+    ctx.fillStyle = shade(s.cornice || '#3b3530', 25);
+    for (let x = 4; x < w; x += 12) ctx.fillRect(x, corH * 0.55, 6, corH * 0.45);
+    ctx.fillRect(0, corH - 3, w, 3);
+    // windows
+    const bw = w / bays;
+    for (let f = 0; f < floors; f++) {
+      const y0 = corH + f * flH;
+      for (let b = 0; b < bays; b++) {
+        const x = b * bw + bw * 0.22, ww = bw * 0.56, wy = y0 + flH * 0.18, wh = flH * 0.62;
+        const lit = r() < (s.lit ?? 0.25);
+        ctx.fillStyle = s.stone || '#7a5e48';
+        ctx.fillRect(x - 3, wy - 7, ww + 6, 7);          // lintel
+        ctx.fillRect(x - 2, wy + wh, ww + 4, 4);         // sill
+        ctx.fillStyle = '#1c1612'; ctx.fillRect(x, wy, ww, wh);
+        ctx.fillStyle = lit ? '#d9a65a' : '#3a3c42';
+        ctx.fillRect(x + 2, wy + 2, ww / 2 - 3, wh / 2 - 3); ctx.fillRect(x + ww / 2 + 1, wy + 2, ww / 2 - 3, wh / 2 - 3);
+        ctx.fillRect(x + 2, wy + wh / 2 + 1, ww / 2 - 3, wh / 2 - 3); ctx.fillRect(x + ww / 2 + 1, wy + wh / 2 + 1, ww / 2 - 3, wh / 2 - 3);
+        if (r() < 0.25) { ctx.fillStyle = 'rgba(230,220,200,.6)'; ctx.fillRect(x + 2, wy + 2, ww - 4, wh * 0.25); } // curtain
+      }
+      // fire escape balcony line
+      if (s.escape) { ctx.fillStyle = '#121212'; ctx.fillRect(w * 0.12, y0 + flH * 0.86, w * 0.76, 3); for (let x = w * 0.12; x < w * 0.88; x += 5) ctx.fillRect(x, y0 + flH * 0.7, 1, flH * 0.16); }
+    }
+    // ground-floor storefront
+    const sy = h - storeH;
+    ctx.fillStyle = s.storeColor || '#3a2a1e'; ctx.fillRect(0, sy, w, storeH);
+    ctx.fillStyle = s.signColor || '#2a2420'; ctx.fillRect(w * 0.04, sy + 4, w * 0.92, storeH * 0.2);
+    ctx.fillStyle = '#d8c48a'; ctx.font = `bold ${Math.round(storeH * 0.13)}px Georgia`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    if (s.sign) ctx.fillText(s.sign, w / 2, sy + 4 + storeH * 0.1, w * 0.88);
+    ctx.fillStyle = '#4a5560'; ctx.fillRect(w * 0.06, sy + storeH * 0.3, w * 0.5, storeH * 0.62);   // shop window
+    ctx.fillStyle = 'rgba(255,220,150,.25)'; ctx.fillRect(w * 0.06, sy + storeH * 0.3, w * 0.5, storeH * 0.62);
+    ctx.fillStyle = '#20160e'; ctx.fillRect(w * 0.64, sy + storeH * 0.3, w * 0.13, storeH * 0.7);  // shop door
+    ctx.fillStyle = '#15100c'; ctx.fillRect(w * 0.82, sy + storeH * 0.26, w * 0.14, storeH * 0.74); // tenement hall door
+    noise(ctx, w, h, r, 14, 1500);
+  },
+  // Ground-floor shopfront only (cast-iron pilasters, big glass, sign board).
+  storefront(ctx, w, h, s, r) {
+    ctx.fillStyle = s.color || '#3a2a1e'; ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle = s.signColor || '#2a2420'; ctx.fillRect(0, 0, w, h * 0.22);
+    ctx.fillStyle = s.ink || '#d8c48a'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.font = `bold ${Math.round(h * 0.14)}px Georgia`;
+    if (s.sign) ctx.fillText(s.sign, w / 2, h * 0.11, w * 0.92);
+    ctx.fillStyle = '#20262c'; ctx.fillRect(w * 0.05, h * 0.3, w * 0.52, h * 0.62);
+    ctx.fillStyle = 'rgba(255,214,150,.3)'; ctx.fillRect(w * 0.05, h * 0.3, w * 0.52, h * 0.62);
+    for (let i = 0; i < 6; i++) { ctx.fillStyle = ['#8a6a3a', '#6a7a3a', '#a04a2a', '#c8b080'][i % 4]; ctx.fillRect(w * (0.08 + i * 0.08), h * 0.75, w * 0.06, h * 0.12); }
+    ctx.fillStyle = '#15100c'; ctx.fillRect(w * 0.64, h * 0.3, w * 0.16, h * 0.7);
+    ctx.fillStyle = '#2b2b2b'; for (const x of [0, 0.6, 0.97]) ctx.fillRect(w * x, h * 0.22, w * 0.03, h * 0.78);
+    noise(ctx, w, h, r, 12, 600);
+  },
+  // Eldridge Street Synagogue (1887): Moorish Revival brick & terra cotta, rose window, three arched portals.
+  synagogue(ctx, w, h, s, r) {
+    ctx.fillStyle = '#9a5a3c'; ctx.fillRect(0, 0, w, h);
+    noise(ctx, w, h, r, 18, 3000);
+    ctx.fillStyle = '#d9c7a0'; for (let y = h * 0.12; y < h; y += h * 0.09) ctx.fillRect(0, y, w, 3);
+    ctx.fillStyle = '#7a4430'; ctx.fillRect(0, 0, w * 0.18, h); ctx.fillRect(w * 0.82, 0, w * 0.18, h);
+    // towers' caps
+    ctx.fillStyle = '#5a3a2a'; for (const x of [0.09, 0.91]) { ctx.beginPath(); ctx.moveTo(w * (x - 0.09), h * 0.08); ctx.lineTo(w * x, 0); ctx.lineTo(w * (x + 0.09), h * 0.08); ctx.fill(); }
+    // rose window
+    const cx = w / 2, cy = h * 0.32, R = w * 0.2;
+    ctx.fillStyle = '#d9c7a0'; ctx.beginPath(); ctx.arc(cx, cy, R * 1.12, 0, 7); ctx.fill();
+    ctx.fillStyle = '#2a4a6a'; ctx.beginPath(); ctx.arc(cx, cy, R, 0, 7); ctx.fill();
+    ctx.strokeStyle = '#d9c7a0'; ctx.lineWidth = 4;
+    for (let i = 0; i < 12; i++) { const a = i * Math.PI / 6; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(a) * R, cy + Math.sin(a) * R); ctx.stroke(); }
+    ctx.strokeStyle = '#e8c060'; ctx.lineWidth = 5;
+    for (const rot of [0, Math.PI]) { ctx.beginPath(); for (let i = 0; i < 3; i++) { const a = rot - Math.PI / 2 + i * 2 * Math.PI / 3; const px = cx + Math.cos(a) * R * 0.45, py = cy + Math.sin(a) * R * 0.45; i ? ctx.lineTo(px, py) : ctx.moveTo(px, py); } ctx.closePath(); ctx.stroke(); }
+    // horseshoe-arched windows
+    for (const x of [0.28, 0.72]) { ctx.fillStyle = '#2a3a4a'; ctx.fillRect(w * (x - 0.05), h * 0.52, w * 0.1, h * 0.12); ctx.beginPath(); ctx.arc(w * x, h * 0.52, w * 0.05, Math.PI, 0); ctx.fill(); }
+    // three portals
+    for (const x of [0.3, 0.5, 0.7]) { ctx.fillStyle = '#d9c7a0'; ctx.fillRect(w * (x - 0.07), h * 0.74, w * 0.14, h * 0.26); ctx.fillStyle = '#3a2418'; ctx.fillRect(w * (x - 0.055), h * 0.8, w * 0.11, h * 0.2); ctx.beginPath(); ctx.arc(w * x, h * 0.8, w * 0.055, Math.PI, 0); ctx.fill(); }
+    ctx.fillStyle = '#3a2418'; ctx.font = `bold ${Math.round(w * 0.045)}px Georgia`; ctx.textAlign = 'center';
+    ctx.fillText('K\'HAL ADATH JESHURUN · 5647', w / 2, h * 0.7);
+  },
+  // Church of the Transfiguration, 25 Mott St (1801): Georgian fieldstone, arched door, small tower.
+  church(ctx, w, h, s, r) {
+    ctx.fillStyle = '#7a7266'; ctx.fillRect(0, 0, w, h);
+    for (let y = 0; y < h; y += 14) for (let x = (y / 14) % 2 * -10; x < w; x += 22 + r() * 10) { ctx.fillStyle = shade('#837a6c', (r() - 0.5) * 40); ctx.fillRect(x + 2, y + 2, 20, 11); }
+    ctx.fillStyle = '#e4ddcc'; ctx.beginPath(); ctx.moveTo(0, h * 0.18); ctx.lineTo(w / 2, 0); ctx.lineTo(w, h * 0.18); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#7a7266'; ctx.beginPath(); ctx.moveTo(w * 0.08, h * 0.17); ctx.lineTo(w / 2, h * 0.03); ctx.lineTo(w * 0.92, h * 0.17); ctx.closePath(); ctx.fill();
+    for (const x of [0.2, 0.8]) { ctx.fillStyle = '#d9d2c0'; ctx.fillRect(w * (x - 0.07), h * 0.28, w * 0.14, h * 0.32); ctx.fillStyle = '#2e3440'; ctx.fillRect(w * (x - 0.055), h * 0.31, w * 0.11, h * 0.27); ctx.beginPath(); ctx.arc(w * x, h * 0.31, w * 0.055, Math.PI, 0); ctx.fill(); }
+    ctx.fillStyle = '#d9d2c0'; ctx.fillRect(w * 0.38, h * 0.62, w * 0.24, h * 0.38);
+    ctx.fillStyle = '#3a2418'; ctx.fillRect(w * 0.41, h * 0.7, w * 0.18, h * 0.3); ctx.beginPath(); ctx.arc(w * 0.5, h * 0.7, w * 0.09, Math.PI, 0); ctx.fill();
+    ctx.fillStyle = '#2e3440'; ctx.beginPath(); ctx.arc(w * 0.5, h * 0.4, w * 0.07, 0, 7); ctx.fill();
+    ctx.fillStyle = '#2a2420'; ctx.font = `bold ${Math.round(w * 0.05)}px Georgia`; ctx.textAlign = 'center';
+    ctx.fillText('CHURCH OF THE TRANSFIGURATION', w / 2, h * 0.6);
+  },
   sky(ctx, w, h, s) {
     const g = ctx.createLinearGradient(0, 0, 0, h);
     g.addColorStop(0, s.top || '#8a9aa8'); g.addColorStop(0.6, s.mid || '#cdbf9e'); g.addColorStop(1, s.bottom || '#e8d6b0');

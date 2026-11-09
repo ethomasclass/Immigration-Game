@@ -127,12 +127,13 @@ export class Dialogue {
   }
 
   show(who, text, keep = false) {
+    this.currentWho = who; this.currentTree = this.treeId;
     const c = CHARACTERS[who] || {};
     const narr = who === 'narrator';
     el.name.innerHTML = narr ? '' : `${esc(c.name || who)}<span class="role">${esc(c.role || '')}</span>`;
     if (!keep) { el.text.innerHTML = richText(text); el.text.dataset.raw = text; }
     el.text.classList.toggle('narration', narr);
-    // Portrait: uses portrait_<id> art if present, else char_<id> wrap texture.
+    // Portrait: the same portrait_<id> art used for the character in the world.
     if (narr) { el.portrait.style.visibility = 'hidden'; return; }
     el.portrait.style.visibility = 'visible';
     const url = this.game.portraitURL(who);

@@ -3,6 +3,7 @@
 import * as THREE from 'three';
 import { material, colorMat, texture } from './textures.js';
 import { CHARACTERS } from '../data/characters.js';
+import { makeCutout, animateCutout } from './cutout.js';
 
 export class Zone {
   constructor(game) {
@@ -25,16 +26,13 @@ export class Zone {
   update(dt) {
     this.time += dt;
     for (const u of this.updaters) u(dt, this.time);
-    // NPCs turn gently toward the player when nearby.
-    const p = this.game.controls.pos;
+    // 2D cutouts face the camera and animate; the one speaking plays its talk animation.
+    const cam = this.game.camera;
+    const d = this.game.dialogue;
+    const speaker = d && d.active ? d.currentWho : null;
     for (const n of this.npcs) {
-      if (n.noTurn) continue;
-      const dx = p.x - n.group.position.x, dz = p.z - n.group.position.z;
-      const d = Math.hypot(dx, dz);
-      const target = d < 6 ? Math.atan2(dx, dz) : n.baseYaw;
-      let diff = target - n.group.rotation.y;
-      diff = Math.atan2(Math.sin(diff), Math.cos(diff));
-      n.group.rotation.y += diff * Math.min(1, dt * 3);
+      if (!n.group.visible) continue;
+      animateCutout(n.group, this.time, cam, speaker && speaker === n.id && n.talking !== false && d.currentTree === n.talkTree);
     }
   }
 
@@ -78,6 +76,28 @@ export class Zone {
       // `see`: low objects (tables, carts) don't block the camera's view.
       this.colliders.push({ minX: x - hw, maxX: x + hw, minZ: z - hd, maxZ: z + hd, see: y + h < 1.4 });
     }
+    return m;
+  }
+
+  /**
+   * A building block from x0..x1, z0..z1, height h. `fronts` maps a side
+   * ('n' = -z face, 's' = +z, 'e' = +x, 'w' = -x) to a facade material spec
+   * [key, spec]; the facade repeats every `lot` meters (25-ft lots = 7.6 m).
+   */
+  building(x0, x1, z0, z1, h, fronts = {}, side = null, { lot = 7.6, collide = true } = {}) {
+    const w = x1 - x0, d = z1 - z0;
+    const sideMat = toMat(side || ['wall_brick_side', { type: 'brick', color: '#6e3426' }, { repeat: [Math.max(1, w / 6), h / 6] }]);
+    const face = (k, len) => {
+      if (!fronts[k]) return sideMat;
+      const [key, spec] = fronts[k];
+      return material(key, spec, { repeat: [Math.max(1, Math.round(len / lot)), 1] });
+    };
+    // BoxGeometry face order: +x, -x, +y, -y, +z, -z
+    const mats = [face('e', d), face('w', d), colorMat('#2e2a26'), sideMat, face('s', w), face('n', w)];
+    const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mats);
+    m.position.set((x0 + x1) / 2, h / 2, (z0 + z1) / 2);
+    this.scene.add(m);
+    if (collide) this.colliders.push({ minX: x0, maxX: x1, minZ: z0, maxZ: z1 });
     return m;
   }
 
@@ -148,28 +168,29 @@ export class Zone {
     return t;
   }
 
-  /** A person. Body = tapered cylinder wearing the character's art (char_<id>). */
-  person(id, x, z, ry = 0, { talk = id, photo = id, prompt = null, noTurn = false, scale = 1, seated = false } = {}) {
+  /** A person: an animated 2D cutout using assets/art/portrait_<id>.png. */
+  person(id, x, z, ry = 0, { talk = id, photo = id, prompt = null, scale = 1, seated = false } = {}) {
     const c = CHARACTERS[id] || {};
-    const g = makeFigure(id, c, scale, seated);
+    const g = makeCutout(id, c, scale);
     g.position.set(x, 0, z);
-    g.rotation.y = ry;
     this.scene.add(g);
-    const height = (c.height || 1.7) * scale * (seated ? 0.72 : 1);
-    const npc = { id, group: g, baseYaw: ry, noTurn, height };
+    const height = (c.height || 1.7) * scale;
+    const npc = { id, group: g, height, talkTree: talk };
     this.npcs.push(npc);
+    if (seated) this.box(x - Math.sin(ry) * 0.25, 0, z - Math.cos(ry) * 0.25, 0.45, 0.45, 0.45, '#4a3420', { collide: false });
     this.colliders.push({ minX: x - 0.3, maxX: x + 0.3, minZ: z - 0.3, maxZ: z + 0.3 });
     if (talk) this.interact({ x, y: height * 0.8, z, r: 2.4, prompt: prompt || `Talk to ${c.name || id}`, action: () => this.game.talk(talk) });
     if (photo) this.target(photo, x, height * 0.7, z, 9);
     return npc;
   }
 
-  /** Background person (no dialogue). Uses crowd art: char_crowd<N>. */
-  crowd(n, x, z, ry = 0, { seated = false, scale = 1 } = {}) {
-    const preset = CROWD[n % CROWD.length];
-    const g = makeFigure('crowd' + (n % CROWD.length), preset, scale, seated);
-    g.position.set(x, 0, z); g.rotation.y = ry;
+  /** Background person (no dialogue). Art: portrait_crowd<N>.png */
+  crowd(n, x, z, ry = 0, { scale = 1 } = {}) {
+    const i = n % CROWD.length;
+    const g = makeCutout('crowd' + i, CROWD[i], scale);
+    g.position.set(x, 0, z);
     this.scene.add(g);
+    this.npcs.push({ id: 'crowd' + i, group: g });
     this.colliders.push({ minX: x - 0.28, maxX: x + 0.28, minZ: z - 0.28, maxZ: z + 0.28 });
     return g;
   }
@@ -247,87 +268,17 @@ function scaleUV(geo, w, h, d, [mx, my]) {
   uv.needsUpdate = true;
 }
 
+// Background people (art: portrait_crowd0..7). Colors follow 1880s working dress.
 const CROWD = [
-  { coat: '#4a3b30', skin: '#e2bf9c', height: 1.7, hat: 'cap' },
-  { coat: '#3b3f4a', skin: '#d9b08c', height: 1.62, hat: 'scarf' },
-  { coat: '#5a4636', skin: '#c99a70', height: 1.75, hat: 'hat' },
-  { coat: '#36402e', skin: '#ecc8ab', height: 1.58, hat: 'bonnet' },
-  { coat: '#2e2a26', skin: '#e0bc98', height: 1.8, hat: 'bowler' },
-  { coat: '#5b3a3a', skin: '#d6a982', height: 1.2, hat: 'cap' },
-  { coat: '#45405a', skin: '#e8c4a8', height: 1.66, hat: 'scarf' },
-  { coat: '#504a3a', skin: '#ddb894', height: 1.72, hat: 'none' },
+  { coat: '#4a3b30', skin: '#e2bf9c', height: 1.7, hat: 'cap', anim: { idle: 'fidget' } },
+  { coat: '#3b3530', skin: '#d9b08c', height: 1.6, hat: 'scarf', anim: { idle: 'breathe' } },
+  { coat: '#3a3a3a', skin: '#c99a70', height: 1.72, hat: 'hat', anim: { idle: 'sway' } },
+  { coat: '#4a3a2a', skin: '#ecc8ab', height: 1.58, hat: 'bonnet', anim: { idle: 'breathe', speed: 0.7 } },
+  { coat: '#1e1e22', skin: '#e0bc98', height: 1.78, hat: 'bowler', anim: { idle: 'still' } },
+  { coat: '#5b4a3a', skin: '#d6a982', height: 1.2, hat: 'cap', anim: { idle: 'bounce', speed: 1.3 } },
+  { coat: '#45405a', skin: '#e8c4a8', height: 1.64, hat: 'none', anim: { idle: 'sway', speed: 0.8 } },
+  { coat: '#4a4a46', skin: '#ddb894', height: 1.74, hat: 'cap', anim: { idle: 'rock', speed: 0.6 } },
 ];
-
-const SKIN = new Map();
-function skinMat(color) {
-  if (!SKIN.has(color)) SKIN.set(color, new THREE.MeshLambertMaterial({ color }));
-  return SKIN.get(color);
-}
-
-export function makeFigure(id, c, scale = 1, seated = false) {
-  const H = (c.height || 1.7) * scale;
-  const g = new THREE.Group();
-  const bodyH = H * (seated ? 0.5 : 0.72);
-  const wide = /hat|bowler/.test(c.hat || '') ? 1 : 0.95;
-  // Body: open cylinder, image center (u=0.5) faces +Z.
-  const bodyGeo = new THREE.CylinderGeometry(0.17 * scale * wide, 0.29 * scale, bodyH, 14, 1, false, Math.PI, Math.PI * 2);
-  const body = new THREE.Mesh(bodyGeo, material(`char_${id}`, { type: 'figure', color: c.coat || '#555', w: 256, h: 256 }));
-  body.position.y = (seated ? 0.45 : 0) + bodyH / 2;
-  g.add(body);
-  if (seated) {
-    const seat = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.45, 0.5), colorMat('#4a3420'));
-    seat.position.y = 0.225; g.add(seat);
-  }
-  // Shoulders + arms (simple)
-  const shoulder = new THREE.Mesh(new THREE.SphereGeometry(0.2 * scale, 10, 6, 0, Math.PI * 2, 0, Math.PI / 2), colorMat(c.coat || '#555'));
-  shoulder.scale.set(1.15, 0.5, 0.9);
-  shoulder.position.y = body.position.y + bodyH / 2 - 0.02;
-  g.add(shoulder);
-  // Head
-  const headR = 0.12 * scale;
-  const head = new THREE.Mesh(new THREE.SphereGeometry(headR, 12, 10), skinMat(c.skin || '#d9b08c'));
-  head.position.y = shoulder.position.y + headR + 0.06 * scale;
-  head.scale.set(0.92, 1.08, 0.95);
-  g.add(head);
-  // Face card: a small plane in front of the head, using face_<id> art if provided
-  const face = new THREE.Mesh(new THREE.PlaneGeometry(headR * 1.5, headR * 1.8), material(`face_${id}`, { type: 'solid', color: c.skin || '#d9b08c', w: 64, h: 64 }, { transparent: false }));
-  face.position.set(0, head.position.y, headR * 0.86);
-  face.visible = false; // turned on when real face art loads (see main.js)
-  face.userData.faceKey = `face_${id}`;
-  g.add(face);
-  // Eyes (placeholder)
-  for (const sx of [-1, 1]) {
-    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.014 * scale, 6, 4), colorMat('#1a1410'));
-    eye.position.set(sx * headR * 0.38, head.position.y + headR * 0.12, headR * 0.88);
-    g.add(eye);
-  }
-  // Headwear
-  const hatColor = shade(c.coat || '#444');
-  const hy = head.position.y + headR * 0.6;
-  if (c.hat === 'hat' || c.hat === 'bowler') {
-    const brim = new THREE.Mesh(new THREE.CylinderGeometry(headR * 1.6, headR * 1.6, 0.02, 14), colorMat('#1d1a18'));
-    brim.position.y = hy; g.add(brim);
-    const crown = c.hat === 'bowler'
-      ? new THREE.Mesh(new THREE.SphereGeometry(headR * 1.02, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2), colorMat('#1d1a18'))
-      : new THREE.Mesh(new THREE.CylinderGeometry(headR * 0.95, headR * 1.0, headR * 1.1, 14), colorMat('#1d1a18'));
-    crown.position.y = hy + (c.hat === 'bowler' ? 0 : headR * 0.55); g.add(crown);
-  } else if (c.hat === 'cap') {
-    const cap = new THREE.Mesh(new THREE.SphereGeometry(headR * 1.08, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2.2), colorMat(hatColor));
-    cap.position.y = head.position.y + headR * 0.15; g.add(cap);
-    const peak = new THREE.Mesh(new THREE.BoxGeometry(headR * 1.4, 0.015, headR * 0.8), colorMat(hatColor));
-    peak.position.set(0, head.position.y + headR * 0.3, headR * 0.9); g.add(peak);
-  } else if (c.hat === 'scarf' || c.hat === 'bonnet') {
-    const sc = new THREE.Mesh(new THREE.SphereGeometry(headR * 1.12, 12, 8, Math.PI * 0.15, Math.PI * 1.7, 0, Math.PI * 0.62), colorMat(c.hat === 'scarf' ? '#7a5a4a' : '#3a3530'));
-    sc.rotation.y = Math.PI; sc.position.y = head.position.y + headR * 0.05; g.add(sc);
-  }
-  return g;
-}
-
-function shade(hex) {
-  const n = parseInt(hex.slice(1), 16);
-  const r = Math.max(0, (n >> 16) - 30), gg = Math.max(0, ((n >> 8) & 255) - 30), b = Math.max(0, (n & 255) - 30);
-  return '#' + ((r << 16) | (gg << 8) | b).toString(16).padStart(6, '0');
-}
 
 // Common reusable textures
 export const TEX = {

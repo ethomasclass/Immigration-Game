@@ -1,237 +1,458 @@
 // ZONE 3: THE LOWER EAST SIDE (about 15 minutes)
+// Built on the real 1888 street grid (see docs/HISTORICAL_REFERENCE.md):
+//   west -> east: Mott · Bowery (Third Ave El) · Chrystie · Forsyth · Eldridge · Allen (Second Ave El) · Orchard
+//   north -> south: Grand · Hester · Canal   (+ Pell St off Mott, in Chinatown)
+// Street widths are real (50 ft; Bowery 100 ft). Blocks are shortened to ~22 m.
+// 1 unit = 1 meter. North = -z, east = +x.
 import * as THREE from 'three';
 import { Zone } from '../engine/world.js';
 import { colorMat, material } from '../engine/textures.js';
 import { state, flag } from '../state.js';
+import { sfx } from '../engine/audio.js';
 
-const BRICK = ['wall_brick_tenement', { type: 'brick', color: '#7a3b2a' }];
-const BRICK2 = ['wall_brick_dark', { type: 'brick', color: '#5d3226', mortar: '#4a3a32' }];
-const COBBLE = ['street_cobble', { type: 'cobble' }];
+// ---- street grid ----
+const NS = { // north-south streets: [west edge, east edge]
+  Mott: [-175.5, -160.5], Bowery: [-137, -107], Chrystie: [-89.5, -74.5], Forsyth: [-52.5, -37.5],
+  Eldridge: [-15.5, -0.5], Allen: [21.5, 36.5], Orchard: [58.5, 73.5],
+};
+const EW = { Grand: [-65.5, -50.5], Hester: [-7.5, 7.5], Canal: [47.5, 62.5] };
+const BX = [[-195, -175.5], [-160.5, -137], [-107, -89.5], [-74.5, -52.5], [-37.5, -15.5], [-0.5, 21.5], [36.5, 58.5], [73.5, 95]];
+const BZ = [[-112, -65.5], [-50.5, -7.5], [7.5, 47.5], [62.5, 117]];
+const PELL = [88, 96]; // Pell St, from Mott east to the Bowery
+const LOT = 7.6;       // 25-ft lot
+
+// Moishe's tenement: north side of Hester between Allen and Orchard.
+const MX = 44, MZ = -7.5;     // lot's street-front west corner
+const BLD = 18, YARD = 6;     // building depth, yard depth
+
+const BRICKS = ['#8e3b2e', '#a0523d', '#7a3a2c', '#94604a', '#b8a888', '#6e3a30'];
+const SIGNS = {
+  hester: ['BÄCKEREI · BAKERY', 'DRY GOODS', 'קאשער פלייש · KOSHER MEAT', 'GROCERY · SPEZEREI', 'SCHUHMACHER', 'MILLINERY', 'HARDWARE', 'TAILOR · שניידער', 'LAGER BIER', 'SHOES', 'TEA & COFFEE', 'APOTHEKE · DRUGS'],
+  bowery: ['SALOON', 'LODGING 15¢', 'DIME MUSEUM', 'PAWNBROKER', 'CONCERT HALL', 'OYSTERS', 'BEER 5¢', 'CLOTHING'],
+  mott: ['茶 TEAS', '雜貨 GROCERIES', 'WAH KEE & CO.', '中華 RESTAURANT', 'QUONG YUEN SING'],
+};
+
+const COBBLE = ['street_belgian_block', { type: 'stone', color: '#7c7a76', mortar: '#4e4a44', rows: 10 }];
+const WALK = ['sidewalk_bluestone', { type: 'stone', color: '#6f7680', mortar: '#4f545a', rows: 3 }];
 const PLASTER = ['wall_tenement_room', { type: 'plaster', color: '#8f7f62' }];
 const FLOOR = ['floor_tenement', { type: 'planks', color: '#5a412b', n: 8 }];
 const DIRT = ['ground_yard', { type: 'plaster', color: '#4a3e30' }];
 const WOOD = ['wood_rough', { type: 'planks', color: '#5c4630', n: 5 }];
-const WIN = ['window_tenement', { type: 'window', color: '#3a3a40', frame: '#2a2018', w: 128, h: 128 }];
-const WIN_LIT = ['window_tenement_lit', { type: 'window', color: '#e8b860', frame: '#2a2018', w: 128, h: 128 }];
+const IRON = '#2e2d2a';
 
 export class LowerEastSideZone extends Zone {
   build() {
-    this.setSky('#6b5866', 18, 75, '#5c4d58');
-    this.lights({ ambient: 0x7a6a78, ambientI: 0.9, sky: 0xc8a890, ground: 0x302830, hemiI: 0.6, sun: { color: 0xffb880, i: 0.6, pos: [-40, 20, 10] } });
-    this.bounds = { minX: -44, maxX: 44, minZ: -32, maxZ: 30 };
+    this.setSky('#6b5866', 22, 110, '#5c4d58');
+    this.lights({ ambient: 0x7a6a78, ambientI: 0.95, sky: 0xc8a890, ground: 0x302830, hemiI: 0.65, sun: { color: 0xffb880, i: 0.6, pos: [-40, 20, 10] } });
+    this.bounds = { minX: NS.Mott[0], maxX: NS.Orchard[1], minZ: -100, maxZ: 105 };
+    this.rand = mulberry(1888);
+    this.signTexN = 0;
 
-    // ---- ground ----
-    this.floor(0, 0, 88, 10, [COBBLE[0], COBBLE[1], { repeat: [22, 3] }]);
-    this.floor(-40, -18.5, 8, 27, [COBBLE[0], COBBLE[1], { repeat: [2, 7] }]);   // Mott St
-    this.floor(39, 17.5, 10, 25, [COBBLE[0], COBBLE[1], { repeat: [3, 7] }]);    // Forsyth St
-    for (const z of [-4.25, 4.25]) this.floor(0, z, 88, 1.5, ['sidewalk', { type: 'stone', color: '#8a8478', rows: 2 }, { repeat: [30, 1] }], 0.01);
-
-    // ---- building blocks ----
-    this.box(-18, 0, -18.5, 36, 14, 27, BRICK, { uv: [4, 4] });           // north-west block
-    this.box(27, 0, -18.5, 34, 14, 27, BRICK2, { uv: [4, 4] });           // north-east block
-    this.box(-5, 0, 17.5, 78, 13, 25, BRICK2, { uv: [4, 4] });            // south block
-    this.box(-47, 0, -13.5, 6, 15, 47, BRICK, { uv: [4, 4] });            // far west (end of street)
-    this.box(47, 0, 12.5, 6, 13, 45, BRICK, { uv: [4, 4] });              // east side of Forsyth
-    this.box(39, 0, 32, 10, 13, 4, BRICK2, { uv: [4, 4] });               // end of Forsyth
-    this.box(-40, 0, -34, 8, 14, 4, BRICK2, { uv: [4, 4] });              // end of Mott
-    this.windows(-36, 0, -4.99, 0);   // NW block facade
-    this.windows(10, 44, -4.99, 0);   // NE block facade
-    this.windows(-44, 34, 4.99, Math.PI); // south block facade
-    this.windowsX(-36.01, -5, -32, -Math.PI / 2); // Mott St east facade
-    this.fireEscape(-20, -5.05); this.fireEscape(-8, -5.05); this.fireEscape(22, -5.05); this.fireEscape(2, 5.05, Math.PI);
-
-    // Shop signs (ground floor)
-    const signs = [[-28, -4.95, 0, 'KOSHER BUTCHER'], [-12, -4.95, 0, 'DRY GOODS'], [18, -4.95, 0, 'BAKERY · BREAD'], [36, -4.95, 0, 'SALOON'], [-30, 4.95, Math.PI, 'TAILOR · CONTRACTOR'], [-2, 4.95, Math.PI, 'STEAMSHIP TICKETS'], [8, 4.95, Math.PI, 'BANK · MONEY SENT HOME']];
-    signs.forEach(([x, z, ry, t], i) => this.panel(x, 3.1, z, 4.2, 0.7, [`sign_shop_${i}`, { type: 'sign', title: t, w: 256, h: 48 }], ry));
-
-    // ---- Moishe's tenement (x 0..10) ----
+    this.streets();
+    this.blocks();
     this.tenement();
+    this.elevated('Allen', [24.2, 33.8], -112, 117, [{ z: EW.Grand[0] - 2 }, { z: EW.Canal[1] + 2 }]);
+    this.elevated('Bowery', [-126, -118], -112, 117, [{ z: EW.Grand[0] - 2 }]);
+    this.hester();
+    this.landmarks();
+    this.wires();
 
-    // ---- pushcarts + people on Hester Street ----
-    this.cart(-4, -2.8, 0, '#6a7a3a');
-    this.person('peddler', -4, -3.9, 0, { photo: 'pushcart' });
-    this.cart(12, -2.8, 0, '#8a8a8a');
-    this.person('peddler2', 12, -3.9, 0, { photo: null });
-    this.cart(-20, 2.8, Math.PI, '#a05a3a'); this.crowd(4, -20, 3.9, Math.PI);
-    this.cart(-30, -2.8, 0, '#d0c080'); this.crowd(2, -30, -3.9, 0);
-    this.cart(22, 2.8, Math.PI, '#5a3a6a'); this.crowd(7, 22, 3.9, Math.PI);
-    const shoppers = [[-6, -1.2, 1], [-3, -0.8, 3], [10, -1.5, 6], [-18, 1.5, 0], [-26, -1, 5], [6, 1.8, 2], [18, 1, 4], [28, -1.5, 3], [-12, 0.5, 7], [-34, 1.5, 1], [0, 0.2, 6]];
-    shoppers.forEach(([x, z, n]) => this.crowd(n, x, z, (x * 13) % 6));
-
-    // Newsboy + stand
-    this.box(-8.5, 0, 4.3, 1.4, 1.0, 0.8, WOOD);
-    this.panel(-8.5, 1.02, 4.3, 1.2, 0.6, ['papers_stack', { type: 'card', title: 'Papers', lines: 'Yiddish · Italian · German · Irish', w: 160, h: 96 }]).rotation.x = -Math.PI / 2;
-    this.person('newsboy', -7, 3.2, Math.PI);
-
-    // Synagogue + landsmanshaft
-    this.panel(-14, 5.5, 4.97, 8, 9, ['facade_synagogue', { type: 'card', title: 'Synagogue', lines: 'and rooms of the Kiever Society', color: '#c8b896', w: 256, h: 288 }], Math.PI);
-    this.target('synagogue', -14, 5, 4.6, 22);
-    this.panel(-10.6, 1.6, 4.95, 1.0, 1.3, ['board_society', { type: 'card', title: 'Kiever Society', lines: 'Dues 25¢\nSick pay\nLoans\nBurial', w: 160, h: 208 }], Math.PI);
-    this.readable('society', -10.6, 1.6, 4.4, { prompt: 'Read the notice board', photo: 'society' });
-    this.person('rabbi', -13, 3.7, Math.PI);
-
-    // Catholic parish
-    this.panel(16, 5.5, 4.97, 7, 9, ['facade_parish', { type: 'card', title: 'Parish Church', lines: 'Mass in English & Italian', color: '#b8b0a0', w: 256, h: 320 }], Math.PI);
-    this.box(16, 13, 8, 3, 9, 3, '#8a8478', { collide: false });
-    const spire = new THREE.Mesh(new THREE.ConeGeometry(2.2, 5, 4), colorMat('#5a5048')); spire.position.set(16, 24.5, 8); spire.rotation.y = Math.PI / 4; this.scene.add(spire);
-    this.target('parish', 16, 5, 4.6, 24);
-    this.person('priest', 15, 3.7, Math.PI);
-    this.person('giuseppe', 19.5, 3.4, Math.PI, { talk: 'giuseppe2', photo: 'giuseppe2' });
-
-    // Nativism: handbill + Mrs. Brennan
-    this.panel(26.5, 1.7, -4.98, 0.9, 1.2, ['handbill_nativist', { type: 'card', title: 'Americans, Wake Up!', lines: 'America for Americans!', color: '#e8dcc0', w: 160, h: 224 }]);
-    this.readable('handbill', 26.5, 1.7, -4.4, { prompt: 'Read the handbill', photo: 'handbill' });
-    this.person('brennan', 24, -3.7, 0);
-
-    // Ward boss with coal
-    for (let i = 0; i < 4; i++) this.box(30.5 + i * 0.55, 0, 4.4, 0.5, 0.5 + (i % 2) * 0.1, 0.5, '#1d1b1a', { collide: true });
-    this.person('boss', 32, 3.4, Math.PI);
-    this.crowd(5, 30.8, 2.6, Math.PI * 0.8); this.crowd(1, 33.2, 2.4, -Math.PI * 0.8);
-
-    // Neighborhood Guild on Forsyth Street
-    this.panel(43.97, 3, 16, 6, 5, ['facade_neighborhood_guild', { type: 'card', title: 'The Neighborhood Guild', lines: 'Founded 1886\nClubs · Reading Room · Kindergarten', color: '#d8ccb0', w: 288, h: 240 }], -Math.PI / 2);
-    this.readable('guildsign', 43.4, 2, 13.5, { prompt: 'Read the Guild sign' });
-    this.person('guild', 42.2, 16, -Math.PI / 2);
-    this.target('guild', 43.5, 3, 16, 20);
-    this.crowd(5, 41, 18.5, -Math.PI / 2, { scale: 0.75 }); this.crowd(0, 41.5, 19.6, -Math.PI / 2, { scale: 0.72 });
-    this.panel(34.05, 2.8, 6, 1.6, 0.4, ['sign_forsyth', { type: 'sign', title: 'FORSYTH ST', w: 160, h: 40 }], Math.PI / 2);
-
-    // Mott Street (Chinatown), a few blocks west
-    this.panel(-36.05, 2.8, -6, 1.6, 0.4, ['sign_mott', { type: 'sign', title: 'MOTT ST', w: 160, h: 40 }], -Math.PI / 2);
-    this.panel(-36.03, 3.6, -18, 5, 0.9, ['sign_lee_shop', { type: 'sign', title: 'LEE FONG & CO. · TEAS · GROCERIES', color: '#6a1f1a', w: 384, h: 64 }], -Math.PI / 2);
-    this.panel(-36.03, 1.5, -16.3, 2, 1.8, ['window_lee_shop', { type: 'card', title: 'Teas', lines: 'Rice · Dried fish · Medicine · Letters home', color: '#d8b070', w: 192, h: 176 }, { emissive: '#553300', emissiveIntensity: 0.5 }], -Math.PI / 2);
-    this.person('lee', -37.4, -18.5, -Math.PI / 2);
-    for (let i = 0; i < 3; i++) { const l = new THREE.Mesh(new THREE.SphereGeometry(0.25, 8, 6), colorMat('#e04a2a', { emissive: '#801a0a' })); l.position.set(-38 - i * 1.6, 4.2, -18); this.scene.add(l); }
-    this.crowd(7, -41, -12, 1); this.crowd(4, -39, -24, 2.2);
-
-    // Gas street lamps
-    for (const [x, z] of [[-26, -4.6], [-2, 4.6], [20, -4.6], [38, 9], [-40, -16]]) this.lamppost(x, z);
-
-    // Horsecar stop: exit to the wrap-up
-    this.box(28, 0, 4.6, 0.1, 2.6, 0.1, '#222');
-    this.panel(28, 2.7, 4.5, 1.3, 0.5, ['sign_horsecar_stop', { type: 'sign', title: 'HORSECAR · PARK ROW', w: 192, h: 72 }], Math.PI);
-    const ex = this.exit(28, 3.6, 'Take the horsecar back to the Courier office (finish the story)', () => this.ready(), () => this.game.openWrapup('A'));
-    ex.lockedMsg = 'Find Moishe\'s tenement and take at least 5 photographs here first.';
-
-    this.spawn = { x: -6, z: 0.5, yaw: -Math.PI / 2 };
+    this.spawn = { x: -8, z: 1.5, yaw: -Math.PI / 2 };
   }
 
-  tenement() {
-    const H = 3;
-    // block west of the hall
-    this.box(1.75, 0, -11.5, 3.5, 14, 13, BRICK, { uv: [4, 4] });
-    // upper floors
-    this.box(7.5, H, -11.5, 5, 11, 13, BRICK, { collide: false, uv: [4, 4] });
-    this.box(4.25, H, -11.5, 1.5, 11, 13, BRICK, { collide: false, uv: [4, 4] });
-    this.windows(3.5, 10, -4.99, 0, 1);
-    // hall
-    this.room(3.5, 5, -18, -5, H, PLASTER, [{ side: 's', from: 3.5, to: 5 }, { side: 'n', from: 3.5, to: 5 }, { side: 'e', from: -8.4, to: -7.0 }], 0.12);
-    this.floor(4.25, -11.5, 1.5, 13, [FLOOR[0], FLOOR[1], { repeat: [1, 6] }], 0.02);
-    // front room (workroom / kitchen)
-    this.room(5, 10, -12, -5, H, PLASTER, [{ side: 'w', from: -8.4, to: -7.0 }, { side: 'n', from: 8, to: 9 }], 0.12);
-    this.floor(7.5, -8.5, 5, 7, [FLOOR[0], FLOOR[1], { repeat: [3, 4] }], 0.02);
-    // back room (bedroom, no outside window)
-    this.room(5, 10, -18, -12, H, PLASTER, [{ side: 's', from: 8, to: 9 }], 0.12);
-    this.floor(7.5, -15, 5, 6, [FLOOR[0], FLOOR[1], { repeat: [3, 3] }], 0.02);
-    this.ceiling(6.75, -11.5, 6.5, 13, ['ceiling_tenement', { type: 'plaster', color: '#5f5444' }], H - 0.01);
-    // brick face over the front room wall, outside
-    this.panel(7.5, H / 2, -4.93, 5, H, [BRICK[0], BRICK[1], { repeat: [1.2, 0.8] }]);
-    this.panel(6.5, 1.6, -4.9, 1.0, 1.4, WIN_LIT); this.panel(8.8, 1.6, -4.9, 1.0, 1.4, WIN_LIT);
-    this.panel(6.5, 1.6, -5.14, 1.0, 1.4, WIN, Math.PI); this.panel(8.8, 1.6, -5.14, 1.0, 1.4, WIN, Math.PI);
-    // door frame + stoop
-    this.box(4.25, 0, -4.6, 1.8, 0.18, 0.8, '#6a645a', { collide: false });
-    this.panel(4.25, 3.4, -4.95, 1.2, 0.45, ['sign_tenement_number', { type: 'sign', title: 'No. 140', w: 128, h: 48 }]);
-    this.target('tenement', 5, 6, -4.6, 26);
-
-    // workroom props
-    this.box(7.3, 0, -9.8, 2.6, 0.78, 1.1, WOOD);                    // work table
-    for (const x of [6.5, 8.1]) this.box(x, 0.78, -9.8, 0.45, 0.3, 0.3, '#1d1d1d', { collide: false }); // sewing machines
-    this.box(9.3, 0, -11.2, 0.9, 0.5, 0.9, '#3a3438');                 // pile of coats
-    this.box(9.3, 0.5, -11.2, 0.8, 0.4, 0.8, '#2c2a30', { collide: false });
-    this.box(5.6, 0, -6.0, 0.8, 0.85, 0.7, '#1a1a1a');                 // stove
-    this.box(5.6, 0.85, -6.0, 0.15, 2.1, 0.15, '#1a1a1a', { collide: false });
-    this.person('chana', 6.6, -10.7, Math.PI * 0.9, { seated: true, photo: 'sweatshop' });
-    this.person('girl', 7.9, -10.8, Math.PI, { seated: true });
-    this.person('moishe', 8.6, -7.0, Math.PI * 0.75);
-    this.target('sweatshop', 7.3, 1.0, -9.8, 7);
-    this.lamp(7.5, 2.5, -8.8, 0xffb860, 4, 8);
-    // back room: two chairs pushed together, mattress on floor
-    this.box(6.5, 0, -16.5, 2.4, 0.18, 1.2, ['mattress_straw', { type: 'solid', color: '#8a7a58' }]);
-    this.box(8.9, 0, -14.0, 1.2, 0.18, 2.0, ['mattress_straw', { type: 'solid', color: '#8a7a58' }]);
-    this.person('boarder', 6.0, -13.6, Math.PI / 2, { seated: true });
-    this.panel(9.95, 1.8, -15, 0.7, 0.9, ['window_airshaft', { type: 'window', color: '#151518', w: 64, h: 64 }], -Math.PI / 2);
-    this.lamp(6.2, 0.8, -17.3, 0xff9a40, 0.8, 3); // candle
-
-    // Rivka's family at the door
-    this.person('rivka', 2.2, -3.4, Math.PI * 0.2, { talk: 'rivka_les' });
-    this.person('mama', 1.2, -3.0, Math.PI * 0.1, { talk: 'mama', photo: null });
-    this.person('shmuel', 2.9, -2.6, Math.PI * 0.4, { talk: 'shmuel', photo: null });
-
-    // back yard
-    this.floor(5, -24, 10, 12, [DIRT[0], DIRT[1], { repeat: [3, 3] }], 0.02);
-    this.box(5, 0, -31, 10, 12, 2, BRICK2, { uv: [4, 4] });             // rear tenement
-    this.windows(0, 10, -29.99, 0, 0);
-    this.box(8.6, 0, -27.8, 1.3, 2.2, 1.3, WOOD);                       // privy
-    this.panel(8.6, 1.1, -27.13, 0.6, 1.6, ['privy_door', { type: 'planks', color: '#4a3826', n: 3 }]);
-    this.readable('privy', 8.6, 1.2, -26.4, { prompt: 'Look at the privy', photo: 'privy' });
-    for (const [x, z] of [[1.2, -28.5], [1.9, -28.6], [2.6, -28.4]]) { const b = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.8, 10), colorMat('#3c3a36')); b.position.set(x, 0.4, z); this.scene.add(b); }
-    // laundry lines
-    for (const z of [-21, -24.5]) {
-      const line = new THREE.Mesh(new THREE.BoxGeometry(10, 0.02, 0.02), colorMat('#ccc'));
-      line.position.set(5, 3.6, z); this.scene.add(line);
-      for (let i = 0; i < 5; i++) this.panel(1.5 + i * 1.8, 3.1, z, 0.9, 1.0, ['laundry_' + (i % 3), { type: 'solid', color: ['#d8d0c0', '#9a8a7a', '#b0a8c0'][i % 3] }], 0, true);
+  // ------------------------------------------------------------ ground
+  streets() {
+    const x0 = BX[0][0], x1 = BX[7][1], z0 = BZ[0][0], z1 = BZ[3][1];
+    this.floor((x0 + x1) / 2, (z0 + z1) / 2, x1 - x0, z1 - z0, [COBBLE[0], COBBLE[1], { repeat: [(x1 - x0) / 4, (z1 - z0) / 4] }]);
+    // sidewalks (3 m) along every block face
+    const sw = 3;
+    for (const [bx0, bx1] of BX) for (const [bz0, bz1] of BZ) {
+      const cx = (bx0 + bx1) / 2, cz = (bz0 + bz1) / 2, w = bx1 - bx0 + sw * 2, d = bz1 - bz0 + sw * 2;
+      this.floor(cx, cz, w, d, [WALK[0], WALK[1], { repeat: [w / 3, d / 3] }], 0.015);
     }
-    this.person('riis', 4, -23.6, 0);
-    this.crowd(5, 2.5, -26, 1, { scale: 0.7 }); this.crowd(0, 6.5, -21, 2, { scale: 0.7 });
-    // Riis's flash powder: a bright pop every few seconds
-    this.flash = new THREE.PointLight(0xffffff, 0, 16, 1.2);
-    this.flash.position.set(4.6, 2.4, -24.4); this.scene.add(this.flash);
-    let next = 4;
-    this.updaters.push((dt, t) => {
-      this.flash.intensity = Math.max(0, this.flash.intensity - dt * 60);
-      if (t > next) { next = t + 7 + Math.random() * 5; const p = this.game.controls.pos; if (p.z < -17 && p.x > -1 && p.x < 11) this.flash.intensity = 30; }
-    });
+    // Pell St is narrower: sidewalks only on its sides
   }
 
-  windows(x0, x1, z, ry, startFloor = 0) {
-    for (let x = x0 + 1.5; x < x1 - 0.8; x += 2.6) {
-      for (let f = 1; f < 5; f++) {
-        const lit = ((x * 7 + f * 3) | 0) % 4 === 0;
-        this.panel(x, f * 2.8 + 1.3, z + (ry ? 0 : 0), 1.0, 1.5, lit ? WIN_LIT : WIN, ry);
+  // ------------------------------------------------------------ blocks of tenements
+  blocks() {
+    const r = this.rand;
+    const facade = (i, tall) => {
+      const c = BRICKS[i % BRICKS.length];
+      return [`facade_tenement_${i % BRICKS.length}${tall ? '' : '_low'}`, { type: 'facade', color: c, floors: tall ? 5 : 3, bays: 4, escape: i % 2 === 0, lit: 0.3, cornice: i % 3 ? '#3b3530' : '#8a8270', w: 256, h: 512 }];
+    };
+    for (let bi = 0; bi < BX.length; bi++) {
+      for (let bj = 0; bj < BZ.length; bj++) {
+        const [x0, x1] = BX[bi], [z0, z1] = BZ[bj];
+        // Skip/split special blocks
+        if (bi === 6 && bj === 1) { this.moisheBlock(x0, x1, z0, z1); continue; }
+        const isBowery = bi === 1 || bi === 2;
+        const tall = !isBowery;
+        // Carve out landmarks and Pell Street, then fill the rest with tenements.
+        let rects = [[x0, x1, z0, z1]];
+        if (bi === 5 && bj === 3) rects = [[x0, x1, z0, 66], [x0, x1, 82, z1], [20, x1, 66, 82]];             // synagogue
+        if (bi === 1 && bj === 3) rects = [[x0, x1, z0, 66], [-146, x1, 66, 84], [x0, x1, 84, PELL[0]], [x0, x1, PELL[1], z1]]; // church + Pell
+        for (const [rx0, rx1, rz0, rz1] of rects) {
+          // Split west->east into buildings of 2-3 lots with varied heights.
+          let x = rx0;
+          while (x < rx1 - 0.1) {
+            const lots = 2 + Math.floor(r() * 2);
+            const xe = (rx1 - (x + lots * LOT) < LOT * 0.8) ? rx1 : x + lots * LOT;
+            const h = tall ? 16 + r() * 5 : 11 + r() * 4;
+            const v = Math.floor(r() * 12);
+            const fr = { n: facade(v, tall), s: facade(v + 1, tall) };
+            if (x === rx0) fr.w = facade(v + 2, tall);
+            if (xe >= rx1 - 0.1) fr.e = facade(v + 3, tall);
+            this.building(x, xe, rz0, rz1, h, fr, null);
+            x = xe;
+          }
+        }
       }
     }
   }
-  windowsX(x, z0, z1, ry) {
-    for (let z = z0 - 1.5; z > z1 + 0.8; z -= 2.6) {
-      for (let f = 1; f < 5; f++) this.panel(x, f * 2.8 + 1.3, z, 1.0, 1.5, ((z * 7 + f) | 0) % 3 === 0 ? WIN_LIT : WIN, ry);
+
+  /** Painted signboard over a shop. side: 's' faces +z, 'n' faces -z, 'e' faces +x, 'w' faces -x */
+  sign(x, z, side, text, w = 5) {
+    const key = 'sign_shop_' + (this.signTexN++);
+    const ry = { s: 0, n: Math.PI, e: Math.PI / 2, w: -Math.PI / 2 }[side];
+    const off = 0.06;
+    const px = side === 'e' ? x + off : side === 'w' ? x - off : x;
+    const pz = side === 's' ? z + off : side === 'n' ? z - off : z;
+    this.panel(px, 3.4, pz, w, 0.7, [key, { type: 'sign', title: text, color: this.rand() < 0.5 ? '#2a2420' : '#3a1f1a', w: 320, h: 48 }], ry);
+  }
+
+  // ------------------------------------------------------------ Moishe's block & tenement
+  moisheBlock(x0, x1, z0, z1) {
+    const fac = (i) => [`facade_tenement_${i}`, { type: 'facade', color: BRICKS[i], floors: 5, bays: 4, escape: i % 2 === 0, lit: 0.3, cornice: '#3b3530', w: 256, h: 512 }];
+    const rear = z1 - BLD - YARD; // z where the rear lots begin
+    // west corner building (Allen & Hester), east building (to Orchard)
+    this.building(x0, MX, z1 - BLD, z1, 18.5, { s: fac(1), w: fac(2) });
+    this.building(MX + LOT, x1, z1 - BLD, z1, 17.5, { s: fac(3), e: fac(4) });
+    // rear buildings facing Grand St
+    this.building(x0, x1, z0, rear, 18, { n: fac(0), w: fac(5), e: fac(2), s: ['facade_rear', { type: 'facade', color: '#7a3a2c', floors: 6, bays: 4, storeFrac: 0.02, escape: false, lit: 0.35, w: 256, h: 512 }] });
+    // back yards of the neighbors (fenced off)
+    for (const [a, b] of [[x0, MX], [MX + LOT, x1]]) this.box((a + b) / 2, 0, rear + YARD / 2, b - a, 2.2, YARD, WOOD);
+  }
+
+  tenement() {
+    const H = 2.8;                         // ground-floor ceiling (~9 ft)
+    const X = (lx) => MX + lx, Z = (lz) => MZ - lz;  // lot-local -> world (lz grows north)
+    const hall = [3.1, 4.4];
+    // Upper floors (whole lot) with facade
+    const up = this.building(MX, MX + LOT, Z(BLD), Z(0), 19, {}, null, { collide: false });
+    up.position.y = H + (19 - H) / 2; up.scale.y = (19 - H) / 19;
+    this.panel(X(LOT / 2), H + (19 - H) / 2, Z(0) + 0.02, LOT, 19 - H, ['facade_tenement_moishe', { type: 'facade', color: '#8e3b2e', floors: 5, bays: 4, storeFrac: 0.0, escape: true, lit: 0.4, w: 256, h: 480 }]);
+    this.panel(X(LOT / 2), H + (19 - H) / 2, Z(BLD) - 0.02, LOT, 19 - H, ['facade_rear', {}], Math.PI);
+    // Ground floor: shop (west), shop (east), hall in the middle
+    this.box(X(hall[0] / 2), 0, Z(3), hall[0], H, 6, '#2e2620');
+    this.box(X((hall[1] + LOT) / 2), 0, Z(3), LOT - hall[1], H, 6, '#2e2620');
+    this.panel(X(hall[0] / 2), H / 2, Z(0) + 0.02, hall[0], H, ['storefront_moishe_w', { type: 'storefront', sign: 'GROCERY', w: 256, h: 220 }]);
+    this.panel(X((hall[1] + LOT) / 2), H / 2, Z(0) + 0.02, LOT - hall[1], H, ['storefront_moishe_e', { type: 'storefront', sign: 'SODA · סאדע', w: 256, h: 220 }]);
+    // closed front-apartment rooms and rear-west apartment
+    this.box(X(hall[0] / 2), 0, Z(12), hall[0], H, 12, '#3a3228');
+    this.box(X((hall[1] + LOT) / 2), 0, Z(8), LOT - hall[1], H, 4, '#3a3228');
+    // hall
+    this.room(X(hall[0]), X(hall[1]), Z(BLD), Z(0), H, PLASTER,
+      [{ side: 's', from: X(hall[0]), to: X(hall[1]) }, { side: 'n', from: X(hall[0]), to: X(hall[1]) }, { side: 'e', from: Z(14.2), to: Z(13.3) }], 0.1);
+    this.floor(X((hall[0] + hall[1]) / 2), Z(BLD / 2), hall[1] - hall[0], BLD, [FLOOR[0], FLOOR[1], { repeat: [1, 8] }], 0.02);
+    for (let i = 0; i < 8; i++) this.box(X(hall[0] + 0.35), i * 0.3, Z(7 + i * 0.3), 0.6, 0.06, 0.3, WOOD, { collide: false }); // stair going up
+    this.box(X(hall[0] + 0.25), 0, Z(8.2), 0.5, 1.0, 2.4, WOOD, { collide: true });
+    // Moishe's apartment (rear, east of hall): bedroom | kitchen | front room
+    const ax0 = X(hall[1]), ax1 = X(LOT);
+    this.room(ax0, ax1, Z(12.6), Z(10), H, PLASTER, [{ side: 'n', from: X(5.2), to: X(6.1) }], 0.1);            // bedroom (no window)
+    this.room(ax0, ax1, Z(15.2), Z(12.6), H, PLASTER, [{ side: 's', from: X(5.2), to: X(6.1) }, { side: 'w', from: Z(14.2), to: Z(13.3) }, { side: 'n', from: X(5.2), to: X(6.1) }], 0.1); // kitchen
+    this.room(ax0, ax1, Z(BLD), Z(15.2), H, PLASTER, [{ side: 's', from: X(5.2), to: X(6.1) }], 0.1);            // front room (yard windows)
+    this.floor((ax0 + ax1) / 2, Z(14), ax1 - ax0, 8, [FLOOR[0], FLOOR[1], { repeat: [2, 5] }], 0.02);
+    this.ceiling(X(LOT / 2), Z(BLD / 2), LOT, BLD, ['ceiling_tenement', { type: 'plaster', color: '#5f5444' }], H - 0.01);
+    // windows: front room -> yard; bedroom -> air shaft (dark)
+    for (const lx of [5.0, 6.6]) this.panel(X(lx), 1.6, Z(BLD) + 0.07, 0.8, 1.4, ['window_yard', { type: 'window', color: '#8a8a90', frame: '#2a2018', w: 64, h: 64 }], 0);
+    this.panel(ax1 - 0.07, 1.7, Z(11.3), 0.6, 0.8, ['window_airshaft', { type: 'window', color: '#151518', w: 64, h: 64 }], -Math.PI / 2);
+    // front room: the sweatshop
+    this.box(X(5.9), 0, Z(16.6), 1.8, 0.76, 1.0, WOOD);
+    for (const lx of [5.4, 6.4]) this.box(X(lx), 0.76, Z(16.6), 0.4, 0.28, 0.28, '#1d1d1d', { collide: false });
+    this.box(X(7.15), 0, Z(15.6), 0.6, 0.9, 0.6, '#2c2a30'); // pile of coats
+    this.person('chana', X(5.2), Z(17.4), 0, { seated: true, photo: 'sweatshop' });
+    this.person('girl', X(6.6), Z(17.4), 0, { seated: true });
+    this.person('moishe', X(4.9), Z(15.8), 0);
+    this.target('sweatshop', X(5.9), 1.0, Z(16.6), 6);
+    // kitchen: stove + washtub
+    this.box(X(7.1), 0, Z(14.4), 0.7, 0.85, 0.7, '#1a1a1a');
+    this.box(X(7.1), 0.85, Z(14.4), 0.14, 1.95, 0.14, '#1a1a1a', { collide: false });
+    const tub = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.3, 0.35, 12), colorMat('#8a8a84')); tub.position.set(X(5.0), 0.18, Z(12.9)); this.scene.add(tub);
+    this.lamp(X(5.9), 2.4, Z(16.2), 0xffb860, 3.5, 7);
+    // bedroom: two chairs pushed together, a straw tick on the floor
+    this.box(X(5.9), 0, Z(10.6), 2.2, 0.16, 1.0, ['mattress_straw', { type: 'solid', color: '#8a7a58' }], { collide: false });
+    this.person('boarder', X(6.8), Z(11.9), 0, { seated: true });
+    this.target('tenement', X(LOT / 2), 6, Z(0) + 0.6, 30);
+
+    // Rivka's family at the hall door
+    this.person('rivka', X(2.6), Z(0) + 2.0, 0, { talk: 'rivka_les' });
+    this.person('mama', X(1.6), Z(0) + 2.4, 0, { talk: 'mama', photo: null });
+    this.person('shmuel', X(5.6), Z(0) + 2.2, 0, { talk: 'shmuel', photo: null });
+
+    // ---- back yard ----
+    const yz = Z(BLD), yz1 = Z(BLD + YARD);
+    this.floor(X(LOT / 2), (yz + yz1) / 2, LOT, YARD, [DIRT[0], DIRT[1], { repeat: [2, 2] }], 0.02);
+    this.box(X(LOT - 0.7), 0, yz1 + 0.8, 1.2, 2.2, 1.2, WOOD);   // privy
+    this.panel(X(LOT - 0.7), 1.1, yz1 + 1.42, 0.6, 1.6, ['privy_door', { type: 'planks', color: '#4a3826', n: 3 }]);
+    this.readable('privy', X(LOT - 0.7), 1.2, yz1 + 2.0, { prompt: 'Look at the privy', photo: 'privy' });
+    for (const lx of [0.6, 1.3]) { const b = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 0.8, 10), colorMat('#3c3a36')); b.position.set(X(lx), 0.4, yz1 + 0.6); this.scene.add(b); }
+    for (let i = 0; i < 4; i++) {           // laundry lines on pulleys, building to rear building, several stories up
+      const y = 4 + i * 2.6;
+      const line = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.02, YARD), colorMat('#bbb'));
+      line.position.set(X(2 + i * 1.2), y, (yz + yz1) / 2); this.scene.add(line);
+      for (let k = 0; k < 3; k++) this.panel(X(2 + i * 1.2), y - 0.45, yz - 1 - k * 1.8, 0.8, 0.9, ['laundry_' + ((i + k) % 3), { type: 'solid', color: ['#d8d0c0', '#9a8a7a', '#b0a8c0'][(i + k) % 3] }], Math.PI / 2, true);
+    }
+    this.person('riis', X(3.2), yz - 3.0, 0);
+    this.crowd(5, X(1.2), yz - 4.6, 0, { scale: 0.72 });
+    this.flash = new THREE.PointLight(0xffffff, 0, 14, 1.2);
+    this.flash.position.set(X(3.8), 2.4, yz - 2.4); this.scene.add(this.flash);
+    let next = 4;
+    this.updaters.push((dt, t) => {
+      this.flash.intensity = Math.max(0, this.flash.intensity - dt * 60);
+      const p = this.game.controls.pos;
+      if (t > next) { next = t + 7 + Math.random() * 5; if (p.z < yz + 2 && p.z > yz1 - 1 && p.x > MX - 1 && p.x < MX + LOT + 1) this.flash.intensity = 30; }
+    });
+  }
+
+  // ------------------------------------------------------------ elevated railways
+  elevated(name, [cx0, cx1], z0, z1, stations = []) {
+    const deckY = 5.2;
+    const mid = (cx0 + cx1) / 2;
+    for (let z = z0; z < z1; z += 13.7) for (const x of [cx0, cx1]) {
+      this.box(x, 0, z, 0.35, deckY, 0.35, IRON);
+    }
+    // lattice girders + deck
+    this.box(mid, deckY, (z0 + z1) / 2, cx1 - cx0 + 1, 0.55, z1 - z0, ['el_girder', { type: 'planks', color: '#3b3a35', n: 2 }], { collide: false });
+    for (const x of [cx0, cx1]) this.box(x, deckY + 0.55, (z0 + z1) / 2, 0.12, 0.9, z1 - z0, IRON, { collide: false });
+    for (const dx of [-2.2, -1.0, 1.0, 2.2]) this.box(mid + dx, deckY + 0.56, (z0 + z1) / 2, 0.08, 0.1, z1 - z0, '#555', { collide: false });
+    // wooden gabled stations
+    for (const st of stations) {
+      for (const sx of [-1, 1]) {
+        const px = mid + sx * ((cx1 - cx0) / 2 + 1.6);
+        this.box(px, deckY + 0.2, st.z, 3, 0.3, 16, '#4a3a2a', { collide: false });
+        this.box(px, deckY + 0.5, st.z, 3, 2.6, 6, ['wall_el_station', { type: 'planks', color: '#6a5a40', n: 4 }], { collide: false });
+        const roof = new THREE.Mesh(new THREE.ConeGeometry(2.6, 1.4, 4), colorMat('#3a2a22')); roof.position.set(px, deckY + 3.8, st.z); roof.rotation.y = Math.PI / 4; roof.scale.set(0.9, 1, 1.9); this.scene.add(roof);
+      }
+    }
+    // a train
+    const train = new THREE.Group();
+    const eng = new THREE.Mesh(new THREE.BoxGeometry(2.3, 2.4, 5), colorMat('#151515')); eng.position.y = 1.2; train.add(eng);
+    const stack = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.35, 1, 8), colorMat('#111')); stack.position.set(0, 2.9, -1.6); train.add(stack);
+    for (let i = 1; i <= 3; i++) {
+      const car = new THREE.Mesh(new THREE.BoxGeometry(2.5, 2.6, 9.4), material('el_car', { type: 'planks', color: '#5c1f1f', n: 3 })); car.position.set(0, 1.3, i * 10); train.add(car);
+      const roof = new THREE.Mesh(new THREE.BoxGeometry(2.7, 0.2, 9.6), colorMat('#2a1a14')); roof.position.set(0, 2.7, i * 10); train.add(roof);
+      for (const sx of [-1, 1]) for (let w = -3.5; w <= 3.5; w += 1.4) { const win = new THREE.Mesh(new THREE.PlaneGeometry(0.7, 0.7), colorMat('#e8d090', { basic: true })); win.position.set(sx * 1.26, 1.7, i * 10 + w); win.rotation.y = sx * Math.PI / 2; train.add(win); }
+    }
+    train.position.set(mid + 1.6, deckY + 0.6, z0);
+    this.scene.add(train);
+    const speed = 13, len = z1 - z0 + 120, offset = name === 'Allen' ? 0 : 40;
+    this.updaters.push((dt, t) => {
+      const s = (t * speed + offset * speed) % (len * 2);
+      const north = s > len;
+      train.position.z = north ? z1 + 60 - (s - len) : z0 - 60 + s;
+      train.position.x = mid + (north ? -1.6 : 1.6);
+      train.rotation.y = north ? 0 : Math.PI;
+      const p = this.game.controls.pos;
+      if (Math.abs(p.x - mid) < 40 && Math.abs(train.position.z - p.z) < 18 && !train.userData.heard) { sfx('train'); train.userData.heard = true; }
+      if (Math.abs(train.position.z - p.z) > 40) train.userData.heard = false;
+    });
+    this.target('el', mid, deckY, name === 'Allen' ? 0 : 0, 30);
+  }
+
+  // ------------------------------------------------------------ Hester Street life
+  hester() {
+    const r = this.rand;
+    // shop signs along Hester (both sides) and the Bowery and Mott
+    for (const [bx0, bx1] of BX.slice(2, 7)) for (let x = bx0 + 3.8; x < bx1 - 2; x += LOT) {
+      if (x > MX - 1 && x < MX + LOT + 1) continue;
+      this.sign(x, EW.Hester[0], 's', SIGNS.hester[Math.floor(r() * SIGNS.hester.length)], 5.6);
+      this.sign(x, EW.Hester[1], 'n', SIGNS.hester[Math.floor(r() * SIGNS.hester.length)], 5.6);
+    }
+    for (let z = -45; z < 45; z += LOT) if (Math.abs(z) > 8) {
+      this.sign(NS.Bowery[0], z, 'e', SIGNS.bowery[Math.floor(r() * SIGNS.bowery.length)], 5.4);
+      this.sign(NS.Bowery[1], z, 'w', SIGNS.bowery[Math.floor(r() * SIGNS.bowery.length)], 5.4);
+    }
+    // pushcarts along both curbs, Eldridge to Orchard
+    const goods = ['#6a7a3a', '#a05a3a', '#d0c080', '#8a8a8a', '#5a3a6a', '#c86a2a', '#3a4a6a', '#9a3a2a'];
+    let n = 0;
+    for (let x = 2; x < 56; x += 5.2) {
+      if (x > 19 && x < 39) continue; // the El corner stays clear
+      for (const side of [-1, 1]) {
+        if ((x * 7 + side) % 3 < 0.6) continue;
+        this.cart(x, side * 3.6, side < 0 ? 0 : Math.PI, goods[n % goods.length]);
+        if (!(x === 7.2 && side === -1)) this.crowd(n, x + 0.2, side * 5.2, 0);
+        n++;
+      }
+    }
+    // Mrs. Gold's cart
+    this.cart(-4, -3.6, 0, '#6a7a3a');
+    this.person('peddler', -4, -5.2, 0, { photo: 'pushcart' });
+    // Herschel on Orchard Street (the other big pushcart street)
+    this.cart(70, -24, Math.PI / 2, '#8a8a8a');
+    this.person('peddler2', 71.8, -24, 0, { photo: null });
+    for (let z = -40; z < 40; z += 9) if (Math.abs(z + 24) > 4) { this.cart(70.2, z, Math.PI / 2, goods[(z + 40) % 8]); this.crowd(Math.abs(z), 68, z + 1, 0); }
+    // shoppers
+    for (let i = 0; i < 26; i++) {
+      const x = -6 + r() * 64, z = (r() - 0.5) * 6;
+      if (x > MX - 1 && x < MX + LOT + 1 && z < -2) continue;
+      if (Math.abs(x + 4) < 2.2 && z < 0) continue;
+      this.crowd(i, x, z, 0);
+    }
+    for (let i = 0; i < 10; i++) this.crowd(i + 3, -125 + (r() - 0.5) * 22, (r() - 0.5) * 60, 0); // the Bowery
+    for (let i = 0; i < 6; i++) this.crowd(i + 1, -45 + (r() - 0.5) * 5, -20 - r() * 70, 0);       // Forsyth
+
+    // Newsboy at Hester & Allen
+    this.box(18.6, 0, 5.8, 1.3, 0.95, 0.7, WOOD);
+    this.person('newsboy', 18.8, 4.6, 0);
+
+    // Nativism: Mrs. Brennan and a handbill, north side between Forsyth and Eldridge
+    this.panel(-26, 1.7, EW.Hester[0] + 0.03, 0.8, 1.1, ['handbill_nativist', { type: 'card', title: 'Americans, Wake Up!', lines: 'America for Americans!', color: '#e8dcc0', w: 160, h: 224 }]);
+    this.readable('handbill', -26, 1.7, EW.Hester[0] + 0.7, { prompt: 'Read the handbill', photo: 'handbill' });
+    this.person('brennan', -28.2, -5.6, 0);
+
+    // Ward boss with coal, outside a corner saloon (Hester & Eldridge, SE corner)
+    this.sign(3.6, EW.Hester[1], 'n', 'SALOON · DEMOCRATIC CLUB', 6.6);
+    for (let i = 0; i < 4; i++) this.box(5 + i * 0.55, 0, 6.5, 0.5, 0.5 + (i % 2) * 0.1, 0.5, '#1d1b1a');
+    this.person('boss', 3.2, 5.6, 0);
+    this.crowd(5, 4.6, 4.3, 0); this.crowd(1, 1.8, 4.4, 0);
+
+    // gas lamps (cast-iron post, ladder bar, 4-sided lantern)
+    for (const [x, z, lit] of [[-12, -5.4, true], [16, 5.4, false], [40, 5.4, true], [57, -5.4, true], [-34, 5.4, false], [-60, -5.4, false], [-100, 5.4, false]]) this.gaslamp(x, z, lit);
+
+    // Horsecar stop on the Bowery: exit to the wrap-up
+    this.box(-108.6, 0, 9.5, 0.1, 2.6, 0.1, '#222');
+    this.panel(-108.6, 2.7, 9.56, 1.6, 0.5, ['sign_horsecar_stop', { type: 'sign', title: 'BOWERY CARS · PARK ROW', w: 224, h: 72 }], 0);
+    this.horsecarStatic(-112, 16);
+    const ex = this.exit(-109.5, 9.5, 'Take the horsecar down the Bowery to the Courier office (finish the story)', () => this.ready(), () => this.game.openWrapup('A'));
+    ex.lockedMsg = 'Find Moishe\'s tenement and take at least 5 photographs here first.';
+
+    // street name signs at corners
+    for (const [nm, x] of Object.entries(NS)) this.streetSign(nm.toUpperCase() === 'BOWERY' ? 'BOWERY' : nm.toUpperCase() + ' ST', x[1] + 1.2, -6.2);
+    this.streetSign('HESTER ST', 20.3, 6.2); this.streetSign('GRAND ST', 20.3, -63.8); this.streetSign('CANAL ST', -17.3, 61); this.streetSign('PELL ST', -159.3, 86.5);
+  }
+
+  landmarks() {
+    // ---- Eldridge Street Synagogue (1887), east side of Eldridge, south of Canal ----
+    this.building(-0.5, 20, 66, 82, 21, { w: ['facade_eldridge_synagogue', { type: 'synagogue', w: 320, h: 448 }] }, null, { lot: 16 });
+    this.target('synagogue', -0.5, 9, 74, 30);
+    this.panel(-0.53, 1.6, 79.5, 0.9, 1.2, ['board_society', { type: 'card', title: 'Kiever Society', lines: 'Dues 25¢\nSick pay\nLoans\nBurial', w: 160, h: 208 }], -Math.PI / 2);
+    this.readable('society', -1.2, 1.6, 79.5, { prompt: 'Read the notice board', photo: 'society' });
+    this.person('rabbi', -2.6, 76.8, 0);
+    this.crowd(7, -3.5, 70, 0); this.crowd(1, -4.2, 71, 0);
+    this.gaslamp(-1.6, 67, true);
+
+    // ---- Mott Street: Church of the Transfiguration and Chinatown ----
+    this.building(-160.5, -146, 66, 84, 15, { w: ['facade_transfiguration', { type: 'church', w: 320, h: 384 }] }, ['wall_church_side', { type: 'stone', color: '#7a7266', rows: 8 }], { lot: 18 });
+    const tower = new THREE.Mesh(new THREE.CylinderGeometry(1.4, 1.6, 6, 8), colorMat('#d9d2c0')); tower.position.set(-155, 18, 75); this.scene.add(tower);
+    const cap = new THREE.Mesh(new THREE.ConeGeometry(1.6, 3, 8), colorMat('#5a6a5a')); cap.position.set(-155, 22.5, 75); this.scene.add(cap);
+    this.target('parish', -160.5, 7, 75, 30);
+    this.person('priest', -162.4, 76, 0);
+    this.person('giuseppe', -163.4, 71.5, 0, { talk: 'giuseppe2', photo: 'giuseppe2' });
+    // Chinese shops on Mott south of Pell, and on Pell
+    this.panel(-160.47, 3.4, 100, 6, 0.9, ['sign_lee_shop', { type: 'sign', title: 'LEE FONG & CO. · 茶 TEAS · GROCERIES', color: '#6a1f1a', w: 448, h: 64 }], -Math.PI / 2);
+    this.panel(-160.47, 1.5, 101.5, 2, 1.8, ['window_lee_shop', { type: 'card', title: 'Teas', lines: 'Rice · Dried fish · Medicine · Letters home', color: '#d8b070', w: 192, h: 176 }, { emissive: '#553300', emissiveIntensity: 0.5 }], -Math.PI / 2);
+    for (const [z, t] of [[106, '雜貨'], [111, '中華']]) this.panel(-160.47, 4.5, z, 0.7, 2.4, ['sign_vert_' + z, { type: 'sign', title: t, color: '#7a1a14', ink: '#e8c060', w: 64, h: 220 }], -Math.PI / 2);
+    for (let x = -158; x < -140; x += 6) this.sign(x, PELL[1], 'n', SIGNS.mott[Math.floor(this.rand() * SIGNS.mott.length)], 5);
+    this.person('lee', -162.6, 100.5, 0);
+    for (let i = 0; i < 3; i++) { const l = new THREE.Mesh(new THREE.SphereGeometry(0.25, 8, 6), colorMat('#e04a2a', { emissive: '#801a0a' })); l.position.set(-161.2, 4.3, 98 + i * 1.6); this.scene.add(l); }
+    this.crowd(7, -167, 95, 0); this.crowd(4, -150, 92, 0); this.crowd(2, -166, 60, 0); this.crowd(0, -168, 30, 0);
+    this.gaslamp(-161.6, 94, true);
+
+    // ---- The Neighborhood Guild, 146 Forsyth Street (compressed north of Grand) ----
+    this.panel(-37.47, 2.8, -84, 6, 5, ['facade_neighborhood_guild', { type: 'card', title: 'The Neighborhood Guild', lines: '146 Forsyth St. · Founded 1886\nClubs · Reading Room · Kindergarten', color: '#d8ccb0', w: 288, h: 240 }], Math.PI / 2);
+    this.readable('guildsign', -38.2, 2, -80.5, { prompt: 'Read the Guild sign' });
+    this.person('guild', -39.6, -84, 0);
+    this.target('guild', -37.5, 3, -84, 22);
+    this.crowd(5, -41, -86.5, 0, { scale: 0.75 }); this.crowd(0, -42, -85, 0, { scale: 0.72 });
+    this.gaslamp(-38.4, -78, true);
+  }
+
+  wires() {
+    // 1888: the peak of the overhead "wire forest"
+    const poles = [];
+    for (let x = -100; x <= 70; x += 24) poles.push([x, 6.9]);
+    for (const [x, z] of poles) {
+      this.box(x, 0, z, 0.3, 13, 0.3, '#4a3a2a', { collide: true });
+      for (let k = 0; k < 4; k++) this.box(x, 10 + k * 0.8, z, 0.12, 0.1, 2.6, '#4a3a2a', { collide: false });
+    }
+    const mat = new THREE.LineBasicMaterial({ color: 0x1a1a1a });
+    for (let i = 0; i < poles.length - 1; i++) for (let k = 0; k < 4; k++) for (const dz of [-1.1, -0.4, 0.4, 1.1]) {
+      const a = poles[i], b = poles[i + 1], y = 10.1 + k * 0.8;
+      const pts = []; for (let t = 0; t <= 6; t++) { const u = t / 6; pts.push(new THREE.Vector3(a[0] + (b[0] - a[0]) * u, y - Math.sin(u * Math.PI) * 0.5, a[1] + dz)); }
+      this.scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), mat));
     }
   }
 
-  fireEscape(x, z, ry = 0) {
-    const dir = ry ? 1 : -1;
-    for (let f = 1; f < 5; f++) {
-      const y = f * 2.8 + 0.4;
-      this.box(x, y, z - dir * 0.5, 2.6, 0.06, 0.9, '#151515', { collide: false });
-      this.box(x, y + 0.9, z - dir * 0.94, 2.6, 0.04, 0.04, '#151515', { collide: false });
-    }
+  // ------------------------------------------------------------ props
+  gaslamp(x, z, lit) {
+    this.box(x, 0, z, 0.14, 2.9, 0.14, '#23261f', { collide: true });
+    this.box(x, 2.6, z, 0.7, 0.05, 0.05, '#23261f', { collide: false });          // ladder bar
+    const lantern = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.15, 0.5, 4), colorMat(lit ? '#ffe2a0' : '#b8a888', { basic: lit }));
+    lantern.position.set(x, 3.15, z); lantern.rotation.y = Math.PI / 4; this.scene.add(lantern);
+    const top = new THREE.Mesh(new THREE.ConeGeometry(0.28, 0.25, 4), colorMat('#23261f')); top.position.set(x, 3.5, z); top.rotation.y = Math.PI / 4; this.scene.add(top);
+    if (lit) this.lamp(x, 3.0, z, 0xffcf80, 6, 13);
+  }
+
+  streetSign(text, x, z) {
+    this.box(x, 0, z, 0.08, 2.6, 0.08, '#23261f', { collide: false });
+    this.panel(x, 2.8, z, 1.5, 0.32, ['sign_street_' + text, { type: 'sign', title: text, color: '#1d2a3a', ink: '#f0e8d0', w: 192, h: 40 }], 0, true);
   }
 
   cart(x, z, ry, goods) {
+    // two big spoked wheels, flat bed, long handles, a prop leg
     const g = new THREE.Group();
-    const bed = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.12, 0.9), material('wood_cart', { type: 'planks', color: '#6a4a2a', n: 4 }));
-    bed.position.y = 0.85; g.add(bed);
+    const bed = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.1, 0.95), material('wood_cart', { type: 'planks', color: '#6a4a2a', n: 4 }));
+    bed.position.y = 0.8; g.add(bed);
     for (const sx of [-1, 1]) {
-      const side = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.2, 0.04), colorMat('#4a3420')); side.position.set(0, 0.98, sx * 0.44); g.add(side);
-      const wheel = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.42, 0.06, 12), colorMat('#2a1e14')); wheel.rotation.x = Math.PI / 2; wheel.position.set(0.3, 0.42, sx * 0.5); g.add(wheel);
-      const handle = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.05, 0.05), colorMat('#4a3420')); handle.position.set(-1.25, 0.95, sx * 0.35); g.add(handle);
+      const side = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.16, 0.04), colorMat('#4a3420')); side.position.set(0, 0.9, sx * 0.47); g.add(side);
+      const wheel = new THREE.Mesh(new THREE.TorusGeometry(0.42, 0.035, 5, 14), colorMat('#2a1e14')); wheel.position.set(0.25, 0.44, sx * 0.55); g.add(wheel);
+      const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.1, 6), colorMat('#2a1e14')); hub.rotation.x = Math.PI / 2; hub.position.set(0.25, 0.44, sx * 0.55); g.add(hub);
+      for (let k = 0; k < 4; k++) { const sp = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.82, 0.03), colorMat('#2a1e14')); sp.position.copy(wheel.position); sp.rotation.z = k * Math.PI / 4; g.add(sp); }
+      const handle = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.05, 0.05), colorMat('#4a3420')); handle.position.set(-1.35, 0.8, sx * 0.38); g.add(handle);
     }
-    for (let i = 0; i < 6; i++) {
-      const gd = new THREE.Mesh(new THREE.SphereGeometry(0.12 + (i % 3) * 0.03, 6, 5), colorMat(goods));
-      gd.position.set(-0.6 + (i % 3) * 0.55, 1.02, i < 3 ? -0.18 : 0.18); g.add(gd);
+    const leg = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.8, 0.06), colorMat('#4a3420')); leg.position.set(-0.8, 0.4, 0); g.add(leg);
+    for (let i = 0; i < 8; i++) {
+      const gd = new THREE.Mesh(new THREE.SphereGeometry(0.11 + (i % 3) * 0.03, 6, 5), colorMat(goods));
+      gd.position.set(-0.7 + (i % 4) * 0.45, 0.95, i < 4 ? -0.2 : 0.2); g.add(gd);
     }
     g.position.set(x, 0, z); g.rotation.y = ry;
     this.scene.add(g);
-    this.colliders.push({ minX: x - 1.0, maxX: x + 1.0, minZ: z - 0.5, maxZ: z + 0.5, see: true });
+    const swap = Math.abs(Math.sin(ry)) > 0.7;
+    this.colliders.push(swap ? { minX: x - 0.55, maxX: x + 0.55, minZ: z - 1.1, maxZ: z + 1.1, see: true } : { minX: x - 1.1, maxX: x + 1.1, minZ: z - 0.55, maxZ: z + 0.55, see: true });
+  }
+
+  horsecarStatic(x, z) {
+    const g = new THREE.Group();
+    const car = new THREE.Mesh(new THREE.BoxGeometry(2.0, 2.2, 5), material('horsecar_bowery', { type: 'planks', color: '#2f5a3a', n: 3 })); car.position.y = 1.5; g.add(car);
+    const roof = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.15, 5.4), colorMat('#3a2a1a')); roof.position.y = 2.68; g.add(roof);
+    const sign = new THREE.Mesh(new THREE.PlaneGeometry(1.8, 0.35), material('sign_horsecar_bowery', { type: 'sign', title: 'BOWERY · PARK ROW', w: 224, h: 40 })); sign.position.set(0, 2.4, -2.51); sign.rotation.y = Math.PI; g.add(sign);
+    for (const wz of [-1.6, 1.6]) for (const sx of [-1, 1]) { const wh = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.38, 0.08, 12), colorMat('#2a1e14')); wh.rotation.z = Math.PI / 2; wh.position.set(sx * 0.6, 0.38, wz); g.add(wh); }
+    for (const sx of [-0.4, 0.4]) {
+      const horse = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.7, 1.7), colorMat(sx < 0 ? '#5a3a24' : '#3a2416')); horse.position.set(sx, 1.25, -4.2); g.add(horse);
+      const neck = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.8, 0.4), colorMat('#4a2e1c')); neck.position.set(sx, 1.7, -5.1); neck.rotation.x = -0.5; g.add(neck);
+    }
+    g.position.set(x, 0, z); this.scene.add(g);
+    this.colliders.push({ minX: x - 1.1, maxX: x + 1.1, minZ: z - 6, maxZ: z + 2.6 });
+  }
+
+  // ------------------------------------------------------------ map
+  map() {
+    const streets = [];
+    for (const [nm, [a, b]] of Object.entries(NS)) streets.push({ x0: a, x1: b, z0: -112, z1: 117, name: nm + ' St' });
+    for (const [nm, [a, b]] of Object.entries(EW)) streets.push({ x0: -195, x1: 95, z0: a, z1: b, name: nm + ' St' });
+    streets.push({ x0: NS.Mott[1], x1: NS.Bowery[0], z0: PELL[0], z1: PELL[1], name: 'Pell' });
+    return {
+      bounds: { minX: -180, maxX: 80, minZ: -104, maxZ: 108 },
+      streets,
+      pois: [
+        { x: MX + 3.7, z: MZ, label: 'Moishe\'s tenement' }, { x: -4, z: -4, label: 'Pushcarts' },
+        { x: -2, z: 75, label: 'Synagogue' }, { x: -163, z: 75, label: 'Transfiguration Church' },
+        { x: -162, z: 100, label: 'Mott St shops' }, { x: -40, z: -84, label: 'Neighborhood Guild' },
+        { x: -28, z: -5, label: 'Handbill' }, { x: 3, z: 6, label: 'Saloon' }, { x: -110, z: 10, label: 'Horsecar' },
+        { x: 70, z: -24, label: 'Orchard St carts' },
+      ],
+      els: [{ x: 29, name: '2nd Ave El' }, { x: -122, name: '3rd Ave El' }],
+    };
   }
 
   photoCount() { return state.photos.filter(p => p.zone === 'les' && p.subject).length; }
@@ -240,16 +461,18 @@ export class LowerEastSideZone extends Zone {
 
   objectives() {
     return [
-      { text: 'Bring Rivka\'s family to Moishe\'s tenement', done: flag('met_moishe') },
+      { text: 'Bring Rivka\'s family to Moishe\'s tenement (Hester St, past the El)', done: flag('met_moishe') },
       { text: 'Learn how families live in the tenement', done: flag('learned_tenement') },
       { text: 'Learn how families work at home', done: flag('learned_sweatshop') },
       { text: 'Visit the back yard', done: flag('met_riis') },
       { text: 'Talk to a pushcart peddler', done: flag('learned_pushcart') },
       { text: `Find how neighbors help each other (${this.aidCount()}/3)`, done: this.aidCount() >= 3 },
-      { text: 'Walk west to Mott Street', done: flag('learned_lee') || flag('learned_exclusion') },
+      { text: 'Walk west past the Bowery to Mott Street', done: flag('learned_lee') || flag('learned_exclusion') },
       { text: 'Hear what some neighbors think of newcomers', done: flag('learned_nativism') },
       { text: `Photograph evidence (${this.photoCount()}/8)`, done: this.photoCount() >= 8 },
-      { text: 'Take the horsecar to the Courier office', done: false },
+      { text: 'Take the Bowery horsecar to the Courier office', done: false },
     ];
   }
 }
+
+function mulberry(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
