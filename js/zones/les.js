@@ -75,6 +75,28 @@ export class LowerEastSideZone extends Zone {
       this.floor(cx, cz, w, d, [WALK[0], WALK[1], { repeat: [w / 3, d / 3] }], 0.015);
     }
     // Pell St is narrower: sidewalks only on its sides
+    // granite curbs and dark gutters along every sidewalk edge
+    const CURB = '#8e8b84', GUT = colorMat('#2a2622');
+    for (const [bx0, bx1] of BX) for (const [bz0, bz1] of BZ) {
+      const ex0 = bx0 - sw, ex1 = bx1 + sw, ez0 = bz0 - sw, ez1 = bz1 + sw, w = ex1 - ex0, d = ez1 - ez0;
+      this.box((ex0 + ex1) / 2, 0, ez0, w, 0.06, 0.28, CURB, { collide: false }); this.box((ex0 + ex1) / 2, 0, ez1, w, 0.06, 0.28, CURB, { collide: false });
+      this.box(ex0, 0, (ez0 + ez1) / 2, 0.28, 0.06, d, CURB, { collide: false }); this.box(ex1, 0, (ez0 + ez1) / 2, 0.28, 0.06, d, CURB, { collide: false });
+      for (const [gx, gz, gw, gd] of [[(ex0 + ex1) / 2, ez0 - 0.45, w, 0.6], [(ex0 + ex1) / 2, ez1 + 0.45, w, 0.6], [ex0 - 0.45, (ez0 + ez1) / 2, 0.6, d], [ex1 + 0.45, (ez0 + ez1) / 2, 0.6, d]]) {
+        const g = new THREE.Mesh(new THREE.PlaneGeometry(gw, gd), GUT); g.rotation.x = -Math.PI / 2; g.position.set(gx, 0.008, gz); this.scene.add(g);
+      }
+    }
+    // what the street-cleaning department left behind: manure, straw, puddles, cabbage leaves
+    const r = mulberry(77), streetPts = [];
+    for (let i = 0; i < 260 && streetPts.length < 90; i++) {
+      const x = BX[0][0] + r() * (BX[7][1] - BX[0][0]), z = BZ[0][0] + r() * (BZ[3][1] - BZ[0][0]);
+      const onWalk = BX.some(([a, b]) => x > a - 3.6 && x < b + 3.6) && BZ.some(([a, b]) => z > a - 3.6 && z < b + 3.6);
+      if (!onWalk) streetPts.push([x, z]);
+    }
+    const kinds = [colorMat('#3a2c1e'), colorMat('#4a3a24'), colorMat('#a8904e'), colorMat('#4c5560'), colorMat('#6a7a4a')];
+    streetPts.forEach(([x, z], i) => {
+      const k = i % 5, m = new THREE.Mesh(new THREE.CircleGeometry(k === 3 ? 0.9 : 0.35, 7), kinds[k]);
+      m.rotation.x = -Math.PI / 2; m.rotation.z = r() * 6; m.scale.set(1 + r(), 0.6 + r() * 0.5, 1); m.position.set(x, 0.006 + k * 0.0005, z); this.scene.add(m);
+    });
   }
 
   // ------------------------------------------------------------ blocks of tenements
@@ -177,7 +199,7 @@ export class LowerEastSideZone extends Zone {
     this.panel(ax1 - 0.07, 1.7, Z(11.3), 0.6, 0.8, ['window_airshaft', { type: 'window', color: '#151518', w: 64, h: 64 }], -Math.PI / 2);
     // front room: the sweatshop
     this.box(X(5.9), 0, Z(16.6), 1.8, 0.76, 1.0, WOOD);
-    for (const lx of [5.4, 6.4]) this.box(X(lx), 0.76, Z(16.6), 0.4, 0.28, 0.28, '#1d1d1d', { collide: false });
+    for (const lx of [5.4, 6.4]) this.sewingMachine(X(lx), 0.76, Z(16.6));
     this.box(X(7.15), 0, Z(15.6), 0.6, 0.9, 0.6, '#2c2a30'); // pile of coats
     this.person('chana', X(5.2), Z(17.4), 0, { seated: true, photo: 'sweatshop' });
     if (!this.day2 || !flag('printed_sarah')) this.person('girl', X(6.6), Z(17.4), 0, { seated: true });   // Day 2, if printed: Sarah is at the Guild class
@@ -185,14 +207,14 @@ export class LowerEastSideZone extends Zone {
     if (!this.day2 && !flag('kessler_left')) this.kessler = this.person('kessler', X(7.0), Z(13.4), 0, { talk: 'kessler1', photo: null });
     this.target('sweatshop', X(5.9), 1.0, Z(16.6), 6);
     // kitchen: stove + washtub
-    this.box(X(7.1), 0, Z(14.4), 0.7, 0.85, 0.7, '#1a1a1a');
-    this.box(X(7.1), 0.85, Z(14.4), 0.14, 1.95, 0.14, '#1a1a1a', { collide: false });
+    this.range(X(7.1), Z(14.4));
     const tub = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.3, 0.35, 12), colorMat('#8a8a84')); tub.position.set(X(5.0), 0.18, Z(12.9)); this.scene.add(tub);
     this.lamp(X(5.9), 2.4, Z(16.2), 0xffb860, 3.5, 7);
     // bedroom: two chairs pushed together, a straw tick on the floor
     this.box(X(5.9), 0, Z(10.6), 2.2, 0.16, 1.0, ['mattress_straw', { type: 'solid', color: '#8a7a58' }], { collide: false });
     this.person('boarder', X(6.8), Z(11.9), 0, { seated: true });
     this.target('tenement', X(LOT / 2), 6, Z(0) + 0.6, 30);
+    this.apartmentDressing(X, Z);
 
     // Rivka's family at the hall door
     if (!this.day2) {
@@ -236,6 +258,70 @@ export class LowerEastSideZone extends Zone {
       const p = this.game.controls.pos;
       if (t > next) { next = t + 7 + Math.random() * 5; if (p.z < yz + 2 && p.z > yz1 - 1 && p.x > MX - 1 && p.x < MX + LOT + 1) this.flash.intensity = 30; }
     });
+  }
+
+  /** Singer-style sewing machine head on a table top at height y. */
+  sewingMachine(x, y, z) {
+    const BLACK = '#141414', GOLD = '#a8883a';
+    this.box(x, y, z, 0.42, 0.04, 0.2, '#2a2420', { collide: false });                 // bed plate
+    this.box(x + 0.15, y + 0.04, z, 0.08, 0.22, 0.1, BLACK, { collide: false });        // pillar
+    this.box(x - 0.01, y + 0.24, z, 0.4, 0.07, 0.09, BLACK, { collide: false });        // arm
+    this.box(x - 0.18, y + 0.08, z, 0.06, 0.18, 0.08, BLACK, { collide: false });       // head with needle bar
+    this.box(x + 0.02, y + 0.255, z + 0.047, 0.18, 0.03, 0.005, GOLD, { collide: false }); // gilt decal
+    const wheel = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.03, 12), colorMat('#2a2a2a')); wheel.rotation.x = Math.PI / 2; wheel.position.set(x + 0.2, y + 0.17, z - 0.07); this.scene.add(wheel);
+    const spool = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.05, 6), colorMat('#d8d0c0')); spool.position.set(x + 0.05, y + 0.31, z); this.scene.add(spool);
+    // iron treadle frame under the table
+    for (const e of [-0.2, 0.2]) this.box(x + e, 0, z, 0.04, y - 0.02, 0.5, '#1e1e1e', { collide: false });
+    this.box(x, 0.08, z + 0.05, 0.4, 0.03, 0.3, '#1e1e1e', { collide: false });
+  }
+
+  /** Cast-iron coal range with stovepipe, kettle, pot and a sad-iron warming on top. */
+  range(x, z) {
+    this.box(x, 0.18, z, 0.62, 0.62, 0.9, '#1a1a1a');
+    for (const e of [-0.3, 0.3]) for (const f of [-0.42, 0.42]) this.box(x + e * 0.9, 0, z + f * 0.9, 0.06, 0.18, 0.06, '#1a1a1a', { collide: false });
+    this.box(x - 0.315, 0.3, z + 0.12, 0.01, 0.34, 0.4, '#2a2a2a', { collide: false });     // oven door
+    this.box(x - 0.32, 0.47, z + 0.12, 0.02, 0.03, 0.18, '#8a8a84', { collide: false });     // handle
+    this.box(x - 0.315, 0.32, z - 0.25, 0.01, 0.12, 0.2, '#ff8a3a', { collide: false });     // firebox glow
+    this.box(x, 0.8, z, 0.66, 0.04, 0.94, '#262626', { collide: false });                    // top plate
+    this.box(x + 0.15, 0.84, z - 0.3, 0.12, 1.5, 0.12, '#1a1a1a', { collide: false });       // stovepipe
+    this.box(x + 0.27, 2.24, z - 0.3, 0.24, 0.12, 0.12, '#1a1a1a', { collide: false });      // elbow into the chimney
+    const kettle = new THREE.Mesh(new THREE.SphereGeometry(0.12, 10, 6), colorMat('#5a5650')); kettle.scale.y = 0.8; kettle.position.set(x - 0.1, 0.92, z + 0.2); this.scene.add(kettle);
+    const pot = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.13, 0.18, 12), colorMat('#3a3a3a')); pot.position.set(x - 0.08, 0.91, z - 0.15); this.scene.add(pot);
+    this.box(x + 0.12, 0.82, z + 0.32, 0.16, 0.08, 0.08, '#2a2a2a', { collide: false });    // sad-iron for pressing seams
+    const scuttle = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.18, 0.3, 10), colorMat('#2e2c28')); scuttle.position.set(x - 0.1, 0.15, z + 0.75); this.scene.add(scuttle);
+    for (let i = 0; i < 5; i++) { const c = new THREE.Mesh(new THREE.DodecahedronGeometry(0.05), colorMat('#121212')); c.position.set(x - 0.1 + Math.sin(i * 2) * 0.07, 0.31, z + 0.75 + Math.cos(i * 2) * 0.07); this.scene.add(c); }
+  }
+
+  /** Everyday things in the two-room-and-bedroom flat (Riis photographs; 97 Orchard St). */
+  apartmentDressing(X, Z) {
+    const WOODC = '#5c4630', NAVY = '#2a2e3a', GRAY = '#4a4a4e';
+    // FRONT ROOM (the sweatshop): bundles of cut coat pieces everywhere
+    for (const [lx, lz, w, d, c] of [[5.75, 16.45, 0.5, 0.36, NAVY], [6.15, 16.85, 0.4, 0.3, GRAY]]) this.box(X(lx), 0.76, Z(lz), w, 0.07, d, c, { collide: false });
+    for (let i = 0; i < 5; i++) this.box(X(7.2), 0.9 + i * 0.12, Z(15.6) + (i % 2) * 0.06, 0.55 - i * 0.04, 0.12, 0.5, i % 2 ? NAVY : GRAY, { collide: false });  // coats piled to finish
+    for (const [lx, lz, c] of [[4.75, 17.65, NAVY], [7.25, 17.6, GRAY], [7.3, 17.1, NAVY]]) { const h = this.box(X(lx), 0, Z(lz), 0.6, 0.35, 0.5, c, { collide: false }); h.rotation.y = lx; }
+    for (const lx of [5.2, 6.6]) { this.box(X(lx), 0, Z(17.75), 0.42, 0.45, 0.4, WOODC, { collide: false }); this.box(X(lx), 0.45, Z(17.93), 0.42, 0.5, 0.04, WOODC, { collide: false }); }   // chairs
+    // kerosene lamp on the table
+    const lb = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.09, 0.14, 10), colorMat('#7a8a6a')); lb.position.set(X(6.55), 0.83, Z(16.3)); this.scene.add(lb);
+    const ch = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.05, 0.2, 8), colorMat('#fff0c8', { basic: true })); ch.position.set(X(6.55), 1.0, Z(16.3)); this.scene.add(ch);
+    // lace valances on the yard windows, a shelf of dishes, a portrait, a Yiddish calendar
+    for (const lx of [5.0, 6.6]) this.box(X(lx), 2.1, Z(BLD) + 0.1, 0.95, 0.3, 0.02, '#e8e2d2', { collide: false });
+    this.box(X(LOT) - 0.15, 1.75, Z(16.6), 0.22, 0.03, 1.1, WOODC, { collide: false });
+    for (let i = 0; i < 4; i++) { const d = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.02, 10), colorMat(i % 2 ? '#e8e4dc' : '#7a8aa0')); d.rotation.z = Math.PI / 2; d.position.set(X(LOT) - 0.12, 1.86, Z(16.2) - i * 0.24); this.scene.add(d); }
+    this.panel(X(LOT) - 0.11, 2.0, Z(17.3), 0.36, 0.46, ['picture_portrait', { type: 'card', title: 'Mama & Papa', lines: 'Kovno, 1871', color: '#c8b896', w: 96, h: 128 }], -Math.PI / 2);
+    this.panel(X(4.4) + 0.11, 1.7, Z(16.9), 0.4, 0.55, ['calendar_yiddish', { type: 'card', title: 'לוח', lines: '5649\nתשרי · חשון', color: '#e8dcc0', w: 96, h: 128 }], Math.PI / 2);
+    for (const lz of [15.6, 15.9]) this.box(X(4.4) + 0.08, 1.2, Z(lz), 0.05, 0.75, 0.32, lz > 15.7 ? '#3a3240' : '#5a3a2a', { collide: false });   // coats on nails
+    // KITCHEN: mantel shelf with Sabbath candlesticks, washboard by the tub, a tin on a nail
+    this.box(X(LOT) - 0.15, 1.55, Z(13.6), 0.22, 0.04, 0.9, WOODC, { collide: false });
+    for (const dz of [-0.15, 0.15]) { const cs = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.05, 0.24, 8), colorMat('#b8913a')); cs.position.set(X(LOT) - 0.15, 1.69, Z(13.6) + dz); this.scene.add(cs); const cn = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.014, 0.12, 6), colorMat('#f0ead8')); cn.position.set(X(LOT) - 0.15, 1.87, Z(13.6) + dz); this.scene.add(cn); }
+    const wb = this.box(X(5.35), 0, Z(12.75), 0.38, 0.6, 0.03, '#8a7a5a', { collide: false }); wb.rotation.x = -0.2;
+    this.box(X(LOT) - 0.12, 1.25, Z(12.9), 0.03, 0.3, 0.24, '#7a7a74', { collide: false });
+    // BEDROOM: the steamer trunk they carried from Europe, clothes on a line
+    this.box(X(4.85), 0, Z(11.9), 0.75, 0.48, 0.45, ['trunk_steamer', { type: 'planks', color: '#6a4a2a', n: 3 }], { collide: false });
+    for (const dz of [-0.15, 0.15]) this.box(X(4.85), 0, Z(11.9) + dz, 0.77, 0.5, 0.03, '#2a2420', { collide: false });
+    this.box(X(5.9), 2.0, Z(11.3), 2.8, 0.01, 0.01, '#bbb', { collide: false });
+    for (const [lx, c] of [[5.1, '#d8d0c0'], [5.6, '#8a6a5a'], [6.4, '#c8c0b0']]) this.box(X(lx), 1.45, Z(11.3), 0.4, 0.55, 0.01, c, { collide: false });
+    // HALL: one dim gas jet for four families (halls were pitch dark; the 1879 law asked for some light)
+    this.lamp(X(3.75), 2.35, Z(9.5), 0xffb060, 1.6, 5);
   }
 
   onAction(name) {
@@ -460,6 +546,8 @@ export class LowerEastSideZone extends Zone {
       // projecting pressed-metal cornice with brackets
       this.box((x0 + x1) / 2, h - 0.75, z + dir * 0.32, x1 - x0, 0.75, 0.64, '#3b3530', { collide: false });
       for (let x = x0 + 0.5; x < x1; x += 1.9) this.box(x, h - 1.25, z + dir * 0.22, 0.22, 0.5, 0.44, '#2e2a26', { collide: false });
+      // chimney stacks on the party walls
+      if (dir === 1) for (let i = 0; i <= lots; i++) if (r() < 0.7) this.box(x0 + i * lw + (i === 0 ? 0.4 : i === lots ? -0.4 : 0), h, (z0 + z1) / 2 + (r() - 0.5) * 6, 0.7, 1.1 + r() * 0.8, 1.2, ['chimney_brick', { type: 'brick', color: '#6e3426' }], { collide: false });
       const onHester = (dir === 1 && z === EW.Hester[0]) || (dir === -1 && z === EW.Hester[1]);
       if (!onHester) continue;
       for (let i = 0; i < lots; i++) {

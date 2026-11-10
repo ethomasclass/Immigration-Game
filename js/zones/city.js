@@ -120,26 +120,113 @@ export class CityZone extends Zone {
 
   // ------------------------------------------------------------ Tweed Courthouse
   courthouse() {
-    // ~79 x 45 m, long axis east-west, 4.5 stories, Corinthian portico (south), grand stair (north)
-    this.building(-38, 38, -102, -58, 24, { s: ['facade_courthouse', { type: 'facade', color: '#e9e6dd', floors: 4, bays: 5, storeFrac: 0.2, cornice: '#d8d4c8', stone: '#cfcac0', lit: 0.1, civic: true, w: 256, h: 512 }], n: ['facade_courthouse', {}] }, ['wall_marble', MARBLE[1]], { lot: 12 });
-    // south portico + steps
-    for (let i = 0; i < 6; i++) this.box(-8 + i * 3.2, 2.5, -55.5, 1.0, 14, 1.0, '#efe9dc');
+    // ~79 x 45 m, long axis east-west, 4.5 stories, Corinthian portico (south), grand stair (north).
+    // The shell is one box; you can walk in through the portico to the octagonal rotunda.
+    this.building(-38, 38, -102, -58, 24, { s: ['facade_courthouse', { type: 'facade', color: '#e9e6dd', floors: 4, bays: 5, storeFrac: 0.2, cornice: '#d8d4c8', stone: '#cfcac0', lit: 0.1, civic: true, w: 256, h: 512 }], n: ['facade_courthouse', {}] }, ['wall_marble', MARBLE[1]], { lot: 12, collide: false });
+    // south portico on low steps (the real one sits on a raised basement)
+    for (let i = 0; i < 6; i++) this.box(-8 + i * 3.2, 0.24, -55.5, 1.0, 16.26, 1.0, '#efe9dc');
     this.box(0, 16.5, -55.5, 20, 2.2, 2, '#e2dccf', { collide: false });
     const ped = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 12, 4, 3, 1), colorMat('#e2dccf')); ped.rotation.set(Math.PI / 2, 0, 0); ped.scale.set(1, 0.3, 1); ped.position.set(0, 20.6, -55.5); this.scene.add(ped);
-    this.box(0, 0, -53.5, 22, 2.5, 5, '#cfc9bc');
+    for (let i = 0; i < 3; i++) this.box(0, 0, -57.3 + i * 0.7 + 0.35 * 0, 22 + (2 - i) * 1.2, 0.08 * (3 - i), 2.6 + (2 - i) * 1.4, '#cfc9bc', { collide: false });
     this.panel(0, 17.7, -54.45, 14, 0.9, ['sign_courthouse', { type: 'sign', title: 'NEW YORK COUNTY COURTHOUSE', color: '#d8d2c4', ink: '#3a3028', w: 448, h: 40 }]);
+    // open doors with lamplight inside
+    this.panel(0, 2.25, -57.94, 3.6, 4.5, ['door_courthouse_open', { type: 'doorway', w: 128, h: 160 }]);
     // grand stair on the Chambers Street side (removed 1942)
     for (let i = 0; i < 10; i++) this.box(0, 0, -103 - i * 0.7, 24 - i * 0.4, 3 - i * 0.3, 0.7, '#d8d2c4', { collide: false });
     this.colliders.push({ minX: -12, maxX: 12, minZ: -110, maxZ: -102 });
     this.target('courthouse', 0, 10, -56, 60);
     this.readable('courthouse', 12, 1.3, -50.5, { prompt: 'Read about the courthouse', photo: null });
     this.box(12, 0, -50.8, 0.6, 1.0, 0.3, '#6a6458');
-    // Plunkitt's bootblack-stand "office" at the courthouse
-    this.box(-14, 0, -50.2, 1.6, 0.5, 1.2, '#4a3020');
-    this.box(-14, 0.5, -50.6, 1.6, 0.6, 0.4, '#4a3020', { collide: false });
-    this.person('plunkitt', -14, -50.3, 0);
-    this.crowd(5, -12.4, -49, 0, { scale: 0.75 });
-    this.crowd(4, -16.8, -48, 0); this.crowd(2, -10, -47, 0);
+    this.rotunda();
+  }
+
+  /**
+   * The courthouse rotunda: an octagon of stacked red-and-cream brick arcades under a skylight.
+   * Plunkitt keeps his bootblack-stand "office" here. On the wall, the Ring's bills tell the story of graft.
+   */
+  rotunda() {
+    const CX = 0, CZ = -80, R = 10.8, AP = R * Math.cos(Math.PI / 8), HT = 18, FW = 2 * R * Math.sin(Math.PI / 8), DOOR = 1.8;
+    // solid parts of the building around the corridor + octagon (cheap box colliders)
+    for (const c of [[-38, -11.2, -102, -58], [11.2, 38, -102, -58], [-11.2, -DOOR, -70.4, -58], [DOOR, 11.2, -70.4, -58], [-11.2, 11.2, -102, -90.6]])
+      this.colliders.push({ minX: c[0], maxX: c[1], minZ: c[2], maxZ: c[3] });
+    // entrance hall from the portico
+    const PLASTER = ['wall_courthouse_hall', { type: 'plaster', color: '#d9cfb8' }];
+    this.panel(-DOOR, 2.6, -64.2, 12.4, 5.2, PLASTER, Math.PI / 2); this.panel(DOOR, 2.6, -64.2, 12.4, 5.2, PLASTER, -Math.PI / 2);
+    this.ceiling(0, -64.2, 3.6, 12.4, ['ceiling_courthouse', { type: 'plaster', color: '#e8e0cc' }], 5.2);
+    this.floor(0, -64.2, 3.6, 12.4, ['floor_courthouse', { type: 'tiles', n: 8 }, { repeat: [1, 4] }], 0.03);
+    // octagon walls (inside faces), with the doorway arch in the south face
+    const ARC = ['wall_rotunda_arcade', { type: 'arcade', tiers: 3, n: 2, w: 512, h: 768 }];
+    for (let k = 0; k < 8; k++) {
+      const f = k * Math.PI / 4, fx = CX + Math.sin(f) * AP, fz = CZ + Math.cos(f) * AP;
+      if (k === 0) {
+        const sw = (FW - DOOR * 2) / 2;
+        for (const sx of [-1, 1]) this.panel(sx * (DOOR + sw / 2), HT / 2, fz, sw, HT, ARC, Math.PI);
+        this.panel(0, (HT + 5.2) / 2, fz, DOOR * 2, HT - 5.2, ['wall_rotunda_plain', { type: 'plaster', color: '#e8dcc4' }], Math.PI);
+      } else this.panel(fx, HT / 2, fz, FW, HT, ARC, f + Math.PI);
+      // collider points along the face (none in the doorway)
+      const ux = Math.cos(f), uz = -Math.sin(f);
+      for (let d = -FW / 2; d <= FW / 2; d += 0.5) {
+        if (k === 0 && Math.abs(d) < DOOR) continue;
+        const x = fx + ux * d, z = fz + uz * d;
+        this.colliders.push({ minX: x - 0.4, maxX: x + 0.4, minZ: z - 0.4, maxZ: z + 0.4 });
+      }
+    }
+    // gallery floor ledges and a polished marble floor
+    const t0 = -3 * Math.PI / 8;
+    for (const y of [6, 12]) { const g = new THREE.RingGeometry(R - 0.8, R, 8, 1, t0); g.rotateX(-Math.PI / 2); const m = new THREE.Mesh(g, colorMat('#bfb39a', { side: THREE.DoubleSide })); m.position.set(CX, y - 0.6, CZ); this.scene.add(m); }
+    const fg = new THREE.CircleGeometry(R, 8, t0); fg.rotateX(-Math.PI / 2);
+    const fuv = fg.attributes.uv; for (let i = 0; i < fuv.count; i++) fuv.setXY(i, fuv.getX(i) * 3, fuv.getY(i) * 3);
+    const fl = new THREE.Mesh(fg, material('floor_courthouse', { type: 'tiles', n: 8 }, { repeat: [1, 1] })); fl.position.set(CX, 0.03, CZ); this.scene.add(fl);
+    this.noAO = true;
+    // ceiling ring and the octagonal skylight with its iron muntins
+    const cg = new THREE.RingGeometry(5.6, R + 0.1, 8, 1, t0); cg.rotateX(Math.PI / 2);
+    const ce = new THREE.Mesh(cg, colorMat('#e3d8c0')); ce.position.set(CX, HT, CZ); this.scene.add(ce);
+    const sg = new THREE.CircleGeometry(5.7, 8, t0); sg.rotateX(Math.PI / 2);
+    const sky = new THREE.Mesh(sg, colorMat('#f2f0e4', { basic: true })); sky.position.set(CX, HT + 1.2, CZ); this.scene.add(sky);
+    const well = new THREE.Mesh(new THREE.CylinderGeometry(5.7, 5.6, 1.2, 8, 1, true, Math.PI / 8), colorMat('#d8ccb2', { side: THREE.DoubleSide })); well.position.set(CX, HT + 0.6, CZ); this.scene.add(well);
+    for (let i = 0; i < 4; i++) this.box(CX, HT + 1.1, CZ, 11.4, 0.12, 0.12, '#2a2622', { collide: false, ry: i * Math.PI / 4 });
+    // gas chandelier on a long rod from the skylight
+    this.box(CX, 7.2, CZ, 0.06, HT - 7.2, 0.06, '#2a2622', { collide: false });
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(1.3, 0.05, 6, 24), colorMat('#8a6a2a')); ring.rotation.x = Math.PI / 2; ring.position.set(CX, 7.2, CZ); this.scene.add(ring);
+    for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4; const gl = new THREE.Mesh(new THREE.SphereGeometry(0.13, 8, 6), colorMat('#ffe8b0', { basic: true })); gl.position.set(CX + Math.sin(a) * 1.3, 7.35, CZ + Math.cos(a) * 1.3); this.scene.add(gl); }
+    this.lamp(CX, 6.8, CZ, 0xffe2b0, 10, 22);
+    this.lamp(0, 4.4, -63, 0xffd8a0, 5, 10);
+    // office signs over the arches
+    const offices = [[1, 'COUNTY CLERK'], [2, 'NATURALIZATION'], [3, 'SURROGATE'], [5, 'SUPREME COURT'], [6, 'TAX COMMISSIONERS'], [7, 'SHERIFF']];
+    for (const [k, t] of offices) {
+      const f = k * Math.PI / 4, x = CX + Math.sin(f) * (AP - 0.06), z = CZ + Math.cos(f) * (AP - 0.06);
+      this.panel(x, 5.0, z, Math.max(3.4, t.length * 0.24), 0.55, ['sign_ch_' + t, { type: 'sign', title: t, color: '#1e1a16', ink: '#d8b860', w: 384, h: 48 }], f + Math.PI);
+    }
+    // naturalization desk: newcomers in line, a party man vouching for them ("Takes him to the courthouse. Then he can vote.")
+    { const f = 2 * Math.PI / 4, x = CX + Math.sin(f) * (AP - 1.6), z = CZ + Math.cos(f) * (AP - 1.6);
+      this.box(x, 0, z, 1.0, 1.15, 3.6, ['desk_courthouse', { type: 'planks', color: '#4e3826', n: 4 }]);
+      this.box(x + 0.7, 1.15, z, 0.4, 0.04, 0.6, '#efe6cc', { collide: false });
+      this.crowd(6, x + 0.4, z - 0.6, 0); for (let i = 0; i < 4; i++) this.crowd([1, 3, 5, 7][i], x - 1.5 - i * 0.9, z + 0.4 + (i % 2) * 0.5, 0); }
+    // Plunkitt's bootblack stand: two raised chairs, a footrest, brushes and tins
+    { const x = CX - 6.2, z = CZ + 3.2;
+      this.box(x, 0, z, 2.6, 0.55, 1.1, ['bootblack_stand', { type: 'planks', color: '#4a3020', n: 4 }]);
+      for (const sx of [-0.65, 0.65]) { this.box(x + sx, 0.55, z - 0.2, 0.9, 0.12, 0.7, '#6a2a22', { collide: false }); this.box(x + sx, 0.67, z - 0.5, 0.9, 0.8, 0.1, '#6a2a22', { collide: false }); this.box(x + sx, 0.25, z + 0.5, 0.3, 0.06, 0.3, '#8a6a2a', { collide: false }); }
+      this.person('plunkitt', x + 1.75, z + 0.35, 0);
+      this.crowd(5, x - 0.6, z + 0.9, 0, { scale: 0.72 });     // the bootblack boy
+      this.crowd(4, x + 2.2, z + 1.6, 0); this.crowd(2, x - 2.2, z + 1.8, 0);
+      this.plunkittPos = [x + 1.75, z + 1.6]; }
+    // THE RING'S BILLS: framed copies hung where everyone waiting can read them
+    { const f = 7 * Math.PI / 4 + 0.0, bx = CX + Math.sin(f) * (AP - 0.08), bz = CZ + Math.cos(f) * (AP - 0.08), ry = f + Math.PI, ux = Math.cos(f), uz = -Math.sin(f);
+      this.panel(bx, 2.0, bz, 4.6, 2.9, ['board_graft', { type: 'solid', color: '#3a2a1e' }], ry);
+      const bills = [
+        ['bill_garvey', { head: 'COUNTY OF NEW YORK', sub: 'To A. J. Garvey, Plasterer', items: [['Plastering, Court House', ''], ['Two days’ work', '$133,187'], ['', ''], ['', '']], stamp: 'PAID' }],
+        ['bill_carpenter', { head: 'COUNTY OF NEW YORK', sub: 'To a Carpenter', items: [['Carpentry, Court House', ''], ['One month', '$360,751'], ['', ''], ['', '']], stamp: 'PAID' }],
+        ['bill_chairs', { head: 'COUNTY OF NEW YORK', sub: 'To a Furniture Maker', items: [['3 tables and', ''], ['40 chairs', '$179,729'], ['', ''], ['', '']], stamp: 'PAID' }],
+      ];
+      bills.forEach(([key, spec], i) => this.panel(bx - ux * (i - 1) * 1.45 + Math.sin(f) * -0.01, 2.0, bz - uz * (i - 1) * 1.45 + Math.cos(f) * -0.01, 1.3, 1.8, [key, { type: 'bill', w: 192, h: 256, ...spec }], ry));
+      this.panel(bx - Math.sin(f) * 0.02, 3.75, bz - Math.cos(f) * 0.02, 4.4, 0.45, ['sign_ch_bills', { type: 'sign', title: 'WHAT THIS BUILDING COST', color: '#efe6cc', ink: '#3a2a1e', w: 384, h: 40 }], ry);
+      this.readable('graft', bx - Math.sin(f) * 1.6, 1.5, bz - Math.cos(f) * 1.6, { prompt: 'Read the bills on the wall' });
+      this.target('graft', bx, 2.0, bz, 9); this.graftPos = [bx - Math.sin(f) * 1.6, bz - Math.cos(f) * 1.6]; }
+    // benches between, and spittoons
+    for (const k of [3, 5]) { const f = k * Math.PI / 4, x = CX + Math.sin(f) * (AP - 1.2), z = CZ + Math.cos(f) * (AP - 1.2); this.bench(x, z, f + Math.PI); }
+    for (const [x, z] of [[-3, -71.8], [3, -71.8], [-7.6, -86], [7.6, -86]]) { const sp = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.2, 0.3, 10), colorMat('#8a6a2a')); sp.position.set(x, 0.15, z); this.scene.add(sp); }
+    this.crowd(0, 4, -88, 0); this.crowd(7, -3.4, -90, 0);
+    this.noAO = false;
   }
 
   // ------------------------------------------------------------ Mullett's Post Office at the tip
@@ -855,7 +942,7 @@ export class CityZone extends Zone {
       ],
       parks: [{ x0: BW, x1: 40, z0: CHAMBERS, z1: 140 }],
       pois: [
-        { x: 0, z: 0, label: 'City Hall' }, { x: 0, z: -80, label: 'Tweed Courthouse' }, { x: -14, z: -50, label: 'Plunkitt' },
+        { x: 0, z: 0, label: 'City Hall' }, { x: 0, z: -80, label: 'Tweed Courthouse' }, { x: -6, z: -77, label: 'Plunkitt' },
         { x: -70, z: 185, label: 'Post Office' }, { x: along(135, PR_W)[0], z: along(135, PR_W)[1], label: 'Tribune' },
         { x: along(106, PR_W)[0], z: along(106, PR_W)[1], label: 'New Times Bldg' }, { x: along(161, PR_W)[0], z: along(161, PR_W)[1], label: 'Courier (cartoon)' },
         { x: along(281, PR_W)[0], z: along(281, PR_W)[1], label: 'Brooklyn Bridge' }, { x: along(292, PR_W - 4)[0], z: along(292, PR_W - 4)[1], label: 'El station' },
@@ -885,7 +972,8 @@ export class CityZone extends Zone {
       { text: 'From the roof, wave to Giuseppe on the open top floor', done: flag('saw_fall') },
       { text: up ? 'Hurry! Take the elevator down to the street' : 'Get to Giuseppe on the sidewalk', done: flag('saw_aftermath'), at: up ? this.potterDoor : this.afterPos },
       { text: `Bring the Editor at least 3 photographs from today (${Math.min(n, 3)}/3), at the Courier office`, done: flag('endorsed'), at: [ex, ez] },
-      { text: 'Ask Mr. Plunkitt at the courthouse how Tammany wins votes', done: flag('learned_machine'), at: [-14, -50.3], optional: true },
+      { text: 'Find Mr. Plunkitt inside the courthouse and ask how Tammany wins votes', done: flag('learned_machine'), at: this.plunkittPos || [-6, -76], optional: true },
+      { text: 'Read what the courthouse cost (the bills on the rotunda wall)', done: flag('read_graft'), at: this.graftPos || [7, -87], optional: true },
       { text: 'Ask the old reporter about Boss Tweed', done: flag('learned_tweed'), at: [ox, oz], optional: true },
       { text: 'Ask the foreman why buildings are getting taller', done: flag('learned_skyscraper'), at: [fx, fz], optional: true },
       { text: 'Photograph the Brooklyn Bridge', done: flag('photo_bridge'), at: [bx, bz], optional: true },

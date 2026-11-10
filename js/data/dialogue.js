@@ -1269,7 +1269,7 @@ export const DIALOGUE = {
       tammany: {
         lines: [
           'Gone? Ha! Tweed is gone. Tammany got smarter.',
-          'Go talk to Plunkitt. He sits at the bootblack stand by the courthouse, of all places. He\'ll tell you how it works. He loves to talk.',
+          'Go talk to Plunkitt. He sits at the bootblack stand inside the courthouse, of all places. He\'ll tell you how it works. He loves to talk.',
         ],
         next: 'hub',
       },
@@ -2324,6 +2324,11 @@ export const DOCS = {
   courthouse: {
     title: 'The "Tweed Courthouse"',
     text: 'The New York County Courthouse stands behind City Hall. It took about twenty years to build and cost the city around 13 million dollars, more than the United States paid for Alaska.\n\nMuch of that money went into the pockets of the Tweed Ring, through fake and padded bills.',
+  },
+  graft: {
+    title: 'What This Building Cost',
+    text: 'In July 1871 The New York Times printed copies of the county\'s secret account books. They showed what friends of the Tweed Ring charged the city for this courthouse:\n\n• Andrew J. Garvey, a plasterer: $133,187 for two days of work.\n• A carpenter: $360,751 for one month, in a building with very little woodwork.\n• Three tables and forty chairs: $179,729.\n\nThe contractors padded every bill, kept part of the extra, and paid the rest back to the Ring. Using public office to get rich like this is called graft.\n\nTweed was convicted in 1873 and died in the Ludlow Street Jail in 1878. Tammany Hall survived him.',
+    source: 'Figures as printed in 1871 and cited by historians of the Tweed Ring.',
   },
   bridge: {
     title: 'The Brooklyn Bridge',

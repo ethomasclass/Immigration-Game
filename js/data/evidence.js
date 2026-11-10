@@ -47,6 +47,7 @@ export const SUBJECTS = {
   // ---- Zone 4 ----
   nast:       { title: 'The Cartoon', desc: 'Thomas Nast\'s 1871 cartoon of the Tweed Ring.', col: 'machine', zone: 'city' },
   courthouse: { title: 'The Courthouse', desc: 'The "Tweed Courthouse," where the Tweed Ring stole millions.', col: 'machine', zone: 'city' },
+  graft:      { title: 'The Bills', desc: 'The Tweed Ring\'s padded bills for the courthouse: $133,187 for two days of plastering.', col: 'machine', zone: 'city' },
   plunkitt:   { title: 'The Boss', desc: 'Tammany leader George Washington Plunkitt at his bootblack-stand "office."', col: 'machine', zone: 'city' },
   oldrep:     { title: 'The Old Reporter', desc: 'A reporter who saw the newspapers bring down Boss Tweed.', col: 'machine', zone: 'city' },
   tribune:    { title: 'The Tower', desc: 'The Tribune Building (1875), one of the tallest in New York.', col: 'growth', zone: 'city' },

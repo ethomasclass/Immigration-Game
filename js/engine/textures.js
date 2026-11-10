@@ -427,6 +427,79 @@ const DRAW = {
     const lines = String(s.title || '').split('\n');
     lines.forEach((ln, i) => { ctx.font = `${i ? '' : 'bold '}${Math.round(h * (i ? 0.085 : 0.11))}px Georgia`; ctx.fillText(ln, w / 2, 8 + h * (0.17 + i * 0.125), w - 30); });
   },
+  // Tweed Courthouse rotunda wall: tiers of round arches in red and cream brick
+  // (Eidlitz's polychrome work) with cast-iron balustrades at each floor.
+  arcade(ctx, w, h, s, r) {
+    const tiers = s.tiers || 3, th = h / tiers, n = s.n || 2, aw = w / n;
+    ctx.fillStyle = s.color || '#e8dcc4'; ctx.fillRect(0, 0, w, h);
+    noise(ctx, w, h, r, 10, 1200);
+    for (let t = 0; t < tiers; t++) {
+      const y0 = t * th;
+      for (let i = 0; i < n; i++) {
+        const cx = i * aw + aw / 2, ow = aw * 0.62, top = y0 + th * 0.18, bot = y0 + th * 0.9;
+        // voussoirs: alternating red and cream around the arch
+        for (let k = 0; k < 13; k++) {
+          const a0 = Math.PI + k * Math.PI / 13, a1 = a0 + Math.PI / 13;
+          ctx.fillStyle = k % 2 ? '#a8432e' : '#efe6d2';
+          ctx.beginPath(); ctx.arc(cx, top + ow / 2, ow / 2 + aw * 0.07, a0, a1); ctx.arc(cx, top + ow / 2, ow / 2, a1, a0, true); ctx.closePath(); ctx.fill();
+        }
+        // dark opening (the gallery corridor behind)
+        const gr = ctx.createLinearGradient(0, top, 0, bot); gr.addColorStop(0, '#3a2c22'); gr.addColorStop(1, '#5a463a');
+        ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(cx, top + ow / 2, ow / 2, Math.PI, 0); ctx.lineTo(cx + ow / 2, bot); ctx.lineTo(cx - ow / 2, bot); ctx.closePath(); ctx.fill();
+        // a lit office door deep in the gallery
+        ctx.fillStyle = 'rgba(240,200,120,.35)'; ctx.fillRect(cx - ow * 0.12, bot - th * 0.4, ow * 0.24, th * 0.4);
+        // red brick pier bands
+        ctx.fillStyle = '#b5543a';
+        for (let b = 0; b < 6; b++) ctx.fillRect(i * aw, top + ow / 2 + b * th * 0.09, aw * 0.12, th * 0.035), ctx.fillRect((i + 1) * aw - aw * 0.12, top + ow / 2 + b * th * 0.09, aw * 0.12, th * 0.035);
+      }
+      // iron balustrade along the gallery floor
+      if (t < tiers - 1 || s.topRail) {
+        const ry = y0 + th * 0.9;
+        ctx.fillStyle = '#2a2622'; ctx.fillRect(0, ry - th * 0.2, w, th * 0.025); ctx.fillRect(0, ry - 2, w, 4);
+        for (let x = 4; x < w; x += 9) ctx.fillRect(x, ry - th * 0.2, 2, th * 0.2);
+      }
+      ctx.fillStyle = '#cbbfa6'; ctx.fillRect(0, y0 + th * 0.9, w, th * 0.1);     // floor slab edge
+      ctx.fillStyle = 'rgba(0,0,0,.18)'; ctx.fillRect(0, y0 + th * 0.985, w, th * 0.015);
+    }
+  },
+  // An open double door seen from outside, lamplit hall beyond.
+  doorway(ctx, w, h, s) {
+    ctx.fillStyle = s.frame || '#5a4632'; ctx.fillRect(0, 0, w, h);
+    const g = ctx.createLinearGradient(0, h, 0, 0); g.addColorStop(0, '#8a6a44'); g.addColorStop(0.5, '#c8a066'); g.addColorStop(1, '#6a5038');
+    ctx.fillStyle = g; ctx.fillRect(w * 0.1, h * 0.08, w * 0.8, h * 0.92);
+    ctx.fillStyle = 'rgba(255,230,170,.5)'; ctx.beginPath(); ctx.arc(w / 2, h * 0.3, w * 0.12, 0, 7); ctx.fill();
+    ctx.fillStyle = '#3a2a1e'; ctx.fillRect(w * 0.1, h * 0.08, w * 0.14, h * 0.92); ctx.fillRect(w * 0.76, h * 0.08, w * 0.14, h * 0.92);
+    ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(w * 0.1, h * 0.08, w * 0.8, h * 0.04);
+  },
+  // Polished marble tile floor in two colors, laid on the diagonal.
+  tiles(ctx, w, h, s, r) {
+    const n = s.n || 8, c = w / n;
+    for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
+      ctx.fillStyle = (x + y) % 2 ? (s.color2 || '#7a6e62') : (s.color || '#e6e0d2');
+      ctx.fillRect(x * c, y * c, c, c);
+      ctx.fillStyle = `rgba(255,255,255,${r() * 0.06})`; ctx.fillRect(x * c + r() * c * 0.5, y * c, c * 0.3, c);
+    }
+    ctx.strokeStyle = 'rgba(0,0,0,.18)'; ctx.lineWidth = 1;
+    for (let i = 0; i <= n; i++) { ctx.beginPath(); ctx.moveTo(i * c, 0); ctx.lineTo(i * c, h); ctx.moveTo(0, i * c); ctx.lineTo(w, i * c); ctx.stroke(); }
+  },
+  // A contractor's bill to the county, on ruled ledger paper (for the graft display).
+  bill(ctx, w, h, s, r) {
+    ctx.fillStyle = '#efe6cc'; ctx.fillRect(0, 0, w, h); noise(ctx, w, h, r, 16, 1600);
+    ctx.strokeStyle = 'rgba(70,110,150,.35)'; ctx.lineWidth = 1;
+    for (let y = h * 0.3; y < h * 0.95; y += h * 0.07) { ctx.beginPath(); ctx.moveTo(10, y); ctx.lineTo(w - 10, y); ctx.stroke(); }
+    ctx.strokeStyle = 'rgba(170,40,40,.5)'; ctx.beginPath(); ctx.moveTo(w * 0.72, h * 0.25); ctx.lineTo(w * 0.72, h * 0.95); ctx.stroke();
+    ctx.fillStyle = '#2b2118'; ctx.textAlign = 'center';
+    ctx.font = `bold ${Math.round(h * 0.075)}px Georgia`; ctx.fillText(s.head || 'COUNTY OF NEW YORK', w / 2, h * 0.1, w - 20);
+    ctx.font = `italic ${Math.round(h * 0.055)}px Georgia`; ctx.fillText(s.sub || 'To the Board of Supervisors, Dr.', w / 2, h * 0.18, w - 20);
+    ctx.textAlign = 'left'; ctx.font = `${Math.round(h * 0.06)}px Georgia`;
+    (s.items || []).forEach(([what, amt], i) => {
+      const y = h * (0.35 + i * 0.14);
+      ctx.fillStyle = '#2b2118'; ctx.fillText(what, 16, y, w * 0.66);
+      ctx.textAlign = 'right'; ctx.fillStyle = '#8a1e1a'; ctx.font = `bold ${Math.round(h * 0.065)}px Georgia`; ctx.fillText(amt, w - 14, y, w * 0.26);
+      ctx.textAlign = 'left'; ctx.font = `${Math.round(h * 0.06)}px Georgia`;
+    });
+    if (s.stamp) { ctx.save(); ctx.translate(w * 0.7, h * 0.86); ctx.rotate(-0.2); ctx.strokeStyle = 'rgba(150,30,30,.7)'; ctx.lineWidth = 3; ctx.strokeRect(-w * 0.2, -h * 0.05, w * 0.4, h * 0.1); ctx.fillStyle = 'rgba(150,30,30,.75)'; ctx.textAlign = 'center'; ctx.font = `bold ${Math.round(h * 0.05)}px Georgia`; ctx.fillText(s.stamp, 0, h * 0.018); ctx.restore(); }
+  },
   // Picket railing on a transparent background (used with alphaTest).
   picket(ctx, w, h, s) {
     ctx.clearRect(0, 0, w, h);
