@@ -24,6 +24,13 @@ This research backs the game's environments. Colors are rendering estimates. Poi
   - In 1888 it was **copper brown**, not green; the green came around 1900–1906.
   - It worked as a lighthouse until 1902.
 
+### Castle Garden details added from 1871–1880 accounts
+- **Island fort:** built 1808–1811 on rocks off the tip of Manhattan and reached by a timber causeway. Landfill joined it to the Battery in the 1850s, so in 1888 only the harbor side faces water.
+- **Walls:** square brownstone blocks about six feet thick, with the old gun ports still open. The nail-studded fort gates were still hung but left open.
+- **Inside (documented):** registry desks, a railroad ticket counter, exchange brokers with a blackboard of the day's rates, a telegraph office, a desk where a clerk wrote letters for free, a bread stand (bread, milk, coffee, sausage), an iron staircase to the offices, and a blackboard of arriving steamers.
+- **Outside (documented):** a hospital shed by the water entrance, customs sheds with baggage scales at the dock, a tall board fence, and barges towed by a tug.
+- **Guesses in the game:** the exchange rates on the blackboard, the sign wording, the pot-belly stoves, and the roof color are plausible but not confirmed by a source.
+
 ## Lower East Side
 - **Hester Street, west to east:** Bowery (Third Ave El overhead), Chrystie, Forsyth, Eldridge, **Allen (Second Ave El overhead, opened 1880, stations at Canal and Grand)**, Orchard, Ludlow, Essex.
 - **Block sizes:** blocks were about 200 ft. Side streets were about 50 ft wide building to building (a 30 ft roadway and 10 ft sidewalks). The Bowery was about 100 ft wide.

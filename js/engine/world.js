@@ -35,8 +35,15 @@ export class Zone {
     for (const m of this.movers || []) this.stepMover(m, dt, pp);
     for (const n of this.npcs) {
       if (!n.group.visible) continue;
-      if (n.path) this.stepWalker(n, dt, pp);
-      animateCutout(n.group, this.time, cam, speaker && speaker === n.id && n.talking !== false && d.currentTree === n.talkTree, n.path && !n.paused ? n : null);
+      if (n.goto) this.stepGoto(n, dt);
+      else if (n.path) this.stepWalker(n, dt, pp);
+      // People far away (hidden by fog) are not drawn or animated: keeps the frame rate up.
+      const gp = n.group.position, far = (gp.x - pp.x) ** 2 + (gp.z - pp.z) ** 2 > (this.cullDist || 95) ** 2;
+      const cut = n.group.children;
+      if (far !== n.far) { n.far = far; for (const ch of cut) ch.visible = !far; }
+      if (far) continue;
+      const walking = n.goto ? n : (n.path && !n.paused ? n : null);
+      animateCutout(n.group, this.time, cam, speaker && speaker === n.id && n.talking !== false && d.currentTree === n.talkTree, walking);
     }
   }
 
@@ -217,13 +224,40 @@ export class Zone {
     g.position.set(x, y, z);
     this.scene.add(g);
     const height = (c.height || 1.7) * scale;
-    const npc = { id, group: g, height, talkTree: talk };
+    const npc = { id, group: g, height, talkTree: talk, speed: 1.25 };
     this.npcs.push(npc);
     if (seated) this.box(x - Math.sin(ry) * 0.25, y, z - Math.cos(ry) * 0.25, 0.45, 0.45, 0.45, '#4a3420', { collide: false });
-    if (!y) this.colliders.push({ minX: x - 0.3, maxX: x + 0.3, minZ: z - 0.3, maxZ: z + 0.3 });
-    if (talk) this.interact({ x, y: y + height * 0.8, z, r: 2.4, prompt: prompt || `Talk to ${c.name || id}`, action: () => this.game.talk(talk) });
-    if (photo) this.target(photo, x, y + height * 0.7, z, 9);
+    if (!y) { npc.col = { minX: x - 0.3, maxX: x + 0.3, minZ: z - 0.3, maxZ: z + 0.3 }; this.colliders.push(npc.col); }
+    if (talk) npc.it = this.interact({ x, y: y + height * 0.8, z, r: 2.4, prompt: prompt || `Talk to ${c.name || id}`, action: () => this.game.talk(npc.talkTree) });
+    if (photo) npc.tg = this.target(photo, x, y + height * 0.7, z, 9);
     return npc;
+  }
+
+  /** Send a person walking along [x, z] points. Their talk prompt, photo target and collider travel with them. */
+  walkTo(npc, pts, onDone = null, speed = null) {
+    if (speed) npc.speed = speed;
+    npc.goto = { pts, i: 0, cb: onDone };
+  }
+  /** Put a person somewhere at once (used when a scene is restored from a save). */
+  place(npc, x, z) { npc.group.position.x = x; npc.group.position.z = z; npc.goto = null; this.syncNpc(npc); }
+  syncNpc(n) {
+    const p = n.group.position;
+    if (n.it) { n.it.pos.x = p.x; n.it.pos.z = p.z; }
+    if (n.tg) { n.tg.pos.x = p.x; n.tg.pos.z = p.z; }
+    if (n.col) { n.col.minX = p.x - 0.3; n.col.maxX = p.x + 0.3; n.col.minZ = p.z - 0.3; n.col.maxZ = p.z + 0.3; }
+  }
+  stepGoto(n, dt) {
+    const g = n.goto, p = n.group.position, [tx, tz] = g.pts[g.i];
+    const dx = tx - p.x, dz = tz - p.z, d = Math.hypot(dx, dz);
+    if (d < 0.12) {
+      if (++g.i >= g.pts.length) { n.goto = null; this.syncNpc(n); g.cb && g.cb(); }
+      return;
+    }
+    const step = Math.min(d, n.speed * dt);
+    p.x += dx / d * step; p.z += dz / d * step; n.vx = dx / d; n.vz = dz / d;
+    if (n.col) { n.col.minX = 1e9; n.col.maxX = 1e9; }   // no bumping into people while they walk
+    if (n.it) { n.it.pos.x = p.x; n.it.pos.z = p.z; }
+    if (n.tg) { n.tg.pos.x = p.x; n.tg.pos.z = p.z; }
   }
 
   /**
@@ -382,12 +416,52 @@ export class Zone {
     return m;
   }
 
-  tree(x, z, s = 1) {
+  /** A street tree. It is late October 1888, so most leaves have turned. */
+  tree(x, z, s = 1, leaf = null) {
     const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.12 * s, 0.2 * s, 2.4 * s, 6), colorMat('#4a3828'));
     trunk.position.set(x, 1.2 * s, z); this.scene.add(trunk);
-    const crown = new THREE.Mesh(new THREE.IcosahedronGeometry(1.5 * s, 0), colorMat('#4d6a36'));
-    crown.position.set(x, 3.2 * s, z); crown.scale.y = 1.2; this.scene.add(crown);
+    const tones = ['#b8962e', '#c07a2a', '#8a8a34', '#a8641e', '#6f7a36'];
+    const k = Math.abs(Math.round(x * 3 + z * 7)) % tones.length;
+    const crown = new THREE.Mesh(new THREE.IcosahedronGeometry(1.5 * s, 1), colorMat(leaf || tones[k]));
+    crown.position.set(x, 3.2 * s, z); crown.scale.set(1, 1.15, 1); crown.rotation.y = k; this.scene.add(crown);
+    const low = new THREE.Mesh(new THREE.IcosahedronGeometry(1.0 * s, 0), colorMat(leaf || tones[(k + 1) % tones.length]));
+    low.position.set(x + 0.7 * s, 2.6 * s, z - 0.4 * s); this.scene.add(low);
     this.colliders.push({ minX: x - 0.25, maxX: x + 0.25, minZ: z - 0.25, maxZ: z + 0.25 });
+  }
+
+  /** Small street props (all static, so they merge into a few draw calls). */
+  barrel(x, z, color = '#5a4630') {
+    const b = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.26, 0.85, 10), colorMat(color)); b.position.set(x, 0.43, z); this.scene.add(b);
+    for (const y of [0.2, 0.66]) { const h = new THREE.Mesh(new THREE.CylinderGeometry(0.31, 0.31, 0.04, 10), colorMat('#2a2420')); h.position.set(x, y, z); this.scene.add(h); }
+    this.colliders.push({ minX: x - 0.3, maxX: x + 0.3, minZ: z - 0.3, maxZ: z + 0.3, see: true });
+  }
+  crate(x, z, s = 0.6, color = '#7a6040') { this.box(x, 0, z, s, s * 0.8, s, ['crate_wood', { type: 'planks', color, n: 4 }]); }
+  hamper(x, z) {   // lidded wicker travelling basket
+    this.box(x, 0, z, 0.75, 0.45, 0.5, ['wicker', { type: 'planks', color: '#b08d57', n: 10 }]);
+    this.box(x, 0.45, z, 0.8, 0.06, 0.55, '#8a6a3a', { collide: false });
+  }
+  bundle(x, z, color = '#7a5a6a') {   // bedding tied up in cloth
+    const b = new THREE.Mesh(new THREE.SphereGeometry(0.36, 8, 6), colorMat(color)); b.scale.y = 0.7; b.position.set(x, 0.25, z); this.scene.add(b);
+    const k = new THREE.Mesh(new THREE.SphereGeometry(0.09, 6, 4), colorMat(color)); k.position.set(x, 0.55, z); this.scene.add(k);
+  }
+  bench(x, z, ry = 0) {   // wooden slats on iron ends
+    const along = Math.abs(Math.sin(ry)) > 0.7;
+    this.box(x, 0.4, z, along ? 0.5 : 1.9, 0.07, along ? 1.9 : 0.5, '#5a4030', { collide: false });
+    this.box(x - (along ? 0.22 * Math.sign(Math.sin(ry)) : 0), 0.47, z - (along ? 0 : 0.22 * (Math.cos(ry) > 0 ? 1 : -1)), along ? 0.06 : 1.9, 0.5, along ? 1.9 : 0.06, '#5a4030', { collide: false });
+    for (const e of [-0.85, 0.85]) this.box(x + (along ? 0 : e), 0, z + (along ? e : 0), along ? 0.5 : 0.07, 0.42, along ? 0.07 : 0.5, '#1e1e1e', { collide: false });
+    this.colliders.push({ minX: x - (along ? 0.3 : 1), maxX: x + (along ? 0.3 : 1), minZ: z - (along ? 1 : 0.3), maxZ: z + (along ? 1 : 0.3), see: true });
+  }
+  hydrant(x, z) {
+    const b = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.14, 0.62, 8), colorMat('#22302a')); b.position.set(x, 0.31, z); this.scene.add(b);
+    const cap = new THREE.Mesh(new THREE.SphereGeometry(0.13, 8, 5, 0, Math.PI * 2, 0, Math.PI / 2), colorMat('#22302a')); cap.position.set(x, 0.62, z); this.scene.add(cap);
+    this.colliders.push({ minX: x - 0.15, maxX: x + 0.15, minZ: z - 0.15, maxZ: z + 0.15, see: true });
+  }
+  stove(x, z) {   // pot-belly stove with its pipe
+    const b = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.36, 0.9, 10), colorMat('#161616')); b.position.set(x, 0.65, z); this.scene.add(b);
+    const base = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.42, 0.2, 10), colorMat('#101010')); base.position.set(x, 0.1, z); this.scene.add(base);
+    const glow = new THREE.Mesh(new THREE.PlaneGeometry(0.2, 0.16), colorMat('#ff8a30', { basic: true })); glow.position.set(x, 0.55, z + 0.36); this.scene.add(glow);
+    this.box(x, 1.1, z, 0.14, 7, 0.14, '#161616', { collide: false });
+    this.colliders.push({ minX: x - 0.42, maxX: x + 0.42, minZ: z - 0.42, maxZ: z + 0.42 });
   }
 
   lamppost(x, z, light = true) {

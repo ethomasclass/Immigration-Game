@@ -88,6 +88,7 @@ Prompts and sizes for all of these are in **[FLOW_ASSET_PROMPTS.md](FLOW_ASSET_P
 | Interiors | `shelves_lee_shop`, `backbar_saloon`, `board_club`, `board_society` | Wall panels inside the walk-in shops. |
 | Chapter title cards | `card_intro`, `card_ship`, `card_castle`, `card_les`, `card_city` | Full tarot cards. Optional looping video: `assets/video/card_<name>.mp4`. |
 | Awnings | `awning_0`…`2` | Striped canvas. |
+| Keepsake icons | `keep_lemon`, `keep_address`, `keep_horse`, `keep_receipt`, `keep_coal`, `keep_paper`, `keep_unioncard`, `keep_leaflet`, `keep_novak_letter`, `keep_bird`, `keep_ribbon` | Square, about 256 × 256. Shown as round medallions in the journal. |
 
 ## 4. Other surfaces
 

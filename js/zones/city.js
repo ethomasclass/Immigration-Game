@@ -16,7 +16,7 @@ import { colorMat, material, texture } from '../engine/textures.js';
 import { state, flag } from '../state.js';
 import { sfx } from '../engine/audio.js';
 
-const COBBLE = ['street_belgian_block', { type: 'stone', color: '#7c7a76', mortar: '#4e4a44', rows: 10 }];
+const COBBLE = ['street_belgian_block', { type: 'belgian', w: 512, h: 512 }];
 const GRASS = ['grass_park', { type: 'grass' }];
 const PATH = ['path_gravel', { type: 'plaster', color: '#a8987a' }];
 const MARBLE = ['wall_marble', { type: 'stone', color: '#e9e6dd', mortar: '#c8c4b8', rows: 6 }];
@@ -664,7 +664,7 @@ export class CityZone extends Zone {
     }, { roof: 'The roof of the Potter Building, eleven stories up.', street: 'Back on Park Row.', park: '59th Street. You walk west into Central Park and up the Mall.', downtown: 'City Hall station, Park Row.' }[dest]);
   }
 
-  ridePark() { this.startRide('car', 'park'); }
+  ridePark() { this.game.spend(5, 'El fare'); this.startRide('car', 'park'); }
   rideDown() { this.startRide('car', 'downtown'); }
 
   fade(fn, msg) {

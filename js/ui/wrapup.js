@@ -16,7 +16,7 @@ export class Wrapup {
     this.part = part;
     this.cfg = WRAPUPS[part];
     root.classList.remove('hidden');
-    this.step = 0;
+    this.step = 0; this.rocks = 0;
     this.render();
   }
   close() { root.classList.add('hidden'); save(); }
@@ -31,17 +31,24 @@ export class Wrapup {
     box.querySelectorAll('textarea, input').forEach(i => i.addEventListener('keydown', e => e.stopPropagation()));
   }
 
+  // ---- the darkroom: rock the tray and watch your best plate appear ----
   intro() {
-    const n = this.photos().length;
+    const ph = this.photos(), n = ph.length;
+    const plate = (this.part === 'A' && (ph.find(p => p.subject === 'girl') || ph.find(p => p.subject === 'sweatshop'))) || ph.find(p => p.subject) || ph[0];
+    this.rocks = this.rocks || 0;
+    const need = 6, k = Math.min(1, this.rocks / need), done = k >= 1 || !plate;
     box.innerHTML = `
-      <h1>Developing Your Plates</h1>
-      <p style="text-align:center">In the darkroom, your photographs slowly appear. Your editor wants your answer to one question:</p>
+      <h1>The Darkroom</h1>
+      <p style="text-align:center">Under the red lamp, you slide a glass plate into the developing tray. ${plate ? 'Rock the tray gently and watch.' : ''}</p>
+      ${plate ? `<div class="tray-wrap"><div class="tray" id="tray"><img src="${plate.img}" alt="" style="opacity:${0.04 + k * 0.96};filter:contrast(${0.4 + k * 0.7}) brightness(${1.6 - k * 0.6})"><div class="tray-liquid"></div></div></div>
+      <p style="text-align:center;min-height:1.6em"><i>${done ? esc(plate.title) + '. ' + esc(plate.caption || plate.desc) : ['Nothing yet...', 'A shadow.', 'Shapes.', 'A room... people.', 'Faces.', 'Almost.'][Math.min(5, this.rocks)]}</i></p>` : ''}
+      ${done ? `<p style="text-align:center">You took <b>${n}</b> photograph${n === 1 ? '' : 's'} for this part of the story. Your editor wants your answer to one question:</p>
       <div class="question">${esc(this.cfg.question)}</div>
-      <p style="text-align:center">You took <b>${n}</b> photograph${n === 1 ? '' : 's'} for this part of the story.</p>
-      ${n < 3 ? '<p style="text-align:center;color:#8e2f25">You have very few photographs. You can go back and take more, or continue anyway.</p>' : ''}
+      ${n < 3 ? '<p style="text-align:center;color:#e66a4e">You have very few photographs. You can go back and take more, or continue anyway.</p>' : ''}` : ''}
       <div class="row">
-        ${n < 3 ? '<button class="btn" data-act="back">Go back and explore</button>' : ''}
-        <button class="btn big" data-act="next">Sort my evidence &#9656;</button>
+        ${!done ? '<button class="btn big" data-act="rock">Rock the tray</button>' : ''}
+        ${done && n < 3 ? '<button class="btn" data-act="back">Go back and explore</button>' : ''}
+        ${done ? '<button class="btn big" data-act="next">Continue &#9656;</button>' : ''}
       </div>`;
     this.wire();
   }
@@ -195,6 +202,7 @@ export class Wrapup {
       const act = b.dataset.act;
       if (act === 'next') { this.step++; this.render(); }
       else if (act === 'prev') { this.step--; this.render(); }
+      else if (act === 'rock') { this.rocks++; sfx('page'); this.render(); const t = document.getElementById('tray'); if (t) { t.classList.remove('rock'); void t.offsetWidth; t.classList.add('rock'); } }
       else if (act === 'print') window.print();
       else if (act === 'back') { this.close(); this.game.resumeFromWrapup(); }
       else if (act === 'day2') { this.close(); this.game.startDay2(); }

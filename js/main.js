@@ -16,6 +16,7 @@ import { TouchControls } from './ui/touch.js';
 import { richText } from './ui/text.js';
 import { DOCS, CARDS } from './data/dialogue.js';
 import { CHARACTERS } from './data/characters.js';
+import { KEEPSAKES } from './data/keepsakes.js';
 import { ShipZone } from './zones/ship.js';
 import { CastleZone } from './zones/castle.js';
 import { LowerEastSideZone, LowerEastSideDay2 } from './zones/les.js';
@@ -147,6 +148,8 @@ class Game {
         state.zone = id; save();
         this.zone.build();
         this.zone.optimize();
+        this.beacon = this.makeBeacon(); this.zone.scene.add(this.beacon);
+        this.showPurse();
         const sp = spawn || this.zone.spawn;
         this.controls.setPose(sp.x, sp.z, sp.yaw);
         this.controls.roll = 0; this.controls.floorY = 0;
@@ -320,6 +323,63 @@ class Game {
   }
   hasPortrait(who) { return hasRealArt('portrait_' + who); }
 
+  // ------------------------------------------------------------------ purse + keepsakes
+  spend(cents, what = '') {
+    state.cents = Math.max(0, state.cents - cents); save();
+    this.toast(`<b>Paid ${cents}¢</b>${what ? ' ' + what : ''}. <span class="muted">Purse: $${(state.cents / 100).toFixed(2)}</span>`);
+    this.showPurse(true);
+  }
+  keep(id) {
+    const k = KEEPSAKES[id];
+    if (!k || state.keeps.includes(id)) return;
+    state.keeps.push(id); save(); sfx('chime');
+    this.toast(`<b>Keepsake:</b> ${k.name} <span class="muted">(in your journal)</span>`, 5000);
+  }
+  showPurse(flash) {
+    const el = $('purse'); el.textContent = `Purse $${(state.cents / 100).toFixed(2)}`;
+    if (flash) { el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); }
+  }
+
+  // ------------------------------------------------------------------ goal marker in the world
+  makeBeacon() {
+    const g = new THREE.Group();
+    const beam = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.13, 26, 8, 1, true), new THREE.MeshBasicMaterial({ color: 0xf2c230, transparent: true, opacity: 0.22, depthWrite: false, fog: false }));
+    beam.position.y = 13;
+    const gem = new THREE.Mesh(new THREE.OctahedronGeometry(0.32), new THREE.MeshBasicMaterial({ color: 0xffd84a, fog: false }));
+    gem.position.y = 2.7;
+    const ring = new THREE.Mesh(new THREE.RingGeometry(0.55, 0.75, 20), new THREE.MeshBasicMaterial({ color: 0xf2c230, transparent: true, opacity: 0.7, depthWrite: false, fog: false, side: THREE.DoubleSide }));
+    ring.rotation.x = -Math.PI / 2; ring.position.y = 0.06;
+    g.add(beam, gem, ring); g.userData = { gem, ring, beam, keep: true };
+    g.traverse(o => { o.userData.keep = true; o.renderOrder = 5; });
+    return g;
+  }
+  updateWaypoint(t) {
+    const wp = $('waypoint'), b = this.beacon, goal = this.currentGoal;
+    const on = this.mode === 'play' && goal && goal.at && !goal.done && !this.photo.active;
+    if (b) b.visible = !!on;
+    if (!on) { wp.classList.add('hidden'); return; }
+    const c = this.controls, [gx, gz] = goal.at, fy = c.floorY > 5 ? c.floorY : 0;
+    b.position.set(gx, 0, gz);
+    b.userData.gem.position.y = 2.7 + Math.sin(t * 2.4) * 0.18; b.userData.gem.rotation.y = t * 1.6;
+    b.userData.ring.scale.setScalar(1 + Math.sin(t * 2.4) * 0.12);
+    const dist = Math.hypot(gx - c.pos.x, gz - c.pos.z);
+    b.userData.beam.material.opacity = Math.min(0.22, Math.max(0, (dist - 5) / 40));
+    if (dist < 3.2) { wp.classList.add('hidden'); return; }
+    // screen position of the marker (pinned to the edge with an arrow when it is off screen)
+    const v = this._wpv || (this._wpv = new THREE.Vector3());
+    v.set(gx, fy + 2.7, gz).project(this.camera);
+    const behind = v.z > 1;
+    let x = (v.x * 0.5 + 0.5) * innerWidth, y = (-v.y * 0.5 + 0.5) * innerHeight;
+    if (behind) { x = innerWidth - x; y = innerHeight - 60; }
+    const m = 56, off = behind || x < m || x > innerWidth - m || y < m + 40 || y > innerHeight - m;
+    const cx = Math.max(m, Math.min(innerWidth - m, x)), cy = Math.max(m + 40, Math.min(innerHeight - m - 30, y));
+    wp.style.transform = `translate(${cx}px, ${cy}px)`;
+    wp.classList.toggle('off', off);
+    if (off) $('wp-arrow').style.transform = `rotate(${Math.atan2((behind ? innerHeight : y) - innerHeight / 2, x - innerWidth / 2)}rad)`;
+    $('wp-dist').textContent = dist < 1000 ? `${Math.round(dist)} m` : '';
+    wp.classList.remove('hidden');
+  }
+
   toast(html, ms = 4200) {
     const t = document.createElement('div');
     t.className = 'toast'; t.innerHTML = html;
@@ -407,6 +467,7 @@ class Game {
     this.photo.update(dt);
     this.minimap.update(dt);
     this.rotateHint();
+    this.updateWaypoint(this.zone.time);
     const f = this.findFocus();
     this.touch.update(f);
     if (f !== this.focus) {

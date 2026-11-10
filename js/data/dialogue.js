@@ -75,6 +75,7 @@ export const DIALOGUE = {
       },
       letter: {
         set: ['read_letter'],
+        keep: 'address',
         note: 'CHAIN MIGRATION: Rivka carries a letter with her cousin Moishe\'s address on Hester Street. Family who came first help the next ones come.',
         lines: [
           'Moishe\'s letter! I read it every night. Here, you may look.',
@@ -143,6 +144,7 @@ export const DIALOGUE = {
       },
       first: {
         set: ['lemon'],
+        keep: 'lemon',
         lines: [
           'Ah, a photographer! Here, catch!',
           { who: 'narrator', text: 'He tosses you a lemon, wrinkled from twelve days at sea.' },
@@ -376,6 +378,7 @@ export const DIALOGUE = {
           '...Seasick. Half the ship is seasick. Move along.',
           { who: 'mama', text: 'Thank God. Thank God.' },
         ],
+        action: 'afterDoctor',
         next: 'hub',
       },
       hub: {
@@ -430,6 +433,7 @@ export const DIALOGUE = {
           { who: 'rivka', text: 'Our cousin, Moishe Abramowitz. He is a tailor. Here is his address.' },
           'Family with a job and an address. Good. That\'s what I like to see. Next!',
         ],
+        action: 'afterClerk',
         next: 'after',
       },
       quiet: {
@@ -438,6 +442,7 @@ export const DIALOGUE = {
           { who: 'rivka', text: 'We have... eleven dollars. And a cousin. A tailor.' },
           'Address? ...Hester Street. All right. Next!',
         ],
+        action: 'afterClerk',
         next: 'after',
       },
       after: {
@@ -495,6 +500,8 @@ export const DIALOGUE = {
       },
       pay: {
         set: ['paid_telegram', 'novak_decided'],
+        spend: 25, spendFor: 'for Mr. Novak\'s telegram to Chicago',
+        keep: 'receipt',
         lines: [
           { who: 'narrator', text: 'You count out the coins. Mr. Novak holds them a long time before he closes his hand.' },
           'Tomas Novak. Halsted Street, Chicago. "Your father is at Castle Garden. Come."',
@@ -514,7 +521,7 @@ export const DIALOGUE = {
         branch: [{ if: 'paid_telegram', next: 'waiting' }, { next: 'carving' }],
       },
       waiting: { lines: ['Every time the door opens, I think: Tomas. Not yet. Not yet.'], end: true },
-      carving: { lines: ['The horse is finished. Give it to the boy for me, if I cannot.'], end: true },
+      carving: { keep: 'horse', lines: ['The horse is finished. Give it to the boy for me, if I cannot.'], end: true },
     },
   },
 
@@ -656,6 +663,20 @@ export const DIALOGUE = {
           'This is it! Hester Street. The number matches the letter!',
           'Moishe lives inside, on the ground floor. Come, come in with us!',
         ],
+        action: 'familyEnters',
+        end: true,
+      },
+    },
+  },
+
+  rivka_home: {
+    speaker: 'rivka',
+    nodes: {
+      start: {
+        lines: [
+          'Two rooms. Nine people. And it is ours.',
+          'Tomorrow Moishe takes me to a shop that needs a girl for buttonholes. Tomorrow I start.',
+        ],
         end: true,
       },
     },
@@ -789,9 +810,10 @@ export const DIALOGUE = {
           'The manufacturer on Broadway pays me less every season. If I don\'t squeeze, I lose the contract, and nobody in this building eats.',
           'You want a villain for your newspaper? Go photograph the man on Broadway.',
         ],
+        action: 'kesslerLeaves',
         end: true,
       },
-      nothing: { lines: ['Good. A man who knows when to keep quiet. Next Friday, Moishe. Fourteen coats.'], end: true },
+      nothing: { lines: ['Good. A man who knows when to keep quiet. Next Friday, Moishe. Fourteen coats.'], action: 'kesslerLeaves', end: true },
     },
   },
 
@@ -910,6 +932,7 @@ export const DIALOGUE = {
         choices: [
           { text: 'Why sell from a pushcart?', next: 'why' },
           { text: 'Is it hard?', next: 'hard' },
+          { text: 'Buy a pickle (1 cent).', next: 'pickle' },
         ],
       },
       why: {
@@ -922,6 +945,7 @@ export const DIALOGUE = {
         ],
         end: true,
       },
+      pickle: { spend: 1, spendFor: 'for a pickle', lines: ['One cent! The best pickle on Hester Street. Don\'t tell Herschel I said so. He thinks his are better.'], end: true },
       hard: {
         lines: [
           'Rain, snow, other peddlers fighting for the same corner.',
@@ -957,6 +981,7 @@ export const DIALOGUE = {
         ],
         choices: [
           { text: 'Why so many languages?', next: 'why' },
+          { text: 'Buy a paper (2 cents).', next: 'buy' },
           { text: 'No thanks.', next: 'bye' },
         ],
       },
@@ -968,6 +993,7 @@ export const DIALOGUE = {
         ],
         end: true,
       },
+      buy: { spend: 2, spendFor: 'for a newspaper', keep: 'paper', lines: ['Two cents! Thanks, mister! Read the back pages, that\'s where the jobs are.'], end: true },
       bye: { lines: ['Suit yourself! Extra, extra!'], end: true },
     },
   },
@@ -1174,6 +1200,7 @@ export const DIALOGUE = {
     nodes: {
       start: {
         set: ['met_quinn'],
+        keep: 'coal',
         lines: [
           'Cold night coming! Here, take a sack of coal for your family. No charge!',
           'Just remember who your friends are on Election Day. Ha ha!',
@@ -1626,6 +1653,7 @@ export const DIALOGUE = {
     nodes: {
       start: {
         set: ['met_esther'],
+        keep: 'unioncard',
         note: 'UNIONS: The United Hebrew Trades was founded in New York in 1888 to organize Jewish workers in the garment shops, bakeries, and print shops.',
         lines: [
           'Sisters! Brothers! Fourteen hours for three dollars a week! They tell us there is no money. There is money!',
@@ -1708,6 +1736,7 @@ export const DIALOGUE = {
       },
       novak: {
         set: ['read_novak_letter'],
+        keep: 'novak_letter',
         lines: ['Oh! A letter came for you. Here, at our address. It has a steamship company stamp.'],
         doc: 'novak_letter',
         next: 'vote',
@@ -1813,6 +1842,7 @@ export const DIALOGUE = {
     nodes: {
       start: {
         set: ['heard_whitcomb2'],
+        keep: 'leaflet',
         note: 'REFORM: Mayor Abram Hewitt ran an honest government and pushed for small parks and a public subway, but many immigrants felt he looked down on them.',
         lines: [
           'Leaflet? Vote for Mayor Hewitt! An honest man. Not one dollar stolen from the city.',
@@ -2076,6 +2106,7 @@ export const DIALOGUE = {
           { who: 'narrator', text: 'The square explodes. Tammany wins. Mayor Hewitt, the honest man, has finished third.' },
         ],
         set: ['saw_results'],
+        keep: 'ribbon',
         action: 'results',
         end: true,
       },
@@ -2165,6 +2196,7 @@ export const DIALOGUE = {
     nodes: {
       start: {
         set: ['met_novak_night'],
+        keep: 'bird',
         lines: [
           'PHOTOGRAPHER! Here! Over here!',
           { who: 'narrator', text: 'Mr. Novak is holding the arm of a tall man with a red mustache, who is holding him back from the crowd.' },

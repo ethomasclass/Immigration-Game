@@ -54,6 +54,8 @@ export class Dialogue {
     this.seen.add(this.treeId + '.' + nodeId);
     (node.set || []).forEach(setFlag);
     if (node.note && addNote(this.game.zoneId, node.note)) this.game.toast('<b>Notebook:</b> new note added (J)');
+    if (node.spend) this.game.spend(node.spend, node.spendFor);
+    if (node.keep) this.game.keep(node.keep);
     this.lineIndex = -1;
     this.choiceList = null;
     save();

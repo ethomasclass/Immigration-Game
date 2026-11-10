@@ -74,13 +74,15 @@ const DRAW = {
     noise(ctx, w, h, r, 16);
   },
   brick(ctx, w, h, s, r) {
-    const c = s.color || '#7a3b2a'; ctx.fillStyle = s.mortar || '#5a4b40'; ctx.fillRect(0, 0, w, h);
-    const rows = 16, bw = w / 6, bh = h / rows;
+    const c = s.color || '#8e3f2e'; ctx.fillStyle = s.mortar || '#6b6157'; ctx.fillRect(0, 0, w, h);
+    const rows = 20, bw = w / 6, bh = h / rows, tones = [-22, -8, 0, 10, 20];
     for (let y = 0; y < rows; y++) for (let x = -1; x < 7; x++) {
-      ctx.fillStyle = shade(c, (r() - 0.5) * 40);
-      ctx.fillRect(x * bw + (y % 2 ? bw / 2 : 0) + 2, y * bh + 2, bw - 4, bh - 4);
+      ctx.fillStyle = shade(c, tones[Math.floor(r() * 5)] + (r() < 0.06 ? -40 : 0));
+      ctx.fillRect(x * bw + (y % 2 ? bw / 2 : 0) + 1.2, y * bh + 1.2, bw - 2.4, bh - 2.4);
     }
-    noise(ctx, w, h, r, 20);
+    const g = ctx.createLinearGradient(0, 0, 0, h); g.addColorStop(0, 'rgba(40,24,20,.3)'); g.addColorStop(0.6, 'rgba(40,24,20,0)');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+    noise(ctx, w, h, r, 20, 3000);
   },
   plaster(ctx, w, h, s, r) {
     ctx.fillStyle = s.color || '#a89a80'; ctx.fillRect(0, 0, w, h);
@@ -326,6 +328,105 @@ const DRAW = {
     ctx.strokeStyle = '#2a2018'; ctx.lineWidth = 8; ctx.strokeRect(w * 0.2, h * 0.3, w * 0.6, h * 0.6);
     ctx.fillStyle = '#e8d8a8'; ctx.font = `bold ${Math.round(h * 0.09)}px Georgia`; ctx.textAlign = 'center'; ctx.fillText('FLOOR', w / 2, h * 0.2);
   },
+  // Brownstone / sandstone ashlar: regular courses of big blocks, thin pale joints, soot and salt.
+  ashlar(ctx, w, h, s, r) {
+    const base = s.color || '#8a5a44', rows = s.rows || 6, rh = h / rows;
+    ctx.fillStyle = s.mortar || '#b9a48e'; ctx.fillRect(0, 0, w, h);
+    for (let y = 0; y < rows; y++) {
+      let x = (y % 2) * -w / 6;
+      while (x < w) {
+        const bw = w / 3 * (0.75 + r() * 0.5);
+        const g = ctx.createLinearGradient(0, y * rh, 0, (y + 1) * rh);
+        const c = (r() - 0.5) * 34;
+        g.addColorStop(0, shade(base, c + 10)); g.addColorStop(1, shade(base, c - 12));
+        ctx.fillStyle = g; ctx.fillRect(x + 1.5, y * rh + 1.5, bw - 3, rh - 3);
+        // tooling marks and chips
+        for (let k = 0; k < 14; k++) { ctx.fillStyle = `rgba(0,0,0,${0.04 + r() * 0.08})`; ctx.fillRect(x + r() * bw, y * rh + r() * rh, 2 + r() * 10, 1); }
+        if (r() < 0.25) { ctx.fillStyle = 'rgba(40,24,18,.35)'; ctx.beginPath(); ctx.arc(x + r() * bw, y * rh + (r() < 0.5 ? 2 : rh - 2), 3 + r() * 5, 0, 7); ctx.fill(); }
+        x += bw;
+      }
+    }
+    // soot streaks running down, salt bleaching low
+    for (let i = 0; i < 9; i++) { const x = r() * w, g = ctx.createLinearGradient(0, 0, 0, h * (0.4 + r() * 0.6)); g.addColorStop(0, 'rgba(40,26,22,.32)'); g.addColorStop(1, 'rgba(40,26,22,0)'); ctx.fillStyle = g; ctx.fillRect(x, 0, 6 + r() * 16, h); }
+    noise(ctx, w, h, r, 22, 5000);
+  },
+  // Whitewashed iron hull: lapped plates, double rivet rows, rust weeping from the seams.
+  hull(ctx, w, h, s, r) {
+    ctx.fillStyle = s.color || '#d8d4c4'; ctx.fillRect(0, 0, w, h);
+    const strakes = 2, sh = h / strakes;
+    for (let y = 0; y < strakes; y++) {
+      const g = ctx.createLinearGradient(0, y * sh, 0, (y + 1) * sh); g.addColorStop(0, 'rgba(255,255,255,.12)'); g.addColorStop(1, 'rgba(0,0,0,.14)');
+      ctx.fillStyle = g; ctx.fillRect(0, y * sh, w, sh);
+      ctx.fillStyle = 'rgba(40,36,30,.5)'; ctx.fillRect(0, y * sh, w, 2);
+      for (const dy of [7, 14]) for (let x = 4; x < w; x += 10) { ctx.fillStyle = 'rgba(90,84,74,.75)'; ctx.beginPath(); ctx.arc(x, y * sh + dy, 1.7, 0, 7); ctx.fill(); ctx.fillStyle = 'rgba(255,255,255,.5)'; ctx.fillRect(x - 1, y * sh + dy - 1.4, 1.2, 1.2); }
+      for (let i = 0; i < 7; i++) { const x = r() * w, len = 20 + r() * (sh - 30), gg = ctx.createLinearGradient(0, y * sh + 14, 0, y * sh + 14 + len); gg.addColorStop(0, 'rgba(138,74,42,.55)'); gg.addColorStop(1, 'rgba(138,74,42,0)'); ctx.fillStyle = gg; ctx.fillRect(x, y * sh + 14, 2 + r() * 4, len); }
+    }
+    for (let x = 0; x < w; x += w / 2) { ctx.fillStyle = 'rgba(40,36,30,.45)'; ctx.fillRect(x, 0, 2, h); for (let y = 6; y < h; y += 10) { ctx.fillStyle = 'rgba(90,84,74,.7)'; ctx.beginPath(); ctx.arc(x + 7, y, 1.6, 0, 7); ctx.fill(); } }
+    noise(ctx, w, h, r, 14, 2500);
+  },
+  // 1880s tenement wallpaper: small repeat on ochre, smoke-browned toward the ceiling, dark dado below.
+  wallpaper(ctx, w, h, s, r) {
+    const base = s.color || '#b79a5e';
+    ctx.fillStyle = base; ctx.fillRect(0, 0, w, h);
+    const step = w / 12;
+    for (let y = 0; y < h; y += step) for (let x = (Math.round(y / step) % 2) * step / 2; x < w; x += step) {
+      ctx.strokeStyle = 'rgba(110,60,40,.55)'; ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.arc(x, y, step * 0.16, 0, 7); ctx.stroke();
+      ctx.fillStyle = 'rgba(90,100,60,.6)';
+      for (let k = 0; k < 4; k++) { const a = k * Math.PI / 2 + 0.78; ctx.beginPath(); ctx.ellipse(x + Math.cos(a) * step * 0.3, y + Math.sin(a) * step * 0.3, step * 0.1, step * 0.045, a, 0, 7); ctx.fill(); }
+    }
+    ctx.fillStyle = 'rgba(50,34,20,.22)'; ctx.fillRect(0, 0, w, h);   // lamp smoke and age
+    for (let i = 0; i < 12; i++) { ctx.fillStyle = `rgba(60,40,20,${r() * 0.12})`; ctx.beginPath(); ctx.arc(r() * w, r() * h, 10 + r() * 40, 0, 7); ctx.fill(); }
+    noise(ctx, w, h, r, 14, 2500);
+  },
+  // Weathered vertical board fence.
+  boards(ctx, w, h, s, r) {
+    const base = s.color || '#7d776c', n = s.n || 8;
+    for (let i = 0; i < n; i++) {
+      ctx.fillStyle = shade(base, (r() - 0.5) * 30); ctx.fillRect(i * w / n, 0, w / n, h);
+      ctx.fillStyle = 'rgba(0,0,0,.5)'; ctx.fillRect(i * w / n, 0, 1.5, h);
+      for (let k = 0; k < 9; k++) { ctx.fillStyle = 'rgba(0,0,0,.1)'; ctx.fillRect(i * w / n + r() * w / n, 0, 1, h); }
+      if (r() < 0.4) { ctx.fillStyle = 'rgba(30,22,16,.55)'; ctx.beginPath(); ctx.ellipse(i * w / n + w / n / 2, r() * h, 3, 5, 0, 0, 7); ctx.fill(); }
+      for (const y of [h * 0.12, h * 0.85]) { ctx.fillStyle = 'rgba(40,30,24,.8)'; ctx.fillRect(i * w / n + w / n / 2 - 1, y, 2, 2); }
+    }
+    const g = ctx.createLinearGradient(0, h * 0.7, 0, h); g.addColorStop(0, 'rgba(40,34,26,0)'); g.addColorStop(1, 'rgba(40,34,26,.5)'); ctx.fillStyle = g; ctx.fillRect(0, h * 0.7, w, h * 0.3);
+    noise(ctx, w, h, r, 16, 2000);
+  },
+  // Granite Belgian block street: rectangular setts, dark joints, mud, straw and manure.
+  belgian(ctx, w, h, s, r) {
+    ctx.fillStyle = '#2e2b27'; ctx.fillRect(0, 0, w, h);
+    const rows = 12, rh = h / rows, bw = w / 5;
+    for (let y = 0; y < rows; y++) for (let x = -1; x < 6; x++) {
+      const ox = (y % 2) * bw / 2 + (r() - 0.5) * 3;
+      const g = ctx.createLinearGradient(0, y * rh, 0, (y + 1) * rh), c = (r() - 0.5) * 36;
+      g.addColorStop(0, shade(s.color || '#6e6b66', c + 14)); g.addColorStop(1, shade(s.color || '#6e6b66', c - 10));
+      ctx.fillStyle = g; ctx.beginPath(); ctx.roundRect(x * bw + ox + 1.5, y * rh + 1.5, bw - 3, rh - 3, 3); ctx.fill();
+    }
+    for (let i = 0; i < 16; i++) { ctx.fillStyle = `rgba(90,74,54,${0.18 + r() * 0.3})`; ctx.beginPath(); ctx.ellipse(r() * w, r() * h, 8 + r() * 26, 4 + r() * 10, r() * 3, 0, 7); ctx.fill(); }
+    for (let i = 0; i < 60; i++) { ctx.strokeStyle = `rgba(200,180,110,${0.25 + r() * 0.3})`; ctx.lineWidth = 1; const x = r() * w, y = r() * h, a = r() * 7; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + Math.cos(a) * 7, y + Math.sin(a) * 7); ctx.stroke(); }
+    if (s.wet) for (let i = 0; i < 6; i++) { ctx.fillStyle = 'rgba(150,160,175,.22)'; ctx.beginPath(); ctx.ellipse(r() * w, r() * h, 14 + r() * 30, 5 + r() * 9, 0, 0, 7); ctx.fill(); }
+    noise(ctx, w, h, r, 20, 3000);
+  },
+  // A fort embrasure fitted with a multi-pane sash.
+  embrasure(ctx, w, h, s) {
+    ctx.fillStyle = '#3a2620'; ctx.fillRect(0, 0, w, h);
+    const g = ctx.createLinearGradient(0, 0, w, 0); g.addColorStop(0, '#5a3a2e'); g.addColorStop(0.2, '#241812'); g.addColorStop(0.8, '#241812'); g.addColorStop(1, '#5a3a2e');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle = '#4a5a62'; ctx.fillRect(w * 0.2, h * 0.14, w * 0.6, h * 0.72);
+    ctx.fillStyle = 'rgba(200,215,220,.25)'; ctx.fillRect(w * 0.2, h * 0.14, w * 0.6, h * 0.3);
+    ctx.strokeStyle = '#d8d0bc'; ctx.lineWidth = 3; ctx.strokeRect(w * 0.2, h * 0.14, w * 0.6, h * 0.72);
+    for (let i = 1; i < 3; i++) { ctx.beginPath(); ctx.moveTo(w * (0.2 + i * 0.2), h * 0.14); ctx.lineTo(w * (0.2 + i * 0.2), h * 0.86); ctx.stroke(); }
+    ctx.beginPath(); ctx.moveTo(w * 0.2, h * 0.5); ctx.lineTo(w * 0.8, h * 0.5); ctx.stroke();
+  },
+  // A chalked blackboard (exchange rates, arriving steamers).
+  blackboard(ctx, w, h, s, r) {
+    ctx.fillStyle = '#5a4630'; ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle = '#1c2420'; ctx.fillRect(8, 8, w - 16, h - 16);
+    for (let i = 0; i < 20; i++) { ctx.fillStyle = `rgba(255,255,255,${r() * 0.04})`; ctx.fillRect(8 + r() * (w - 16), 8 + r() * (h - 16), 40 + r() * 80, 6 + r() * 10); }
+    ctx.fillStyle = '#f0ece0'; ctx.textAlign = 'center';
+    const lines = String(s.title || '').split('\n');
+    lines.forEach((ln, i) => { ctx.font = `${i ? '' : 'bold '}${Math.round(h * (i ? 0.085 : 0.11))}px Georgia`; ctx.fillText(ln, w / 2, 8 + h * (0.17 + i * 0.125), w - 30); });
+  },
   awning(ctx, w, h, s) {
     const a = s.color || '#8a2e2a', b = s.color2 || '#e8dcc0';
     for (let x = 0; x < w; x += w / 8) { ctx.fillStyle = (Math.round(x / (w / 8)) % 2) ? a : b; ctx.fillRect(x, 0, w / 8 + 1, h); }
@@ -382,7 +483,7 @@ export function texture(key, spec = {}, repeat = null) {
     const base = new THREE.CanvasTexture(makePlaceholder(key, spec));
     base.colorSpace = THREE.SRGBColorSpace;
     base.wrapS = base.wrapT = THREE.RepeatWrapping;
-    base.anisotropy = 2;
+    base.anisotropy = 4;
     entry = { tex: base, users: [base], img: null, canvas: base.image };
     cache.set(key, entry);
     tryLoad(key, entry);

@@ -19,7 +19,7 @@ const H = 2.25;           // headroom (~7.4 ft)
 const AFT = 0, MID = -15, FWD = -30;   // compartment walls (z)
 const BERTH_L = 1.83, BERTH_W = 0.61, TIER2 = 1.1;
 
-const HULL = ['wall_steerage_hull', { type: 'plaster', color: '#d2cab4' }];
+const HULL = ['wall_steerage_hull', { type: 'hull', color: '#d8d4c4', w: 512, h: 512 }];
 const PARTITION = ['wall_steerage_partition', { type: 'planks', color: '#7a6a52', n: 6 }];
 const FLOOR = ['floor_steerage_sawdust', { type: 'sawdust' }];
 const BEAMS = ['wood_ship_dark', { type: 'planks', color: '#3e2a1a', n: 6 }];
@@ -86,6 +86,7 @@ export class ShipZone extends Zone {
     this.target('bunks', W - 2.3, 1.0, -21.5, 7);
     // luggage: bundles and trunks wherever they fit
     for (const [x, z] of [[-2.8, -3.0], [2.9, -4.6], [-2.7, -13.2], [2.8, -16.8], [-2.9, -27.6]]) this.box(x, 0, z, 0.7, 0.45, 0.45, ['trunk', { type: 'planks', color: '#6a4426', n: 3 }]);
+    for (const [x, z] of [[-2.2, -4.2], [2.9, -9.2], [-2.6, -17.4], [2.7, -22.6]]) this.hamper(x, z);
     for (const [x, z] of [[-3.0, -9.5], [3.0, -12.8], [-3.1, -24.2]]) { const b = new THREE.Mesh(new THREE.SphereGeometry(0.32, 8, 6), colorMat('#7a5a3a')); b.scale.y = 0.7; b.position.set(x, 0.22, z); this.scene.add(b); }
 
     // ---- kerosene lanterns ----

@@ -32,9 +32,9 @@ const SIGNS = {
   mott: ['茶 TEAS', '雜貨 GROCERIES', 'WAH KEE & CO.', '中華 RESTAURANT', 'QUONG YUEN SING'],
 };
 
-const COBBLE = ['street_belgian_block', { type: 'stone', color: '#7c7a76', mortar: '#4e4a44', rows: 10 }];
+const COBBLE = ['street_belgian_block', { type: 'belgian', w: 512, h: 512 }];
 const WALK = ['sidewalk_bluestone', { type: 'stone', color: '#6f7680', mortar: '#4f545a', rows: 3 }];
-const PLASTER = ['wall_tenement_room', { type: 'plaster', color: '#8f7f62' }];
+const PLASTER = ['wall_tenement_room', { type: 'wallpaper', color: '#b79a5e', w: 512, h: 512 }];
 const FLOOR = ['floor_tenement', { type: 'planks', color: '#5a412b', n: 8 }];
 const DIRT = ['ground_yard', { type: 'plaster', color: '#4a3e30' }];
 const WOOD = ['wood_rough', { type: 'planks', color: '#5c4630', n: 5 }];
@@ -182,7 +182,7 @@ export class LowerEastSideZone extends Zone {
     this.person('chana', X(5.2), Z(17.4), 0, { seated: true, photo: 'sweatshop' });
     if (!this.day2 || !flag('printed_sarah')) this.person('girl', X(6.6), Z(17.4), 0, { seated: true });   // Day 2, if printed: Sarah is at the Guild class
     this.person('moishe', X(4.9), Z(15.8), 0, { talk: this.day2 ? 'moishe2' : 'moishe' });
-    if (!this.day2) this.person('kessler', X(7.0), Z(13.4), 0, { talk: 'kessler1', photo: null });
+    if (!this.day2 && !flag('kessler_left')) this.kessler = this.person('kessler', X(7.0), Z(13.4), 0, { talk: 'kessler1', photo: null });
     this.target('sweatshop', X(5.9), 1.0, Z(16.6), 6);
     // kitchen: stove + washtub
     this.box(X(7.1), 0, Z(14.4), 0.7, 0.85, 0.7, '#1a1a1a');
@@ -196,9 +196,17 @@ export class LowerEastSideZone extends Zone {
 
     // Rivka's family at the hall door
     if (!this.day2) {
-      this.person('rivka', X(2.6), Z(0) + 2.0, 0, { talk: 'rivka_les' });
-      this.person('mama', X(1.6), Z(0) + 2.4, 0, { talk: 'mama', photo: null });
-      this.person('shmuel', X(5.6), Z(0) + 2.2, 0, { talk: 'shmuel', photo: null });
+      // They wait at the street door, then walk in through the hall to Moishe's rooms.
+      const inside = [[X(5.3), Z(13.6)], [X(6.1), Z(13.0)], [X(5.0), Z(12.9)]];
+      const out = [[X(2.6), Z(0) + 2.0], [X(1.6), Z(0) + 2.4], [X(5.6), Z(0) + 2.2]];
+      const at = flag('family_inside') ? inside : out;
+      this.family = [
+        this.person('rivka', at[0][0], at[0][1], 0, { talk: flag('family_inside') ? 'rivka_home' : 'rivka_les' }),
+        this.person('mama', at[1][0], at[1][1], 0, { talk: 'mama', photo: null }),
+        this.person('shmuel', at[2][0], at[2][1], 0, { talk: 'shmuel', photo: null }),
+      ];
+      this.familyPath = (i) => [[X(3.75), Z(0) + 1.2 + i * 0.5], [X(3.75), Z(13.75)], [X(4.9), Z(13.75)], inside[i]];
+      this.kesslerPath = [[X(5.6), Z(13.75)], [X(3.75), Z(13.75)], [X(3.75), Z(0) + 1.5], [X(-6), Z(0) + 3.5]];
     } else {
       this.person('mama', X(5.4), Z(13.9), 0, { talk: 'mama2', photo: null });
       this.person('shmuel', X(6.0), Z(12.9), 0, { talk: 'shmuel2', photo: null, scale: 1 });
@@ -210,6 +218,7 @@ export class LowerEastSideZone extends Zone {
     this.box(X(LOT - 0.7), 0, yz1 + 0.8, 1.2, 2.2, 1.2, WOOD);   // privy
     this.panel(X(LOT - 0.7), 1.1, yz1 + 1.42, 0.6, 1.6, ['privy_door', { type: 'planks', color: '#4a3826', n: 3 }]);
     this.readable('privy', X(LOT - 0.7), 1.2, yz1 + 2.0, { prompt: 'Look at the privy', photo: 'privy' });
+    this.hydrant(X(0.7), yz - 1.2);   // the building's only water: one hydrant in the yard
     for (const lx of [0.6, 1.3]) { const b = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 0.8, 10), colorMat('#3c3a36')); b.position.set(X(lx), 0.4, yz1 + 0.6); this.scene.add(b); }
     for (let i = 0; i < 4; i++) {           // laundry lines on pulleys, building to rear building, several stories up
       const y = 4 + i * 2.6;
@@ -227,6 +236,19 @@ export class LowerEastSideZone extends Zone {
       const p = this.game.controls.pos;
       if (t > next) { next = t + 7 + Math.random() * 5; if (p.z < yz + 2 && p.z > yz1 - 1 && p.x > MX - 1 && p.x < MX + LOT + 1) this.flash.intensity = 30; }
     });
+  }
+
+  onAction(name) {
+    if (name === 'familyEnters' && this.family && !flag('family_inside')) {
+      state.flags.family_inside = true;
+      this.family.forEach((n, i) => this.walkTo(n, this.familyPath(i), null, 1.5 - i * 0.1));
+      this.family[0].talkTree = 'rivka_home';
+    } else if (name === 'kesslerLeaves' && this.kessler) {
+      state.flags.kessler_left = true;
+      const k = this.kessler; k.it.hidden = true;
+      this.walkTo(k, this.kesslerPath, () => { k.group.visible = false; }, 1.7);
+    }
+    this.game.refreshObjectives();
   }
 
   // ------------------------------------------------------------ elevated railways
@@ -349,6 +371,17 @@ export class LowerEastSideZone extends Zone {
       this.person('giuseppe', -106.5, 6.4, 0, { talk: 'giuseppe3', photo: 'giuseppe2' });
     }
 
+    // sidewalk clutter: barrels, crates, hydrants, a horse trough, cellar doors
+    for (const [x, z] of [[-9, -6.4], [10.5, 6.5], [-31, 6.4], [52, -6.4], [-58, 6.5], [39.5, -6.5]]) { this.barrel(x, z); this.barrel(x + 0.7, z + 0.1, '#4a3a2a'); }
+    for (const [x, z] of [[-14, 6.6], [26, -6.6], [-45, -6.6], [47, 6.6]]) { this.crate(x, z, 0.7); this.crate(x + 0.75, z, 0.5); }
+    for (const [x, z] of [[-16.5, -4.9], [20.5, -4.9], [-53.5, 4.9], [57.5, 4.9]]) this.hydrant(x, z);
+    this.box(-70, 0, 4.6, 2.2, 0.55, 0.7, ['seawall_granite', { type: 'ashlar', color: '#9a9892', mortar: '#6e6c68', rows: 2, w: 512, h: 128 }]);   // horse trough
+    this.box(-70, 0.5, 4.6, 1.9, 0.06, 0.5, '#4a5a62', { collide: false });
+    for (const x of [-24, 8.5, 30.5, 49]) this.box(x, 0, -6.6, 1.3, 0.1, 1.5, '#2a2a2a', { collide: false });   // iron cellar doors
+    // painted wall advertisements on blank side walls
+    this.panel(-37.44, 9, -30, 9, 4.5, ['wallsign_0', { type: 'sign', title: 'M. STEIN · FURNITURE & BEDDING · 84 GRAND ST.', color: '#1a1e2a', ink: '#efe6cf', w: 512, h: 256 }], Math.PI / 2);
+    this.panel(21.44, 10, 30, 9, 4.5, ['wallsign_1', { type: 'sign', title: 'CASTORIA · CHILDREN CRY FOR IT', color: '#141414', ink: '#efe6cf', w: 512, h: 256 }], -Math.PI / 2);
+
     // gas lamps (cast-iron post, ladder bar, 4-sided lantern)
     for (const [x, z, lit] of [[-12, -5.4, true], [16, 5.4, false], [40, 5.4, true], [57, -5.4, true], [-34, 5.4, false], [-60, -5.4, false], [-100, 5.4, false]]) this.gaslamp(x, z, lit);
 
@@ -357,8 +390,8 @@ export class LowerEastSideZone extends Zone {
     this.panel(-108.6, 2.7, 9.56, 1.6, 0.5, ['sign_horsecar_stop', { type: 'sign', title: 'BOWERY CARS · PARK ROW', w: 224, h: 72 }], 0);
     this.horsecarStatic(-112, 16);
     const ex = this.day2
-      ? this.exit(-109.5, 9.5, 'Take the horsecar down the Bowery to Park Row', () => this.ready(), () => this.game.goParkRow())
-      : this.exit(-109.5, 9.5, 'Take the horsecar down the Bowery to the Courier office (finish the story)', () => this.ready(), () => this.game.openWrapup('A'));
+      ? this.exit(-109.5, 9.5, 'Take the horsecar down the Bowery to Park Row', () => this.ready(), () => { this.game.spend(5, 'horsecar fare'); this.game.goParkRow(); })
+      : this.exit(-109.5, 9.5, 'Take the horsecar down the Bowery to the Courier office (finish the story)', () => this.ready(), () => { this.game.spend(5, 'horsecar fare'); this.game.openWrapup('A'); });
     ex.lockedMsg = 'Not yet. Finish your goal (top left) first.';
 
     // street name signs at corners

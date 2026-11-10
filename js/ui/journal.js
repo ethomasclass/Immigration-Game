@@ -1,6 +1,7 @@
 // The photographer's journal: photographs, notebook, word bank.
 import { state, save } from '../state.js';
 import { GLOSSARY } from '../data/glossary.js';
+import { KEEPSAKES } from '../data/keepsakes.js';
 import { esc, richText } from './text.js';
 
 const ZONE_NAMES = { ship: 'I. Steerage', castle: 'II. Castle Garden', les: 'III. The Lower East Side', city: 'IV. The City' };
@@ -27,6 +28,7 @@ export class Journal {
     if (this.tab === 'photos') this.renderPhotos();
     else if (this.tab === 'notes') this.renderNotes();
     else if (this.tab === 'map') this.renderMap();
+    else if (this.tab === 'keeps') this.renderKeeps();
     else this.renderGlossary();
   }
 
@@ -79,6 +81,19 @@ export class Journal {
     content.innerHTML = `<dl class="gloss-list">${keys.map(k => `<dt>${esc(k)}</dt><dd>${esc(GLOSSARY[k])}</dd>`).join('')}</dl>`;
   }
 }
+
+Journal.prototype.renderKeeps = function () {
+  const dollars = (state.cents / 100).toFixed(2);
+  let html = `<p class="purse-line"><b>Your purse:</b> $${dollars} <span class="muted">(your editor gave you $2.50 for expenses; a laborer earned about $1.50 a day)</span></p>`;
+  if (!state.keeps.length) html += '<div class="empty">Nothing yet. Some of the people you meet will hand you things.</div>';
+  else html += '<div class="keep-grid">' + state.keeps.map(id => {
+    const k = KEEPSAKES[id]; if (!k) return '';
+    return `<div class="keep"><div class="keep-icon" style="background-image:url(assets/art/keep_${id}.png)"><span>${k.glyph}</span></div><div><div class="keep-name">${esc(k.name)}</div><div class="keep-text">${esc(k.text)}</div></div></div>`;
+  }).join('') + '</div>';
+  content.innerHTML = html;
+  // hide the placeholder glyph when real art loads
+  content.querySelectorAll('.keep-icon').forEach(el => { const img = new Image(); img.onload = () => { el.querySelector('span').style.display = 'none'; }; img.onerror = () => { el.style.backgroundImage = 'none'; }; img.src = el.style.backgroundImage.slice(5, -2); });
+};
 
 Journal.prototype.renderMap = function () {
   const zone = this.game.zone;
