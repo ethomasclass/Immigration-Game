@@ -6,6 +6,17 @@ import { CHARACTERS } from '../data/characters.js';
 import { makeCutout, animateCutout } from './cutout.js';
 import { mergeGeometries } from '../../lib/BufferGeometryUtils.js';
 
+/** A copy of vertices [start, start+count) of a non-indexed geometry (position, normal, uv). */
+function slice(geo, start, count) {
+  if (!count) return null;
+  const out = new THREE.BufferGeometry();
+  for (const k of ['position', 'normal', 'uv']) {
+    const a = geo.attributes[k], n = a.itemSize;
+    out.setAttribute(k, new THREE.BufferAttribute(a.array.slice(start * n, Math.min(a.count, start + count) * n), n));
+  }
+  return out;
+}
+
 export class Zone {
   constructor(game) {
     this.game = game;
@@ -39,7 +50,9 @@ export class Zone {
       if (n.goto) this.stepGoto(n, dt);
       else if (n.path) this.stepWalker(n, dt, pp);
       // People far away (hidden by fog) are not drawn or animated: keeps the frame rate up.
-      const gp = n.group.position, far = (gp.x - pp.x) ** 2 + (gp.z - pp.z) ** 2 > (this.cullDist || 95) ** 2;
+      // Background crowd figures (no story role) drop out sooner than named characters.
+      const lim = n.id && n.id.startsWith('crowd') ? (this.crowdCull || 60) : (this.cullDist || 95);
+      const gp = n.group.position, far = (gp.x - pp.x) ** 2 + (gp.z - pp.z) ** 2 > lim * lim;
       const cut = n.group.children;
       if (far !== n.far) { n.far = far; for (const ch of cut) ch.visible = !far; }
       if (far) continue;
@@ -67,16 +80,25 @@ export class Zone {
     const groups = new Map();
     const remove = [];
     for (const o of this.scene.children) {
-      if (!o.isMesh || o.isInstancedMesh || o.userData.keep || Array.isArray(o.material) || (o.material.transparent && !o.material.userData.mergeTransparent)) continue;
+      if (!o.isMesh || o.isInstancedMesh || o.userData.keep) continue;
+      const mats = Array.isArray(o.material) ? o.material : [o.material];
+      if (mats.some(m => m.transparent && !m.userData.mergeTransparent)) continue;
       const g = o.geometry;
       if (!g.index && !g.attributes.position) continue;
+      if (Array.isArray(o.material) && !g.groups.length) continue;
       o.updateMatrixWorld(true);
       const geo = (g.index ? g.toNonIndexed() : g.clone()).applyMatrix4(o.matrixWorld);
       for (const k of Object.keys(geo.attributes)) if (!['position', 'normal', 'uv'].includes(k)) geo.deleteAttribute(k);
       if (!geo.attributes.uv || !geo.attributes.normal) continue;
-      const key = o.material.uuid;
-      if (!groups.has(key)) groups.set(key, { mat: o.material, geos: [] });
-      groups.get(key).geos.push(geo);
+      // Multi-material meshes (building boxes: one material per face) are split by face group,
+      // so each face merges with everything else sharing its material: 1 draw call per material, not 6 per building.
+      const parts = Array.isArray(o.material) ? geo.groups.map(gr => [o.material[gr.materialIndex], slice(geo, gr.start, gr.count)]) : [[o.material, geo]];
+      for (const [mat, part] of parts) {
+        if (!mat || !part) continue;
+        const key = mat.uuid;
+        if (!groups.has(key)) groups.set(key, { mat, geos: [] });
+        groups.get(key).geos.push(part);
+      }
       remove.push(o);
     }
     for (const o of remove) this.scene.remove(o);
