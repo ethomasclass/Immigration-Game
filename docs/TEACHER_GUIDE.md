@@ -17,6 +17,7 @@ Students play a newspaper photographer in **1888**. They cross the Atlantic in s
 - **Required steps are short on purpose.** The questions a goal needs are marked with a star in conversations. Everything else (Mott Street, Mrs. Brennan, the settlement house, Boss Tweed) is an optional lead, so tell students which leads you want them to follow for your lesson.
 - Controls: **WASD** move · **mouse** look · **E** talk/use · **F** (or right-click) raise camera, click to take a photo · **J** journal · **M** map · **Esc** pause.
 - **Phones, tablets, and touchscreens:** touch controls turn on automatically. The left thumb walks (a joystick appears wherever it lands; push all the way to hurry), and the right thumb drags to look. A big button names what you can do next ("Talk to Rivka"); tap it or tap the screen. The camera button raises the viewfinder and a shutter button takes the photo. Buttons at the top open the map, the journal, and pause. Landscape works best. To force touch controls on or off (for example on a touchscreen Chromebook with a mouse), use **Settings → Touch controls**. **Full Screen** on the main menu hides the browser bars on Android.
+- Developers can add `?dev` to the URL for an inspector (ground-gap audit, top-down plans, performance stats).
 - The places are rebuilt from 1880s maps, photographs and records. See [HISTORICAL_REFERENCE.md](HISTORICAL_REFERENCE.md) for sources and the places where distances are compressed.
 
 ## Structure and timing (two class periods, about 25 minutes each)
@@ -68,6 +69,7 @@ Many photos reasonably fit more than one column. Ask students to justify their c
 - **Item 26 (nativism):** Mrs. Brennan (Zone III), the child of Irish Famine immigrants, repeats the prejudice once aimed at the Irish. *This echoes the Kellys' storyline*, so connect it in discussion. The handbill is a fictional composite of 1880s nativist material.
 - **Item 27 (Chinese Exclusion):** the newspaper on the bench (Zone II) and Mr. Lee Fong on Mott Street (Zone III), who explains he opened his own store because white-owned businesses wouldn't hire him. He also notes that Chinese immigrants could not become citizens.
 - **Ep 5 (labor):** the sweatshop and piecework scene with Moishe, Chana, and Sarah.
+- **Graft (Park Row):** students can walk into the Tweed Courthouse. Framed copies of the Ring's bills hang on the rotunda wall ($133,187 for two days of plastering), and reading them is an optional lead that can be photographed ("The Bills"). Plunkitt's bootblack stand is right there in the rotunda, so students hear "honest graft" a few steps from the evidence of the dishonest kind.
 - **6.3 (machines):** Mr. Quinn hands out coal in Day 1. In Day 2 he demands Giuseppe vote under a dead man's name, and either pays the doctor after the fall or abandons him, depending on the student's advice.
 - **Hull House:** the Guild volunteer mentions Jane Addams visiting Toynbee Hall in 1888.
 

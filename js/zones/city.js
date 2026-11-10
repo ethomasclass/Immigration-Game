@@ -589,33 +589,77 @@ export class CityZone extends Zone {
   // ======================================================== CENTRAL PARK (1888)
   centralPark() {
     const X = PX;
-    this.floor(X, -5, 130, 160, [GRASS[0], GRASS[1], { repeat: [30, 36] }]);
+    // lawns: the whole park at street level, except the sunken lower terrace and the Lake
+    this.floor(X, 22, 130, 106, [GRASS[0], GRASS[1], { repeat: [30, 24] }]);
+    for (const sx of [-1, 1]) this.floor(X + sx * 44, -50, 40, 38, [GRASS[0], GRASS[1], { repeat: [9, 9] }]);
     // The Mall: runs north to Bethesda Terrace; elms planted 1860s-70s (canopy not yet closed)
-    this.floor(X, 15, 12, 100, [PATH[0], PATH[1], { repeat: [3, 25] }], 0.012);
-    for (let z = 60; z > -32; z -= 7) for (const dx of [-8, -11, 8, 11]) this.tree(X + dx, z, 1.5);
-    // Bethesda Terrace (olive-buff sandstone) and the Angel of the Waters (brown bronze, 1873)
-    const sand = material('stone_bethesda', { type: 'stone', color: '#a89f7a', mortar: '#8c8466', rows: 4 });
-    const terrace = new THREE.Mesh(new THREE.BoxGeometry(44, 1.2, 14), sand); terrace.position.set(X, 0.6, -42); this.scene.add(terrace);
-    for (let i = 0; i < 6; i++) this.box(X, 0, -36 + i * -0.5, 14, 1.2 - i * 0.2, 0.5, ['stone_bethesda', {}], { collide: false });
-    this.box(X - 22, 0, -42, 0.8, 1.6, 14, ['stone_bethesda', {}]); this.box(X + 22, 0, -42, 0.8, 1.6, 14, ['stone_bethesda', {}]);
-    this.floor(X, -58, 60, 18, [PATH[0], PATH[1], { repeat: [15, 5] }], 0.012);
-    const basin = new THREE.Mesh(new THREE.CylinderGeometry(6, 6.3, 0.8, 28), sand); basin.position.set(X, 0.4, -58); this.scene.add(basin);
-    const water = new THREE.Mesh(new THREE.CircleGeometry(5.7, 28), colorMat('#5a7a88')); water.rotation.x = -Math.PI / 2; water.position.set(X, 0.82, -58); this.scene.add(water);
+    this.floor(X, 17, 12, 96, [PATH[0], PATH[1], { repeat: [3, 24] }], 0.012);
+    for (let z = 60; z > -26; z -= 7) for (const dx of [-8, -11, 8, 11]) this.tree(X + dx, z, 1.5);
+    // Literary Walk at the south end of the Mall: Shakespeare and Scott (both 1872), brown bronze on granite
     const bronze = colorMat('#5a4632');
-    const ped = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 1.2, 3, 10), sand); ped.position.set(X, 2, -58); this.scene.add(ped);
-    const angel = new THREE.Mesh(new THREE.ConeGeometry(0.7, 2.6, 8), bronze); angel.position.set(X, 4.8, -58); this.scene.add(angel);
-    for (const sx of [-1, 1]) { const wing = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.9, 0.08), bronze); wing.position.set(X + sx * 0.8, 5.4, -58.2); wing.rotation.z = sx * 0.5; this.scene.add(wing); }
-    this.colliders.push({ minX: X - 6.5, maxX: X + 6.5, minZ: -64.5, maxZ: -51.5 });
-    this.colliders.push({ minX: X - 23, maxX: X - 7, minZ: -49, maxZ: -35 }, { minX: X + 7, maxX: X + 23, minZ: -49, maxZ: -35 });
-    this.target('park', X, 4, -58, 50);
-    // The Lake beyond
-    const lake = new THREE.Mesh(new THREE.CircleGeometry(30, 32), material('water_harbor', { type: 'water' }, { repeat: [8, 8] }));
-    lake.rotation.x = -Math.PI / 2; lake.position.set(X, 0.02, -82); lake.scale.x = 2.2; this.scene.add(lake);
-    this.colliders.push({ minX: X - 66, maxX: X + 66, minZ: -112, maxZ: -68, see: true });
+    for (const [dx, name] of [[-7, 'SHAKESPEARE'], [7, 'SCOTT']]) {
+      this.box(X + dx, 0, 58, 1.2, 2.2, 1.2, '#9a948a');
+      const body = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.45, 1.7, 8), bronze); body.position.set(X + dx, 3.05, 58); this.scene.add(body);
+      const hd = new THREE.Mesh(new THREE.SphereGeometry(0.22, 8, 6), bronze); hd.position.set(X + dx, 4.1, 58); this.scene.add(hd);
+      this.panel(X + dx, 1.4, 58.62, 1.0, 0.24, ['sign_statue_' + name, { type: 'sign', title: name, color: '#8a847a', ink: '#2a2420', w: 192, h: 40 }]);
+    }
+    // the Mall bandstand (1862, painted cast iron; Sunday concerts drew huge crowds; removed 1923)
+    this.pavilion(X - 18, -12, 4.2, 3.4);
+    const bandRoof = new THREE.Mesh(new THREE.ConeGeometry(5.0, 2.4, 8), colorMat('#8a3a2a')); bandRoof.position.set(X - 18, 4.9, -12); this.scene.add(bandRoof);
+    const fin = new THREE.Mesh(new THREE.SphereGeometry(0.35, 8, 6), colorMat('#b8913a')); fin.position.set(X - 18, 6.3, -12); this.scene.add(fin);
+    this.box(X - 18, 0, -12, 8.4, 0.5, 8.4, '#7a6a5a', { collide: false });
+    this.colliders.push({ minX: X - 22.2, maxX: X - 13.8, minZ: -16.2, maxZ: -7.8 });
+    for (let i = 0; i < 9; i++) this.box(X - 18 + Math.sin(i * 0.7) * 6.5, 0, -12 + Math.cos(i * 0.7) * 6.5 * 0 + (i - 4) * 1.4, 0.5, 0.45, 1.6, '#5a4030');   // folding chairs set out
+    // BETHESDA TERRACE (olive-buff sandstone, 1864-73): from the top of the grand stair you look down
+    // on the lower terrace, the Angel of the Waters (Emma Stebbins, 1873) and the Lake.
+    const sand = material('stone_bethesda', { type: 'stone', color: '#a89f7a', mortar: '#8c8466', rows: 4 });
+    const LOW = -3.5, TOP = -31, BOT = -38.5, FAR = -68;
+    for (const sx of [-1, 1]) this.floor(X + sx * 15.7, -34, 16.6, 6, ['pave_bethesda_upper', { type: 'stone', color: '#b0a684', mortar: '#8c8466', rows: 3 }, { repeat: [4, 2] }], 0.013);
+    this.floor(X, -30.6, 14.8, 1.2, ['pave_bethesda_upper', {}, { repeat: [4, 1] }], 0.013);
+    // carved sandstone balustrade along the drop (you can lean on it, not climb over)
+    const rail = (x0, z0, x1, z1) => {
+      const len = Math.hypot(x1 - x0, z1 - z0), ry = -Math.atan2(z1 - z0, x1 - x0);
+      this.box((x0 + x1) / 2, 0.95, (z0 + z1) / 2, len, 0.16, 0.42, sand, { collide: false, ry });
+      this.box((x0 + x1) / 2, 0, (z0 + z1) / 2, len, 0.18, 0.46, sand, { collide: false, ry });
+      for (let d = 0.3; d < len; d += 0.42) { const b = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.11, 0.78, 6), sand); b.position.set(x0 + (x1 - x0) * d / len, 0.57, z0 + (z1 - z0) * d / len); this.scene.add(b); }
+      this.blockLine(x0, z0, x1, z1);
+    };
+    rail(X - 24, -37, X - 7.4, -37); rail(X + 7.4, -37, X + 24, -37); rail(X - 7.4, TOP, X + 7.4, TOP);
+    rail(X - 7.4, TOP, X - 7.4, -37); rail(X + 7.4, TOP, X + 7.4, -37);
+    rail(X - 24, -37, X - 24, FAR); rail(X + 24, -37, X + 24, FAR);
+    // the grand stair down to the lower terrace
+    for (let i = 0; i < 14; i++) this.box(X, LOW, TOP - 0.25 - i * (BOT - TOP) / -14, 14, (14 - i) * (-LOW / 14), (TOP - BOT) / 14 + 0.02, sand, { collide: false });
+    for (const sx of [-1, 1]) this.box(X + sx * 7.4, LOW, (TOP + BOT) / 2, 0.8, -LOW + 0.9, TOP - BOT, sand, { collide: false });
+    // retaining walls and the arcade front under the upper terrace
+    for (const sx of [-1, 1]) this.box(X + sx * 24.3, LOW, (-37 + FAR) / 2, 0.6, -LOW, -37 - FAR, sand, { collide: false });
+    for (const sx of [-1, 1]) this.box(X + sx * 15.7, LOW, -37.2, 16.6, -LOW, 0.6, sand, { collide: false });
+    for (const sx of [-1, 1]) for (let i = 0; i < 3; i++) this.panel(X + sx * (10.5 + i * 5), LOW + 1.5, -37.52, 2.2, 3, ['arch_bethesda', { type: 'doorway', frame: '#a89f7a', w: 96, h: 128 }], Math.PI);
+    // lower terrace paving, the fountain and its angel
+    this.floor(X, (BOT + FAR) / 2, 48, BOT - FAR, ['pave_bethesda_lower', { type: 'stone', color: '#b0a684', mortar: '#8c8466', rows: 3 }, { repeat: [12, 8] }], LOW);
+    const FZ = -54;
+    const basin = new THREE.Mesh(new THREE.CylinderGeometry(7, 7.3, 0.8, 32), sand); basin.position.set(X, LOW + 0.4, FZ); this.scene.add(basin);
+    const water = new THREE.Mesh(new THREE.CircleGeometry(6.7, 32), colorMat('#5a7a88')); water.rotation.x = -Math.PI / 2; water.position.set(X, LOW + 0.72, FZ); this.scene.add(water);
+    const bowl = new THREE.Mesh(new THREE.CylinderGeometry(2.2, 0.8, 0.6, 16), sand); bowl.position.set(X, LOW + 2.6, FZ); this.scene.add(bowl);
+    const ped = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 1.3, 2.4, 10), sand); ped.position.set(X, LOW + 1.4, FZ); this.scene.add(ped);
+    const ped2 = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.6, 1.6, 8), sand); ped2.position.set(X, LOW + 3.6, FZ); this.scene.add(ped2);
+    const robe = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.75, 2.2, 8), bronze); robe.position.set(X, LOW + 5.5, FZ); this.scene.add(robe);
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.26, 8, 6), bronze); head.position.set(X, LOW + 6.85, FZ); this.scene.add(head);
+    const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.1, 1.0, 6), bronze); arm.position.set(X + 0.45, LOW + 6.6, FZ + 0.1); arm.rotation.z = -0.9; this.scene.add(arm);
+    for (const sx of [-1, 1]) { const wing = new THREE.Mesh(new THREE.BoxGeometry(1.5, 1.3, 0.07), bronze); wing.position.set(X + sx * 0.85, LOW + 6.3, FZ - 0.25); wing.rotation.set(0.2, sx * 0.35, sx * 0.55); this.scene.add(wing); }
+    // four cherubs (Temperance, Purity, Health, Peace) round the pedestal
+    for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2 + Math.PI / 4, c = new THREE.Mesh(new THREE.SphereGeometry(0.3, 8, 6), bronze); c.position.set(X + Math.sin(a) * 1.1, LOW + 2.1, FZ + Math.cos(a) * 1.1); this.scene.add(c); }
+    this.target('park', X, LOW + 4, FZ, 50);
+    // The Lake beyond, with rowboats for hire
+    const lake = new THREE.Mesh(new THREE.CircleGeometry(30, 40), material('water_harbor', { type: 'water' }, { repeat: [8, 8] }));
+    lake.rotation.x = -Math.PI / 2; lake.position.set(X, LOW - 0.25, -96); lake.scale.x = 2.4; this.scene.add(lake);
+    for (const sx of [-1, 1]) this.box(X + sx * 44, LOW - 0.3, FAR, 40, -LOW + 0.3, 0.6, sand, { collide: false });
+    this.box(X, LOW - 0.3, FAR, 48, 0.55, 0.6, sand, { collide: false });
+    for (const [dx, dz, ry] of [[-14, -80, 0.4], [10, -88, -0.7], [26, -78, 1.2]]) { const boat = this.box(X + dx, LOW - 0.35, dz, 1.2, 0.4, 3.2, '#6a4a2a', { collide: false, ry }); }
+    this.colliders.push({ minX: X - 66, maxX: X + 66, minZ: -112, maxZ: FAR - 0.5, see: true });
     // Sheep Meadow to the west, with the park's flock (grazing there since 1864)
     for (let i = 0; i < 14; i++) {
       const sx = X - 30 - (i * 7.3) % 26, sz = -10 + ((i * 13.7) % 50);
-      const body = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.45, 0.9), colorMat('#e8e2d2')); body.position.set(sx, 0.55, sz); body.rotation.y = i; this.scene.add(body);
+      const body = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.45, 0.9), colorMat('#e8e2d2')); body.position.set(sx, 0.55, sz); body.rotation.y = i; this.scene.add(body); this.colliders.push({ minX: sx - 0.5, maxX: sx + 0.5, minZ: sz - 0.5, maxZ: sz + 0.5, see: true });
       const head = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.22, 0.3), colorMat('#2a2420')); head.position.set(sx + Math.sin(i) * 0.5, 0.6, sz + Math.cos(i) * 0.5); head.rotation.y = i; this.scene.add(head);
     }
     this.target('park', X - 40, 1, 10, 30);
@@ -633,7 +677,8 @@ export class CityZone extends Zone {
     this.person('keeper', X + 1.6, 56, 0);
     this.person('chana', X + 7.5, 22, 0, { talk: 'chanapark', photo: 'sunday' });
     this.person('girl', X + 5.2, 20.5, 0, { talk: 'girlpark', photo: 'sunday' });
-    [[-2, 40, 0], [2, 30, 3], [-1, 5, 4], [3, -10, 2], [-3, -20, 7], [-5, -50, 1], [6, -52, 6]].forEach(([dx, dz, n]) => this.crowd(n, X + dx, dz, 0));
+    [[-2, 40, 0], [2, 30, 3], [-1, 5, 4], [3, -10, 2], [-3, -20, 7], [-16, -14, 5], [-20, -9, 1]].forEach(([dx, dz, n]) => this.crowd(n, X + dx, dz, 0));
+    [[-5, -48, 1], [6, -50, 6], [-12, -60, 2], [9, -62, 3]].forEach(([dx, dz, n]) => this.crowd(n, X + dx, dz, 0, { y: -3.5 }));
     this.floor(X + 45, -5, 8, 140, [PATH[0], PATH[1], { repeat: [2, 35] }], 0.012);
     this.carriage = this.horsecar(X + 45, 40, 0, '#1d1d24');
     this.carriage.scale.set(0.8, 0.8, 0.55);

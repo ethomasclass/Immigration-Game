@@ -31,6 +31,11 @@ This research backs the game's environments. Colors are rendering estimates. Poi
 - **Outside (documented):** a hospital shed by the water entrance, customs sheds with baggage scales at the dock, a tall board fence, and barges towed by a tug.
 - **Guesses in the game:** the exchange rates on the blackboard, the sign wording, the pot-belly stoves, and the roof color are plausible but not confirmed by a source.
 
+### Castle Garden as rebuilt from period pictures (2nd environment pass)
+- **Inside, from the 1860s–80s engravings:** a ring of slender iron columns with flared ("palm") capitals carries a raised **clerestory lantern** of arched windows in the middle of the roof. White picket railings divide the floor into aisles and pens. Booths are labeled **REGISTRY, EXCHANGE OFFICE, RAIL ROAD DEPARTMENT, INFORMATION**, and a two-story **Office of the Commissioners of Emigration** with an outside stair stands against the wall.
+- **Outside, from the ca. 1880–90 aerials and Shults's 1880 landing view:** low, pale, gabled wooden sheds (not dark brown), a covered landing shed on the pier, and barges with long curved roofs. The hospital and customs sheds stand on a timber wharf at the water side.
+- **The Battery, from ca. 1885 photographs:** a granite seawall with an iron pipe railing, gas lamps, slat benches, gravel walks, and small octagonal pavilions.
+
 ## Lower East Side
 - **Hester Street, west to east:** Bowery (Third Ave El overhead), Chrystie, Forsyth, Eldridge, **Allen (Second Ave El overhead, opened 1880, stations at Canal and Grand)**, Orchard, Ludlow, Essex.
 - **Block sizes:** blocks were about 200 ft. Side streets were about 50 ft wide building to building (a 30 ft roadway and 10 ft sidewalks). The Bowery was about 100 ft wide.
@@ -53,6 +58,13 @@ This research backs the game's environments. Colors are rendering estimates. Poi
   - cast-iron **gas lamps** about 9–10 ft tall with a ladder bar and a 4-sided glass lantern; the curved "bishop's crook" came later
   - pushcarts with 2 large wooden wheels, a flat bed about 3 × 6 ft, and long handles
 
+### Inside a tenement flat (Riis photographs, 1888–89; 97 Orchard St)
+- **Front room as workshop:** treadle sewing machines on a table under the window, heaps of cut coat pieces on the floor and chairs, finished coats piled high. The light came from a kerosene lamp.
+- **Kitchen:** a cast-iron coal range with its stovepipe into the chimney, a kettle and pot, a sad-iron heating for pressing seams, a coal scuttle, and a washtub with a washboard. A shelf over the stove held brass Sabbath candlesticks.
+- **Bedroom:** no window, or one onto the air shaft. A straw tick on the floor, the family's steamer trunk, and clothes on a line.
+- **Halls:** almost dark. One gas jet for the whole floor, if any.
+- **Street:** granite curbs, dark gutters, and manure, straw, and puddles between the paving blocks. Chimney stacks line the party walls on the roofs.
+
 ## Park Row and City Hall Park
 - **The park:** a triangle with its point to the south (Broadway on the west, Park Row on the east).
   - **Mullett's Post Office** (granite, mansard roofs) fills the southern tip.
@@ -72,11 +84,22 @@ This research backs the game's environments. Colors are rendering estimates. Poi
   - Cable cars were first tested on Tenth Ave in 1885.
 - **Wires:** 1888 was the peak of the overhead **"wire forest"** of telegraph poles. The city started cutting them down in 1889.
 
+### Inside the Tweed Courthouse
+- **The rotunda:** octagonal, under a skylight, ringed by tiers of round arches in **red and cream brick** (Leopold Eidlitz's later work on the building) with cast-iron gallery railings. Courts and county offices opened off the galleries.
+- **What it cost:** about **$13 million** by 1872, against a first budget of about $250,000. In July 1871 *The New York Times* printed the county's secret accounts. Among the bills:
+  - Andrew J. Garvey, plasterer: **$133,187 for two days of work**
+  - a carpenter: **$360,751 for one month**
+  - three tables and forty chairs: **$179,729**
+- **In the game:** framed copies of these bills hang on the rotunda wall ("What This Building Cost"). Plunkitt's bootblack stand is inside the building, where he actually held court. The naturalization desk with a party man vouching for newcomers dramatizes Tammany's citizenship help.
+
 ## Central Park
 - **The El to the park:** the **Sixth Avenue El to 58th Street** stopped at the park's SW corner. The Third Ave El stopped at 59th & Third, four avenues east.
 - **Bethesda Terrace:** olive-buff sandstone. The *Angel of the Waters* (1873) is brown bronze.
 - **The Mall:** elms about 40–50 ft tall, the canopy not yet closed.
 - **Lamps:** sparse gas posts; the Bacon lampposts came in 1907.
+- **Bethesda Terrace:** a grand stair runs down from the end of the Mall to a lower terrace, with an arcade under the drive. The fountain stands on the lower terrace and the Lake lies beyond. The game shows the view from the top of the stair, over the balustrade.
+- **The Mall bandstand (1862):** a painted cast-iron pavilion beside the Mall, used for Sunday concerts until it was removed in 1923.
+- **Literary Walk:** statues of **Shakespeare and Sir Walter Scott**, both unveiled in 1872, at the south end of the Mall.
 - **Grounds:** wooden-slat benches and rustic cedar shelters, small "Keep off the grass" boards, and **sheep on the Sheep Meadow**.
 
 ## How the game simplifies
@@ -95,6 +118,9 @@ This research backs the game's environments. Colors are rendering estimates. Poi
 - Central Park: [58th Street Terminal](https://en.wikipedia.org/wiki/58th_Street_Terminal)
 - Statue of Liberty: [History.com, the green color change](https://www.history.com/news/statue-of-liberty-green-color-change)
 - Street lamps: [Historic street lamp posts (HDC)](https://hdc.org/buildings/historic-street-lamp-posts/)
+- Tweed Ring bills: [Tweed Courthouse (Wikipedia)](https://en.wikipedia.org/wiki/Tweed_Courthouse)
+- Castle Garden pictures used for the rebuild: NYPL Digital Collections (interior engraving, 1880s), Library of Congress (stereo aerials, ca. 1880–1890), *Harper's Weekly* landing scene (Shults, 1880), Currier & Ives bird's-eye view of New York (1883)
+- Tenement interiors: Jacob Riis photographs, 1888–1890 (Museum of the City of New York, public domain)
 - Photo archives for painting textures:
   - Library of Congress (Detroit Publishing Co., Bain)
   - Museum of the City of New York (Riis and Byron collections)
