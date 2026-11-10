@@ -129,7 +129,8 @@ export class CityZone extends Zone {
     this.box(0, 0, -53.5, 22, 2.5, 5, '#cfc9bc');
     this.panel(0, 17.7, -54.45, 14, 0.9, ['sign_courthouse', { type: 'sign', title: 'NEW YORK COUNTY COURTHOUSE', color: '#d8d2c4', ink: '#3a3028', w: 448, h: 40 }]);
     // grand stair on the Chambers Street side (removed 1942)
-    for (let i = 0; i < 10; i++) this.box(0, 0, -103 - i * 0.7, 24 - i * 0.4, 3 - i * 0.3, 0.7, '#d8d2c4', { collide: i < 3 });
+    for (let i = 0; i < 10; i++) this.box(0, 0, -103 - i * 0.7, 24 - i * 0.4, 3 - i * 0.3, 0.7, '#d8d2c4', { collide: false });
+    this.colliders.push({ minX: -12, maxX: 12, minZ: -110, maxZ: -102 });
     this.target('courthouse', 0, 10, -56, 60);
     this.readable('courthouse', 12, 1.3, -50.5, { prompt: 'Read about the courthouse', photo: null });
     this.box(12, 0, -50.8, 0.6, 1.0, 0.3, '#6a6458');
@@ -217,6 +218,10 @@ export class CityZone extends Zone {
     this.rowBuilding(228, 262, 22, office(2, '#b0a090'));
     // (gap 262-300: the Brooklyn Bridge entrance)
     this.rowBuilding(300, 340, 20, office(3, '#7a3a2c'));
+    // seal the blocks behind Newspaper Row (and the sides of the bridge entrance)
+    const B = (s, o) => along(s, PR_W + o);
+    for (const [s0, s1] of [[-10, 262], [300, 340]]) { this.blockLine(...B(s0, 0.3), ...B(s0, 26)); this.blockLine(...B(s1, 0.3), ...B(s1, 26)); this.blockLine(...B(s0, 26), ...B(s1, 26)); }
+    this.blockLine(...B(340, 0.3), ...B(340, 160)); this.blockLine(...B(-10, 0.3), ...B(-10, 160));
   }
 
   timesConstruction(s0, s1) {
@@ -359,7 +364,7 @@ export class CityZone extends Zone {
     const granite = material('bridge_granite', { type: 'stone', color: '#b7b2a8', rows: 10 });
     // approach: brick/stone viaduct rising from the terminal
     const ramp = new THREE.Mesh(new THREE.BoxGeometry(16, 2, 330), granite);
-    const [mx, mz] = P(175); ramp.position.set(mx, 16, mz); ramp.rotation.set(0, rot, 0); ramp.rotateX(-0.11); this.scene.add(ramp);
+    const [mx, mz] = P(195); ramp.position.set(mx, 16.2, mz); ramp.rotation.set(0, rot, 0); ramp.rotateX(-0.11); this.scene.add(ramp);
     // the towers: gray granite, twin pointed arches (Manhattan tower ~ compressed distance)
     // Each tower: one block of granite pierced by two pointed Gothic arches above the roadway.
     const sh = new THREE.Shape(); sh.moveTo(-13, 0); sh.lineTo(13, 0); sh.lineTo(13, 84); sh.lineTo(-13, 84); sh.closePath();
@@ -397,7 +402,7 @@ export class CityZone extends Zone {
     const sgn = this.panel(sgx, 4.6, sgz, 10, 1, ['sign_bridge_terminal', { type: 'sign', title: 'NEW YORK & BROOKLYN BRIDGE', w: 448, h: 48 }]);
     sgn.rotation.y = Math.atan2(-PR.n[0], -PR.n[1]);
     const [rlx, rlz] = P(26);
-    this.wallLine(rlx - dir[1] * 8, rlz + dir[0] * 8, rlx + dir[1] * 8, rlz - dir[0] * 8, 1.1, IRON, 0.15);
+    this.wallLine(rlx - dir[1] * 19.5, rlz + dir[0] * 19.5, rlx + dir[1] * 19.5, rlz - dir[0] * 19.5, 1.1, IRON, 0.15);
     for (const side of [-8, 8]) { const [a1, b1] = P(0); const [a2, b2] = P(26); this.wallLine(a1 - dir[1] * side, b1 + dir[0] * side, a2 - dir[1] * side, b2 + dir[0] * side, 1.1, IRON, 0.15); }
     const [rdx, rdz] = P(22); this.readable('bridge', rdx, 1.3, rdz, { prompt: 'Look at the Brooklyn Bridge' });
   }

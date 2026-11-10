@@ -427,6 +427,27 @@ const DRAW = {
     const lines = String(s.title || '').split('\n');
     lines.forEach((ln, i) => { ctx.font = `${i ? '' : 'bold '}${Math.round(h * (i ? 0.085 : 0.11))}px Georgia`; ctx.fillText(ln, w / 2, 8 + h * (0.17 + i * 0.125), w - 30); });
   },
+  // Picket railing on a transparent background (used with alphaTest).
+  picket(ctx, w, h, s) {
+    ctx.clearRect(0, 0, w, h);
+    const c = s.color || '#d8d0bc', n = s.n || 8, pw = w / n;
+    ctx.fillStyle = c;
+    for (let i = 0; i < n; i++) { const x = i * pw + pw * 0.3; ctx.fillRect(x, h * 0.12, pw * 0.4, h * 0.88); ctx.beginPath(); ctx.moveTo(x, h * 0.12); ctx.lineTo(x + pw * 0.2, 0); ctx.lineTo(x + pw * 0.4, h * 0.12); ctx.fill(); }
+    ctx.fillRect(0, h * 0.25, w, h * 0.07); ctx.fillRect(0, h * 0.78, w, h * 0.07);
+    ctx.fillStyle = 'rgba(0,0,0,.18)'; for (let i = 0; i < n; i++) ctx.fillRect(i * pw + pw * 0.62, h * 0.12, pw * 0.08, h * 0.88);
+  },
+  // A ring of tall arched windows (the clerestory of a lantern), bright from inside.
+  clerestory(ctx, w, h, s) {
+    ctx.fillStyle = s.color || '#d8d0bc'; ctx.fillRect(0, 0, w, h);
+    const n = s.n || 6, ww = w / n;
+    for (let i = 0; i < n; i++) {
+      const x = i * ww + ww * 0.22, y = h * 0.22, wd = ww * 0.56, ht = h * 0.62;
+      ctx.fillStyle = s.glass || '#eef0ea';
+      ctx.fillRect(x, y + wd / 2, wd, ht - wd / 2); ctx.beginPath(); ctx.arc(x + wd / 2, y + wd / 2, wd / 2, Math.PI, 0); ctx.fill();
+      ctx.strokeStyle = '#6a6a64'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x + wd / 2, y); ctx.lineTo(x + wd / 2, y + ht); ctx.moveTo(x, y + ht * 0.55); ctx.lineTo(x + wd, y + ht * 0.55); ctx.stroke();
+    }
+    ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.fillRect(0, 0, w, h * 0.08); ctx.fillRect(0, h * 0.92, w, h * 0.08);
+  },
   awning(ctx, w, h, s) {
     const a = s.color || '#8a2e2a', b = s.color2 || '#e8dcc0';
     for (let x = 0; x < w; x += w / 8) { ctx.fillStyle = (Math.round(x / (w / 8)) % 2) ? a : b; ctx.fillRect(x, 0, w / 8 + 1, h); }
@@ -484,6 +505,7 @@ export function texture(key, spec = {}, repeat = null) {
     base.colorSpace = THREE.SRGBColorSpace;
     base.wrapS = base.wrapT = THREE.RepeatWrapping;
     base.anisotropy = 4;
+    base.userData.key = key;
     entry = { tex: base, users: [base], img: null, canvas: base.image };
     cache.set(key, entry);
     tryLoad(key, entry);
@@ -526,6 +548,7 @@ export function colorMat(color, opts = {}) {
   if (matCache.has(ck)) return matCache.get(ck);
   const m = opts.basic ? new THREE.MeshBasicMaterial({ color, fog: opts.fog ?? true }) : new THREE.MeshLambertMaterial({ color });
   if (opts.emissive) m.emissive = new THREE.Color(opts.emissive);
+  if (opts.side) m.side = opts.side;
   matCache.set(ck, m);
   return m;
 }

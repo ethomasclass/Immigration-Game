@@ -75,7 +75,7 @@ export class ShipZone extends Zone {
     for (const tz of [-5.5, -11.8, -18.2, -26]) {
       this.box(0.8, 0, tz, 0.8, 0.75, 2.6, TABLE);
       this.box(1.55, 0, tz, 0.3, 0.42, 2.4, TABLE);
-      this.box(0.05, 0, tz, 0.3, 0.42, 2.4, TABLE, { collide: false });
+      this.box(0.05, 0, tz, 0.3, 0.42, 2.4, TABLE);
       for (const dz of [-0.8, 0.4]) { const pan = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.18, 0.1, 12), colorMat('#a8a9a4')); pan.position.set(0.8, 0.8, tz + dz); this.scene.add(pan); }
     }
     // the supper pan you can inspect

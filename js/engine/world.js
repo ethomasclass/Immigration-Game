@@ -33,6 +33,7 @@ export class Zone {
     const speaker = d && d.active ? d.currentWho : null;
     const pp = this.game.controls.pos;
     for (const m of this.movers || []) this.stepMover(m, dt, pp);
+    this.stepLightPool(dt);
     for (const n of this.npcs) {
       if (!n.group.visible) continue;
       if (n.goto) this.stepGoto(n, dt);
@@ -45,6 +46,7 @@ export class Zone {
       const walking = n.goto ? n : (n.path && !n.paused ? n : null);
       animateCutout(n.group, this.time, cam, speaker && speaker === n.id && n.talking !== false && d.currentTree === n.talkTree, walking);
     }
+    this.stepShadows();
   }
 
   /** Move a static group's meshes into the scene (keeping their placement) so optimize() can merge them. */
@@ -65,7 +67,7 @@ export class Zone {
     const groups = new Map();
     const remove = [];
     for (const o of this.scene.children) {
-      if (!o.isMesh || o.userData.keep || Array.isArray(o.material) || o.material.transparent) continue;
+      if (!o.isMesh || o.isInstancedMesh || o.userData.keep || Array.isArray(o.material) || (o.material.transparent && !o.material.userData.mergeTransparent)) continue;
       const g = o.geometry;
       if (!g.index && !g.attributes.position) continue;
       o.updateMatrixWorld(true);
@@ -85,6 +87,65 @@ export class Zone {
     }
   }
 
+  initLightPool(n = 5) {
+    this.pool = [];
+    for (let i = 0; i < n; i++) { const p = new THREE.PointLight(0xffffff, 0, 10, 1.4); p.userData.keep = true; this.scene.add(p); this.pool.push({ light: p, v: null }); }
+    this.poolT = 1;
+  }
+  stepLightPool(dt) {
+    if (!this.pool) return;
+    this.poolT += dt;
+    const cam = this.game.camera.position;
+    if (this.poolT > 0.25 && this.vlights) {
+      this.poolT = 0;
+      const ranked = this.vlights.map(v => ({ v, d: v.position.distanceToSquared(cam) / (v.intensity + 0.01) })).sort((a, b) => a.d - b.d);
+      this.pool.forEach((p, i) => { const r = ranked[i]; p.v = r && r.v.position.distanceTo(cam) < r.v.distance * 2.6 ? r.v : null; });
+    }
+    for (const p of this.pool) {
+      const v = p.v, L = p.light;
+      if (!v) { L.intensity = 0; continue; }
+      L.position.copy(v.position); L.color.copy(v.color); L.distance = v.distance;
+      L.intensity += (v.intensity - L.intensity) * Math.min(1, dt * 8);   // fade, so swaps aren't visible
+    }
+  }
+
+  /** One instanced draw call for every person's soft foot shadow. */
+  initShadows() {
+    const n = this.npcs.length; if (!n) return;
+    const m = new THREE.InstancedMesh(new THREE.CircleGeometry(0.32, 14).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.3, depthWrite: false }), n);
+    m.userData.keep = true; m.frustumCulled = false; m.renderOrder = 1;
+    this.scene.add(m); this.shadowMesh = m; this._sm = new THREE.Matrix4(); this._sp = new THREE.Vector3(); this._ss = new THREE.Vector3(); this._sq = new THREE.Quaternion();
+  }
+  stepShadows() {
+    const m = this.shadowMesh; if (!m) return;
+    this.npcs.forEach((n, i) => {
+      const g = n.group, s = g.userData.cutout ? g.userData.cutout.scale : 1, on = g.visible && !n.far;
+      this._sp.set(g.position.x, g.position.y + 0.014, g.position.z);
+      this._ss.set(on ? s : 0, 1, on ? s * 0.6 : 0);
+      m.setMatrixAt(i, this._sm.compose(this._sp, this._sq, this._ss));
+    });
+    m.instanceMatrix.needsUpdate = true;
+  }
+
+  /** Dark soft strip on the ground along a wall foot (cheap ambient occlusion). */
+  aoStrip(x0, z0, x1, z1, width = 1.1, y = 0.02) {
+    if (!this._aoMat) {
+      const cv = document.createElement('canvas'); cv.width = 4; cv.height = 64;
+      const c = cv.getContext('2d'), g = c.createLinearGradient(0, 0, 0, 64); g.addColorStop(0, 'rgba(0,0,0,.55)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+      c.fillStyle = g; c.fillRect(0, 0, 4, 64);
+      const t = new THREE.CanvasTexture(cv);
+      this._aoMat = new THREE.MeshBasicMaterial({ map: t, transparent: true, depthWrite: false });
+      this._aoMat.userData.mergeTransparent = true;
+    }
+    const len = Math.hypot(x1 - x0, z1 - z0); if (len < 0.1) return;
+    const geo = new THREE.PlaneGeometry(len, width); geo.translate(0, -width / 2, 0);
+    const m = new THREE.Mesh(geo, this._aoMat);
+    m.rotation.order = 'YXZ'; m.rotation.x = -Math.PI / 2; m.rotation.y = -Math.atan2(z1 - z0, x1 - x0);
+    m.position.set((x0 + x1) / 2, y, (z0 + z1) / 2);
+    this.scene.add(m);
+    return m;
+  }
+
   // ---- environment ----
   setSky(color, fogNear, fogFar, fogColor) {
     this.scene.background = new THREE.Color(color);
@@ -101,10 +162,16 @@ export class Zone {
     }
   }
 
+  /**
+   * A light source. Lamps are VIRTUAL: the zone keeps a small fixed pool of real
+   * point lights and gives them to the lamps nearest the player. Every material
+   * then shades with the same small number of lights, which keeps the frame rate
+   * steady on Chromebooks no matter how many lamps a street has.
+   * The returned object has .intensity, .color and .position like a real light.
+   */
   lamp(x, y, z, color = 0xffc070, intensity = 6, dist = 12) {
-    const l = new THREE.PointLight(color, intensity, dist, 1.4);
-    l.position.set(x, y, z);
-    this.scene.add(l);
+    const l = { position: new THREE.Vector3(x, y, z), color: new THREE.Color(color), intensity, distance: dist, virtual: true };
+    (this.vlights = this.vlights || []).push(l);
     const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.09, 8, 6), colorMat('#ffd890', { basic: true }));
     bulb.position.set(x, y, z);
     this.scene.add(bulb);
@@ -147,6 +214,7 @@ export class Zone {
     m.position.set((x0 + x1) / 2, h / 2, (z0 + z1) / 2);
     this.scene.add(m);
     if (collide) this.colliders.push({ minX: x0, maxX: x1, minZ: z0, maxZ: z1 });
+    if (!this.noAO) { this.aoStrip(x1, z0, x0, z0); this.aoStrip(x0, z1, x1, z1); this.aoStrip(x0, z0, x0, z1); this.aoStrip(x1, z1, x1, z0); }
     return m;
   }
 
@@ -417,6 +485,43 @@ export class Zone {
   }
 
   /** A street tree. It is late October 1888, so most leaves have turned. */
+  /**
+   * A long gabled wooden shed (Castle Garden's outbuildings, the landing shed, etc.).
+   * Ridge runs along the longer side. wall/roof are material specs.
+   */
+  shed(x0, x1, z0, z1, h, { rise = 1.6, wall = ['shed_whitewash', { type: 'boards', color: '#d2cab4', n: 12, w: 512, h: 256 }], roof = '#5e5e5c', collide = true, open = false } = {}) {
+    const w = x1 - x0, d = z1 - z0, alongX = w >= d, cx = (x0 + x1) / 2, cz = (z0 + z1) / 2;
+    if (!open) this.box(cx, 0, cz, w, h, d, [wall[0], wall[1], { repeat: [Math.max(1, Math.round((alongX ? w : d) / 6)), 1] }], { collide });
+    const span = alongX ? d : w, len = alongX ? w : d;
+    const sh = new THREE.Shape(); sh.moveTo(-span / 2 - 0.4, 0); sh.lineTo(span / 2 + 0.4, 0); sh.lineTo(0, rise); sh.closePath();
+    const g = new THREE.ExtrudeGeometry(sh, { depth: len + 0.6, bevelEnabled: false }); g.translate(0, 0, -(len + 0.6) / 2);
+    const m = new THREE.Mesh(g, typeof roof === 'string' ? colorMat(roof) : material(roof[0], roof[1]));
+    m.position.set(cx, h, cz); m.rotation.y = alongX ? Math.PI / 2 : 0; this.scene.add(m);
+    return m;
+  }
+
+  /** Picket railing from (x0,z0) to (x1,z1). */
+  picket(x0, z0, x1, z1, h = 1.05, color = '#d8d0bc', collide = true) {
+    const L = Math.hypot(x1 - x0, z1 - z0);
+    const p = this.panel((x0 + x1) / 2, h / 2, (z0 + z1) / 2, L, h, ['picket_' + color.slice(1), { type: 'picket', color, n: 8, w: 256, h: 128 }, { transparent: true, repeat: [Math.max(1, Math.round(L / 1.6)), 1] }], -Math.atan2(z1 - z0, x1 - x0), true);
+    if (collide) { const n = Math.max(1, Math.ceil(L / 0.5)); for (let i = 0; i <= n; i++) { const x = x0 + (x1 - x0) * i / n, z = z0 + (z1 - z0) * i / n; this.colliders.push({ minX: x - 0.12, maxX: x + 0.12, minZ: z - 0.12, maxZ: z + 0.12, see: true }); } }
+    return p;
+  }
+
+  /** Octagonal park pavilion (open sides, cone roof). */
+  pavilion(x, z, r = 3.2, h = 2.8) {
+    for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4; this.box(x + Math.sin(a) * r, 0, z + Math.cos(a) * r, 0.16, h, 0.16, '#3a3a34'); }
+    const roof = new THREE.Mesh(new THREE.ConeGeometry(r + 0.6, 1.6, 8), colorMat('#5a5048')); roof.position.set(x, h + 0.8, z); roof.rotation.y = Math.PI / 8; this.scene.add(roof);
+    const fin = new THREE.Mesh(new THREE.ConeGeometry(0.12, 0.6, 6), colorMat('#2a2a28')); fin.position.set(x, h + 1.9, z); this.scene.add(fin);
+    this.box(x, 0, z, r * 1.7, 0.08, r * 1.7, '#8a8478', { collide: false });
+  }
+
+  /** Invisible wall between two points (keeps players out of unbuilt space). */
+  blockLine(x0, z0, x1, z1) {
+    const L = Math.hypot(x1 - x0, z1 - z0);
+    for (let d = 0; d <= L; d += 0.5) { const x = x0 + (x1 - x0) * d / L, z = z0 + (z1 - z0) * d / L; this.colliders.push({ minX: x - 0.38, maxX: x + 0.38, minZ: z - 0.38, maxZ: z + 0.38 }); }
+  }
+
   tree(x, z, s = 1, leaf = null) {
     const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.12 * s, 0.2 * s, 2.4 * s, 6), colorMat('#4a3828'));
     trunk.position.set(x, 1.2 * s, z); this.scene.add(trunk);

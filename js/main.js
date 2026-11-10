@@ -148,6 +148,8 @@ class Game {
         state.zone = id; save();
         this.zone.build();
         this.zone.optimize();
+        this.zone.initLightPool(5);
+        this.zone.initShadows();
         this.beacon = this.makeBeacon(); this.zone.scene.add(this.beacon);
         this.showPurse();
         const sp = spawn || this.zone.spawn;
@@ -486,5 +488,6 @@ class Game {
 }
 
 window.game = new Game();
+if (/[?&]dev(=|&|$)/.test(location.search)) import('./dev/inspect.js').then(m => { window.dev = m; console.log('dev tools ready: dev.gaps(), dev.topdown(), dev.stats()'); });
 // For the art guide: list every art key the game has asked for.
 window.listArtKeys = () => [...requested.keys()].sort();

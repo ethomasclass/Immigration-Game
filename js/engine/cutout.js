@@ -107,10 +107,7 @@ export function makeCutout(artId, c, scale = 1) {
 
   const group = new THREE.Group();
   group.add(plane);
-  // soft shadow at the feet
-  const shadow = new THREE.Mesh(new THREE.CircleGeometry(0.32 * scale, 16), new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.28, depthWrite: false }));
-  shadow.rotation.x = -Math.PI / 2; shadow.position.y = 0.012; shadow.scale.y = 0.6;
-  group.add(shadow);
+  // (foot shadows are drawn for everyone at once by Zone.initShadows)
 
   const anim = c.anim || {};
   const state = {
