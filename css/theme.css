@@ -175,3 +175,25 @@ body.touch #dlg-next { background: var(--brass); color: var(--inkc); border: 1px
 #rotate-hint { background: var(--wood); border: 2px solid var(--brass-m); }
 @media (max-height: 520px) { .panel, #card .title-card { padding: 16px 20px; } .title-card h1 { font-size: 1.6rem; } #purse { top: 6px; font-size: .8rem; } }
 @media (max-width: 760px) { #purse { left: auto; right: 190px; transform: none; top: 150px; } }
+
+/* ---------- film look: soft vignette and a warm print tone over the 3D view ---------- */
+#grade { position: fixed; inset: 0; pointer-events: none; z-index: 1;
+  background:
+    radial-gradient(ellipse 120% 105% at 50% 46%, transparent 52%, rgba(24, 12, 4, .34) 100%),
+    linear-gradient(180deg, rgba(255, 214, 150, .05), rgba(40, 20, 10, .07)); }
+
+/* ---------- living title screen: the harbor shows behind the menu ---------- */
+#menu.live { background: linear-gradient(180deg, rgba(14, 8, 6, .30), rgba(14, 8, 6, .12) 40%, rgba(14, 8, 6, .55)); }
+#menu.live .panel.menu { box-shadow: 0 18px 60px rgba(0, 0, 0, .65); animation: menu-in .9s ease-out both; }
+@keyframes menu-in { from { opacity: 0; transform: translateY(14px) scale(.985); } to { opacity: 1; transform: none; } }
+@media (min-width: 900px) { #menu.live { justify-content: flex-start; padding-left: 7vw; } }
+
+/* ---------- dialogue portrait: the character's own art, framed head and shoulders ---------- */
+#dlg-portrait { flex: 0 0 128px; height: 176px; background-size: auto 250%; background-position: 50% 3%; background-repeat: no-repeat;
+  background-color: #cdbf9e; background-image: none; }
+#dlg-portrait.bust { background-size: cover; background-position: 50% 12%; }
+#dlg-portrait.pop { animation: portrait-pop .28s ease-out; }
+@keyframes portrait-pop { from { transform: translateY(8px) scale(.94); opacity: .3; } to { transform: none; opacity: 1; } }
+#dlg-text.line-in { animation: line-in .22s ease-out; }
+@keyframes line-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+@media (max-height: 520px) { #dlg-portrait { flex-basis: 78px; height: 112px; } }

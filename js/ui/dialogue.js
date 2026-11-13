@@ -71,7 +71,9 @@ export class Dialogue {
       const who = typeof ln === 'string' ? this.tree.speaker : ln.who;
       const text = typeof ln === 'string' ? ln : ln.text;
       const id = `${this.treeId}.${this.nodeId}.${this.lineIndex + 1}`;
-      this.show(who, text);
+      // mood: 'up' | 'down' on a line or its node swaps in the speaker's expression close-up
+      const mood = (typeof ln === 'object' && ln.mood) || (who === this.tree.speaker ? this.node.mood : null) || null;
+      this.show(who, text, false, mood);
       playVoice(id, text, who);
       el.choices.innerHTML = '';
       el.next.classList.remove('hidden');
@@ -130,7 +132,7 @@ export class Dialogue {
     this.nextLine();
   }
 
-  show(who, text, keep = false) {
+  show(who, text, keep = false, mood = null) {
     this.currentWho = who; this.currentTree = this.treeId;
     const c = CHARACTERS[who] || {};
     const narr = who === 'narrator';
@@ -140,9 +142,16 @@ export class Dialogue {
     // Portrait: the same portrait_<id> art used for the character in the world.
     if (narr) { el.portrait.style.visibility = 'hidden'; return; }
     el.portrait.style.visibility = 'visible';
-    const url = this.game.portraitURL(who);
-    el.portrait.style.backgroundImage = url ? `url(${url})` : '';
-    el.portrait.textContent = url && this.game.hasPortrait(who) ? '' : (c.name || '').split(' ').map(w => w[0]).join('').slice(0, 3);
+    const art = this.game.portraitURL(who, mood);
+    el.portrait.style.backgroundImage = art ? `url(${art.url})` : '';
+    el.portrait.classList.toggle('bust', !!(art && art.bust));
+    el.portrait.textContent = art ? '' : (c.name || '').split(' ').map(w => w[0]).join('').slice(0, 3);
+    if (!keep) {
+      // small entrance each line, a bigger one when the speaker changes
+      el.text.classList.remove('line-in'); void el.text.offsetWidth; el.text.classList.add('line-in');
+      if (this.lastWho !== who) { el.portrait.classList.remove('pop'); void el.portrait.offsetWidth; el.portrait.classList.add('pop'); }
+      this.lastWho = who;
+    }
   }
 
   close() {

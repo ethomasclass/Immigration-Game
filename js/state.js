@@ -11,7 +11,7 @@ const DEFAULTS = () => ({
   answers: { A: { stance: '', text: '' }, B: { stance: '', text: '' } },
   cents: 250,       // the photographer's expense money ($2.50)
   keeps: [],        // keepsake ids, in the order found
-  settings: { sens: 1, quality: 0.8, vo: 1, amb: 0.5, tts: false, drag: false, touch: 'auto' },
+  settings: { sens: 1, quality: 0, qv: 2, vo: 1, amb: 0.5, tts: false, drag: false, touch: 'auto' },
 });
 
 export const state = DEFAULTS();
@@ -24,6 +24,7 @@ export function load() {
     const d = DEFAULTS();
     Object.assign(state, d, data);
     state.settings = Object.assign(d.settings, data.settings || {});
+    if ((data.settings || {}).qv !== 2) { state.settings.quality = 0; state.settings.qv = 2; }   // older saves move to Automatic quality
     state.chart = Object.assign(d.chart, data.chart || {});
     state.answers = Object.assign(d.answers, data.answers || {});
     if (typeof state.cents !== 'number') state.cents = 250;

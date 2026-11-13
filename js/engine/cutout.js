@@ -86,6 +86,15 @@ function placeholder(c) {
 }
 
 const placeholderCache = new Map();
+const placeholderURLs = new Map();
+/** Image URL of the drawn stand-in figure (used by the dialogue box until real art exists). */
+export function placeholderURL(artId, c) {
+  if (!placeholderURLs.has(artId)) {
+    if (!placeholderCache.has(artId)) placeholderCache.set(artId, placeholder(c));
+    placeholderURLs.set(artId, placeholderCache.get(artId).toDataURL());
+  }
+  return placeholderURLs.get(artId);
+}
 
 /**
  * Build a cutout. `artId` picks the art file (portrait_<artId>), `c` is the
@@ -130,8 +139,8 @@ function fit(s) {
   const aspect = img && img.width ? frameW / img.height : 0.5;
   if (Math.abs(aspect - s.aspect) < 1e-3) return;
   s.aspect = aspect;
-  // Real art includes some empty margin; scale so the figure is about H tall.
-  const h = hasRealArt(s.key) ? s.H * 1.06 : s.H * 1.0;
+  // Real art is cropped to the figure when it loads, so the image height is the figure's height.
+  const h = hasRealArt(s.key) ? s.H * 1.02 : s.H * 1.0;
   s.plane.scale.set(h * aspect, h, 1);
   s.baseW = h * aspect; s.baseH = h;
 }

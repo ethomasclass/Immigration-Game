@@ -15,6 +15,7 @@
 </head>
 <body>
   <canvas id="view"></canvas>
+  <div id="grade"></div>
 
   <!-- Photo viewfinder -->
   <div id="viewfinder" class="hidden">
@@ -133,6 +134,7 @@
         <label>Mouse sensitivity <input type="range" id="set-sens" min="0.3" max="3" step="0.1"></label>
         <label>Graphics quality
           <select id="set-quality">
+            <option value="0">Automatic (recommended)</option>
             <option value="0.6">Low (fastest)</option>
             <option value="0.8">Medium</option>
             <option value="1">High</option>

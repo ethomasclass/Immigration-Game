@@ -54,6 +54,7 @@ export const DIALOGUE = {
         next: 'hub',
       },
       why: {
+        mood: 'down',
         set: ['heard_rivka_push'],
         note: 'PUSH: After 1881, mobs attacked Jewish towns in the Russian Empire (pogroms). New laws in 1882 (the May Laws) limited where Jews could live and work.',
         lines: [
@@ -74,6 +75,7 @@ export const DIALOGUE = {
         next: 'hub',
       },
       letter: {
+        mood: 'up',
         set: ['read_letter'],
         keep: 'address',
         note: 'CHAIN MIGRATION: Rivka carries a letter with her cousin Moishe\'s address on Hester Street. Family who came first help the next ones come.',
@@ -91,6 +93,7 @@ export const DIALOGUE = {
         next: 'hub',
       },
       photo: {
+        mood: 'up',
         set: ['promised_print'],
         lines: [
           'A picture? Of us? ...Yes. Please.',
@@ -111,6 +114,7 @@ export const DIALOGUE = {
     speaker: 'mama',
     nodes: {
       start: {
+        mood: 'down',
         set: ['heard_cough'],
         lines: [
           'Rivka does the talking. Her English is better than mine.',
@@ -175,6 +179,7 @@ export const DIALOGUE = {
         next: 'hub',
       },
       why: {
+        mood: 'down',
         set: ['heard_giuseppe_push'],
         note: 'PUSH: In southern Italy, poor farmers worked land owned by rich landlords, paid high taxes, and could barely feed their families.',
         lines: [
@@ -184,6 +189,7 @@ export const DIALOGUE = {
         next: 'hub',
       },
       plan: {
+        mood: 'up',
         note: 'PULL: Jobs and higher pay. Many Italian men planned to work for a few years and return home. They were called "birds of passage."',
         lines: [
           'America needs strong backs! They are building railroads, streets, buildings, everything.',
@@ -481,6 +487,7 @@ export const DIALOGUE = {
     speaker: 'novak',
     nodes: {
       start: {
+        mood: 'down',
         branch: [{ if: 'novak_decided', next: 'after' }, { next: 'first' }],
       },
       first: {
@@ -499,6 +506,7 @@ export const DIALOGUE = {
         ],
       },
       pay: {
+        mood: 'up',
         set: ['paid_telegram', 'novak_decided'],
         spend: 25, spendFor: 'for Mr. Novak\'s telegram to Chicago',
         keep: 'receipt',
@@ -510,6 +518,7 @@ export const DIALOGUE = {
         end: true,
       },
       nopay: {
+        mood: 'down',
         set: ['novak_decided'],
         lines: [
           'No, no. You are young. Your money is your future. I understand.',
@@ -529,6 +538,7 @@ export const DIALOGUE = {
     speaker: 'rivka',
     nodes: {
       start: {
+        mood: 'down',
         lines: [
           'So many men shouting! Everyone wants our bags, our money...',
           'Mama is frightened. You know this city better than we do. Who should we trust?',
@@ -565,6 +575,7 @@ export const DIALOGUE = {
         end: true,
       },
       carver: {
+        mood: 'up',
         set: ['gate_done', 'safe'],
         lines: [
           { who: 'narrator', text: 'Miss Carver changes their money at the official rate and draws a map to Hester Street.' },
@@ -659,6 +670,7 @@ export const DIALOGUE = {
     speaker: 'rivka',
     nodes: {
       start: {
+        mood: 'up',
         lines: [
           'This is it! Hester Street. The number matches the letter!',
           'Moishe lives inside, on the ground floor. Come, come in with us!',
@@ -673,6 +685,7 @@ export const DIALOGUE = {
     speaker: 'rivka',
     nodes: {
       start: {
+        mood: 'up',
         lines: [
           'Two rooms. Nine people. And it is ours.',
           'Tomorrow Moishe takes me to a shop that needs a girl for buttonholes. Tomorrow I start.',
@@ -695,6 +708,7 @@ export const DIALOGUE = {
         ],
       },
       swindled: {
+        mood: 'down',
         lines: [
           'Rivka! Mama! Shmuel! You are here! ...What? A runner took your money?',
           'Ach. They wait like wolves at Castle Garden. Don\'t worry. The Kiever Society will help. We help each other here.',
@@ -702,6 +716,7 @@ export const DIALOGUE = {
         next: 'hub',
       },
       shortchanged: {
+        mood: 'down',
         lines: [
           'Rivka! Mama! You came! ...Cheated by a money changer? It happens to half of us.',
           'Don\'t cry. The Kiever Society will help. We help each other here.',
@@ -709,6 +724,7 @@ export const DIALOGUE = {
         next: 'hub',
       },
       welcome: {
+        mood: 'up',
         lines: [
           'Rivka! Mama! Shmuel! You found me! The letter worked!',
           'And you, the photographer who helped them. Come in, come in. Mind the stairs. It\'s dark.',
@@ -729,6 +745,7 @@ export const DIALOGUE = {
         ],
       },
       work: {
+        mood: 'down',
         set: ['learned_sweatshop'],
         note: 'SWEATSHOPS: Many families sewed clothing at home. A contractor brought cut cloth and paid by the piece (piecework). Families worked 12 to 14 hours a day, six days a week.',
         lines: [
@@ -766,6 +783,7 @@ export const DIALOGUE = {
         next: 'hub',
       },
       opportunity: {
+        mood: 'up',
         lines: [
           'Opportunity? In Russia they burned our homes. Here, they only work us to the bone.',
           'But my Sarah goes to school. She reads English better than her teacher! That is opportunity.',
@@ -774,6 +792,7 @@ export const DIALOGUE = {
         next: 'hub',
       },
       sarah: {
+        mood: 'down',
         set: ['heard_sarah_plea'],
         lines: [
           '...Photograph the room. Photograph the machine. Photograph me, I don\'t care.',
@@ -791,6 +810,7 @@ export const DIALOGUE = {
     speaker: 'kessler',
     nodes: {
       start: {
+        mood: 'down',
         set: ['met_kessler'],
         lines: [
           'Ten coats. Eleven. Twelve. This one, the seam is crooked. Ten cents off.',
@@ -805,6 +825,7 @@ export const DIALOGUE = {
         ],
       },
       straight: {
+        mood: 'down',
         lines: [
           'You are the photographer? Listen, mister.',
           'The manufacturer on Broadway pays me less every season. If I don\'t squeeze, I lose the contract, and nobody in this building eats.',
@@ -835,6 +856,7 @@ export const DIALOGUE = {
     speaker: 'girl',
     nodes: {
       start: {
+        mood: 'down',
         lines: [
           'I sew buttons after school. Mama says school comes first.',
           'But buttons pay, so I sew fast. Look, twelve already!',
@@ -888,6 +910,7 @@ export const DIALOGUE = {
         next: 'hub',
       },
       flash: {
+        mood: 'up',
         lines: [
           '[[flash powder|Flash powder]]! Brand new. You light it, and poof! A flash like lightning.',
           'For a moment, the darkest room is bright as noon. I nearly set a room on fire once. Twice, actually.',
@@ -895,6 +918,7 @@ export const DIALOGUE = {
         next: 'hub',
       },
       consent: {
+        mood: 'down',
         set: ['riis_consent'],
         lines: [
           'Agree? Ha. Most of them were asleep when the flash went off. Some ran. Some threw things.',
@@ -1140,6 +1164,7 @@ export const DIALOGUE = {
         ],
       },
       handbill: {
+        mood: 'down',
         lines: ['I did. And some of it\'s right, if you ask me. But I don\'t hold with all of it.'],
         next: 'when',
       },
@@ -1154,6 +1179,7 @@ export const DIALOGUE = {
         ],
       },
       mirror: {
+        mood: 'down',
         lines: [
           '...Well. That was different. We spoke English, at least.',
           '...Maybe they did say the same things. Maybe they do. I don\'t have to like it.',
@@ -1199,6 +1225,7 @@ export const DIALOGUE = {
     speaker: 'boss',
     nodes: {
       start: {
+        mood: 'up',
         set: ['met_quinn'],
         keep: 'coal',
         lines: [
@@ -1300,6 +1327,7 @@ export const DIALOGUE = {
         ],
       },
       votes: {
+        mood: 'up',
         set: ['learned_machine'],
         note: 'POLITICAL MACHINES: Groups like Tammany Hall gave people jobs, food, coal, and help with the law. In return, people voted for the machine\'s candidates.',
         lines: [
@@ -1320,6 +1348,7 @@ export const DIALOGUE = {
         next: 'hub',
       },
       tweed: {
+        mood: 'down',
         lines: [
           'Tweed was a thief, plain and simple. Took money right out of the city treasury. That\'s dishonest graft. Stupid, too.',
           'Me, I believe in honest graft. Say I hear the city\'s going to build a new park. I buy the land first, cheap. Then the city buys it from me, for a good price.',
@@ -1335,6 +1364,7 @@ export const DIALOGUE = {
         next: 'hub',
       },
       buying: {
+        mood: 'up',
         lines: [
           'Buying? Ha! It\'s friendship, young fella. Where\'s the government when a family is cold? Where are the reformers? They come once, make a speech, and go home.',
           'Tammany is there every day. Ask the families we helped last winter whether Tammany is bad.',
@@ -1599,9 +1629,11 @@ export const DIALOGUE = {
         next: 'debt',
       },
       debt: {
+        mood: 'down',
         branch: [{ if: 'swindled', next: 'owe' }, { if: 'shortchanged', next: 'owe' }, { next: 'card' }],
       },
       owe: {
+        mood: 'down',
         lines: ['And we still owe the Kiever Society for the money that was stolen from us at Castle Garden. Every week, a little.'],
         next: 'card',
       },
@@ -1617,6 +1649,7 @@ export const DIALOGUE = {
         ],
       },
       sign: {
+        mood: 'up',
         set: ['rivka_union', 'rivka_decided'],
         lines: [
           'Yes. Yes! Papa used to say: one finger is easy to break. A fist is not.',
@@ -1625,6 +1658,7 @@ export const DIALOGUE = {
         next: 'vote',
       },
       wait: {
+        mood: 'down',
         set: ['rivka_wait', 'rivka_decided'],
         lines: [
           'Maybe you are right. Maybe next season, when we have something saved.',
@@ -1666,6 +1700,7 @@ export const DIALOGUE = {
         ],
       },
       afraid: {
+        mood: 'down',
         lines: [
           'Of course. The police broke up our meeting on Thursday.',
           'But I am more afraid of my mother\'s hands. Thirty years of sewing. They don\'t open anymore.',
@@ -1673,6 +1708,7 @@ export const DIALOGUE = {
         end: true,
       },
       strike: {
+        mood: 'up',
         lines: [
           'We all stop work, on the same day. No coats, no money for the boss.',
           'He can fire one girl. He cannot fire twenty. Not in November, with orders waiting.',
@@ -1686,6 +1722,7 @@ export const DIALOGUE = {
     speaker: 'kessler',
     nodes: {
       start: {
+        mood: 'down',
         set: ['met_kessler2'],
         lines: [
           'You again, with the camera. You want to put me in your newspaper too?',
@@ -1732,6 +1769,7 @@ export const DIALOGUE = {
         next: 'letter',
       },
       letter: {
+        mood: 'up',
         branch: [{ ifNot: 'paid_telegram', next: 'novak' }, { next: 'vote' }],
       },
       novak: {
@@ -1775,10 +1813,12 @@ export const DIALOGUE = {
         branch: [{ if: 'paid_telegram', next: 'happy' }, { next: 'sad' }],
       },
       happy: {
+        mood: 'up',
         lines: ['Mr. Novak finished my horse! I tried to make it swim in the washtub. It sinks. But it\'s a very good horse.'],
         end: true,
       },
       sad: {
+        mood: 'down',
         lines: [
           'Mr. Novak gave Mama this horse for me. Then they put him back on the ship.',
           'Why did they send him back? He was nice. He wasn\'t a "public charge." He was Mr. Novak.',
@@ -1792,6 +1832,7 @@ export const DIALOGUE = {
     speaker: 'boss',
     nodes: {
       start: {
+        mood: 'up',
         set: ['heard_quinn2'],
         note: 'THE 1888 ELECTION: Tammany Hall backed Hugh J. Grant, the son of Irish immigrants. Its clubs gave out coal and jobs and expected votes in return.',
         lines: [
@@ -1806,6 +1847,7 @@ export const DIALOGUE = {
         ],
       },
       hewitt: {
+        mood: 'down',
         lines: [
           'Hewitt! He wouldn\'t even review the St. Patrick\'s Day parade! Wouldn\'t fly the green flag over City Hall!',
           'He thinks we\'re dirt. He\'ll build parks for the rich and send inspectors to close your shops.',
@@ -1825,6 +1867,7 @@ export const DIALOGUE = {
     speaker: 'brennan',
     nodes: {
       start: {
+        mood: 'down',
         set: ['heard_brennan2'],
         lines: [
           'Tomorrow my Michael will be first in line at the polls. Women can\'t vote, more\'s the pity.',
@@ -1886,6 +1929,7 @@ export const DIALOGUE = {
     speaker: 'giuseppe',
     nodes: {
       start: {
+        mood: 'up',
         set: ['met_gius3'],
         lines: [
           'Photographer! Look at me! Mr. Quinn found me work, on the new Times Building!',
@@ -1918,6 +1962,7 @@ export const DIALOGUE = {
         branch: [{ if: 'gius_decided', next: 'after' }, { next: 'ask' }],
       },
       ask: {
+        mood: 'down',
         lines: [
           'You came! Look up. Eleven stories. Tonight my back will say hello to me.',
           'Now. The favor. Mr. Quinn says tomorrow, I go to the polls and I say, "My name is Patrick Moran."',
@@ -1932,6 +1977,7 @@ export const DIALOGUE = {
         ],
       },
       refuse: {
+        mood: 'up',
         set: ['gius_refuse', 'gius_decided'],
         lines: [
           'You are right. My father always said: a man has his name and nothing else.',
@@ -1941,6 +1987,7 @@ export const DIALOGUE = {
         next: 'climb',
       },
       repeat: {
+        mood: 'down',
         set: ['gius_repeat', 'gius_decided'],
         lines: [
           'Yes. Yes. One little vote. Who does it hurt?',
@@ -1949,6 +1996,7 @@ export const DIALOGUE = {
         next: 'climb',
       },
       expose: {
+        mood: 'up',
         set: ['gius_expose', 'gius_decided'],
         lines: [
           'The newspapers? Then everyone knows it was me who talked...',
@@ -1957,6 +2005,7 @@ export const DIALOGUE = {
         next: 'climb',
       },
       climb: {
+        mood: 'up',
         lines: ['Now I climb, or the foreman docks me. Go up on the Potter Building roof next door, you can watch me work! Take my picture for Mamma!'],
         action: 'giuseppeClimbs',
         end: true,
@@ -1969,6 +2018,7 @@ export const DIALOGUE = {
     speaker: 'giuseppe',
     nodes: {
       start: {
+        mood: 'up',
         lines: [
           'Fotografo! Up here! You see? I am higher than the church steeples!',
           'Take my picture! For Mamma! Tell her I am a big man in America now!',
@@ -2000,6 +2050,7 @@ export const DIALOGUE = {
     speaker: 'giuseppe',
     nodes: {
       start: {
+        mood: 'down',
         set: ['saw_aftermath'],
         lines: [
           'Photographer... I am alive. The arm is broken. Maybe two ribs.',
@@ -2020,6 +2071,7 @@ export const DIALOGUE = {
         end: true,
       },
       alone: {
+        mood: 'down',
         lines: [
           'I told Quinn no, this morning. When I fell, I sent a boy to his club. He sent back a message: "Ask your new friends for help."',
           { who: 'societa', text: 'Coraggio, Giuseppe. The Società pays for the doctor. You paid your ten cents every week. Now we pay you.' },
@@ -2028,6 +2080,7 @@ export const DIALOGUE = {
         end: true,
       },
       expose: {
+        mood: 'down',
         lines: [
           { who: 'oldrep', text: 'I\'ve got it all, son. Repeaters, dead men on the voting lists, Quinn\'s name. It runs in tomorrow\'s paper.' },
           { who: 'societa', text: 'And the Società will pay for the doctor. Coraggio, Giuseppe.' },
@@ -2119,6 +2172,7 @@ export const DIALOGUE = {
     nodes: {
       start: { set: ['met_rivka_night'], branch: [{ if: 'rivka_union', next: 'union' }, { next: 'wait' }] },
       union: {
+        mood: 'up',
         lines: [
           'Kessler found my card on Wednesday. He threw me out in front of everyone.',
           'So on Thursday, the whole shop walked out! All twenty of us! Esther says he will pay us everything by Monday. He has to. The orders are waiting.',
@@ -2127,6 +2181,7 @@ export const DIALOGUE = {
         next: 'endorse',
       },
       wait: {
+        mood: 'down',
         lines: [
           'I still have my job. Kessler paid us half. Half!',
           'Esther says next season every shop on the street will strike together. Next season, I sign.',
@@ -2240,6 +2295,7 @@ export const DIALOGUE = {
       start: { set: ['met_quinn_night'], lines: ['Every ward! Every single one! Tell your readers: Tammany takes care of its own!'], next: 'x' },
       x: { branch: [{ if: 'gius_expose', next: 'angry' }, { if: 'endorse_grant', next: 'friend' }, { next: 'bye' }] },
       angry: {
+        mood: 'down',
         lines: [
           'And YOU. You and your Mr. Haskins cost me two good men today.',
           '...I won\'t forget it, photographer. Tammany has a long memory.',

@@ -16,6 +16,7 @@ import { TouchControls } from './ui/touch.js';
 import { richText } from './ui/text.js';
 import { DOCS, CARDS } from './data/dialogue.js';
 import { CHARACTERS } from './data/characters.js';
+import { placeholderURL } from './engine/cutout.js';
 import { KEEPSAKES } from './data/keepsakes.js';
 import { ShipZone } from './zones/ship.js';
 import { CastleZone } from './zones/castle.js';
@@ -29,7 +30,7 @@ const $ = (id) => document.getElementById(id);
 class Game {
   constructor() {
     this.canvas = $('view');
-    this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas, antialias: false, powerPreference: 'low-power' });
+    this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas, antialias: true, powerPreference: 'default' });
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.camera = new THREE.PerspectiveCamera(70, innerWidth / innerHeight, 0.08, 2500);
     this.controls = new Controls(this.canvas, this.camera);
@@ -53,8 +54,11 @@ class Game {
     addEventListener('resize', () => this.resize());
     addEventListener('keydown', (e) => this.onKey(e));
     this.setupMenus();
+    // Automatic quality: start a little below full resolution and adapt to the frame rate.
+    this.dyn = navigator.webdriver ? 1 : 0.9; this.fpsT = 0; this.fpsN = 0;
     this.resize();
     this.loop();
+    setTimeout(() => this.loadBackdrop(), 60);
   }
 
   // ------------------------------------------------------------------ menus
@@ -150,6 +154,8 @@ class Game {
         this.zone.optimize();
         this.zone.initLightPool(5);
         this.zone.initShadows();
+        // ask early for the expression close-ups of everyone in this chapter, so they are ready when spoken to
+        for (const n of this.zone.npcs) if (CHARACTERS[n.id]) for (const m of ['up', 'down']) texture(`portrait_${n.id}_${m}`, { type: 'solid', color: '#000000', w: 4, h: 4 });
         this.beacon = this.makeBeacon(); this.zone.scene.add(this.beacon);
         this.showPurse();
         const sp = spawn || this.zone.spawn;
@@ -170,7 +176,19 @@ class Game {
     if (skipCard || !CARDS[id]) go(); else this.showCard(id, go);
   }
 
+  /** The title screen shows the harbor: Castle Garden from the water, with the camera drifting slowly. */
+  loadBackdrop() {
+    if (this.zone || this.mode !== 'menu') return;
+    try {
+      const z = new ZONES.castle(this);
+      z.build(); z.optimize(); z.initLightPool(5); z.initShadows();
+      this.zone = z; this.zoneId = null; this.isBackdrop = true;
+      $('menu').classList.add('live');
+    } catch (e) { console.warn('backdrop failed', e); this.zone = null; }
+  }
+
   disposeZone() {
+    this.isBackdrop = false; $('menu').classList.remove('live');
     if (!this.zone) return;
     this.zone.scene.traverse(o => { if (o.geometry) o.geometry.dispose(); });
     this.zone = null;
@@ -319,9 +337,16 @@ class Game {
     this.showCard('night', () => this.loadZone('city', { skipCard: true }));
   }
 
-  portraitURL(who) {
-    if (hasRealArt('portrait_' + who)) return artURL('portrait_' + who);
-    return null;
+  /** Art for the dialogue box. mood: 'up' | 'down' picks an expression close-up when one exists. */
+  portraitURL(who, mood = null) {
+    if (mood && CHARACTERS[who]) {
+      const k = `portrait_${who}_${mood}`;
+      texture(k, { type: 'solid', color: '#000000', w: 4, h: 4 });      // asks for the file (once)
+      if (hasRealArt(k)) return { url: artURL(k), bust: true };
+    }
+    if (hasRealArt('portrait_' + who)) return { url: artURL('portrait_' + who), bust: false };
+    const c = CHARACTERS[who];
+    return c ? { url: placeholderURL(who, c), bust: false } : null;
   }
   hasPortrait(who) { return hasRealArt('portrait_' + who); }
 
@@ -453,8 +478,8 @@ class Game {
   }
 
   resize() {
-    const q = state.settings.quality || 0.8;
-    this.renderer.setPixelRatio(Math.min(devicePixelRatio, 1) * q);
+    const q = state.settings.quality || this.dyn || 0.9;      // 0 = Automatic
+    this.renderer.setPixelRatio(Math.min(devicePixelRatio, 1.25) * q);
     this.renderer.setSize(innerWidth, innerHeight, false);
     this.camera.aspect = innerWidth / innerHeight;
     this.camera.updateProjectionMatrix();
@@ -462,8 +487,27 @@ class Game {
 
   loop() {
     requestAnimationFrame(() => this.loop());
-    const dt = Math.min(0.05, this.clock.getDelta());
+    const raw = this.clock.getDelta(), dt = Math.min(0.05, raw);
+    if (this.zone && this.isBackdrop) {
+      // title screen: drift along the harbor in front of Castle Garden
+      const t = (this.menuT = (this.menuT || 0) + dt), c = this.camera;
+      c.position.set(-6 + Math.sin(t * 0.045) * 26, 6.5 + Math.sin(t * 0.11) * 1.0, 84 + Math.cos(t * 0.045) * 8);
+      c.rotation.set(0, 0, 0); c.lookAt(c.position.x * 0.5 - (innerWidth > 900 ? 26 : 0), 8, 0);
+      this.controls.pos.x = c.position.x; this.controls.pos.z = c.position.z;
+      this.zone.update(dt);
+      this.renderer.render(this.zone.scene, c);
+      return;
+    }
     if (!this.zone || this.mode === 'menu' || this.mode === 'wrapup') return;
+    // Automatic quality: once a second, nudge the render resolution toward a steady frame rate.
+    if (this.mode === 'play' && !state.settings.quality && !navigator.webdriver) {
+      this.fpsT += raw; this.fpsN++;
+      if (this.fpsT >= 1) {
+        const fps = this.fpsN / this.fpsT, was = this.dyn; this.fpsT = 0; this.fpsN = 0;
+        if (fps < 33) this.dyn = Math.max(0.5, this.dyn - 0.1); else if (fps > 52) this.dyn = Math.min(1, this.dyn + 0.05);
+        if (this.dyn !== was) this.resize();
+      }
+    }
     this.zone.update(dt);
     this.controls.update(dt, this.zone.colliders, this.zone.bounds);
     this.photo.update(dt);

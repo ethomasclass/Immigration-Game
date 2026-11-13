@@ -554,14 +554,69 @@ function makePlaceholder(key, spec) {
   return cv;
 }
 
+/**
+ * Character art straight from an image generator has a flat background and lots of empty margin.
+ * This clears everything connected to the image edges that matches the corner color, softens
+ * the outline, removes color spill, crops to the figure, and shrinks it to a size a Chromebook
+ * can hold fifty of. Art that already has a transparent background is only cropped and shrunk.
+ */
+export function prepCutout(img, { crop = true, maxH = 640 } = {}) {
+  const k = Math.min(1, 1024 / Math.max(img.width, img.height));
+  const w = Math.max(1, Math.round(img.width * k)), h = Math.max(1, Math.round(img.height * k));
+  const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+  const g = cv.getContext('2d', { willReadFrequently: true });
+  g.drawImage(img, 0, 0, w, h);
+  let id;
+  try { id = g.getImageData(0, 0, w, h); } catch { return img; }
+  const d = id.data, at = (x, y) => (y * w + x) * 4;
+  const corners = [at(1, 1), at(w - 2, 1), at(1, h - 2), at(w - 2, h - 2)];
+  if (corners.every(i => d[i + 3] > 250)) {
+    // opaque background: sample its color from the corners
+    let br = 0, bg = 0, bb = 0; for (const i of corners) { br += d[i]; bg += d[i + 1]; bb += d[i + 2]; } br /= 4; bg /= 4; bb /= 4;
+    const dist = (i) => Math.abs(d[i] - br) + Math.abs(d[i + 1] - bg) + Math.abs(d[i + 2] - bb);
+    const TOL = 96, seen = new Uint8Array(w * h), stack = [];
+    const push = (x, y) => { const n = y * w + x; if (!seen[n] && dist(n * 4) < TOL) { seen[n] = 1; stack.push(n); } };
+    for (let x = 0; x < w; x++) { push(x, 0); push(x, h - 1); }
+    for (let y = 0; y < h; y++) { push(0, y); push(w - 1, y); }
+    while (stack.length) {
+      const n = stack.pop(), x = n % w, y = (n / w) | 0;
+      if (x > 0) push(x - 1, y); if (x < w - 1) push(x + 1, y); if (y > 0) push(x, y - 1); if (y < h - 1) push(x, y + 1);
+    }
+    const greenish = bg > br + 40 && bg > bb + 40;
+    for (let n = 0; n < w * h; n++) {
+      const i = n * 4;
+      if (seen[n]) { d[i + 3] = 0; continue; }
+      const x = n % w, y = (n / w) | 0;
+      const edge = (x > 0 && seen[n - 1]) || (x < w - 1 && seen[n + 1]) || (y > 0 && seen[n - w]) || (y < h - 1 && seen[n + w]);
+      if (edge) d[i + 3] = Math.max(0, Math.min(255, (dist(i) - TOL * 0.5) * 2.2));     // soft outline
+      if (greenish && d[i + 1] > Math.max(d[i], d[i + 2])) d[i + 1] = Math.max(d[i], d[i + 2]);   // remove green spill
+    }
+    g.putImageData(id, 0, 0);
+  }
+  // crop to the figure
+  let x0 = 0, y0 = 0, x1 = w - 1, y1 = h - 1;
+  if (crop) {
+    x0 = w; y0 = h; x1 = 0; y1 = 0;
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (d[at(x, y) + 3] > 40) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+    if (x1 <= x0 || y1 <= y0) { x0 = 0; y0 = 0; x1 = w - 1; y1 = h - 1; }
+    const pad = Math.round(h * 0.012); x0 = Math.max(0, x0 - pad); y0 = Math.max(0, y0 - pad); x1 = Math.min(w - 1, x1 + pad);
+  }
+  const cw = x1 - x0 + 1, chh = y1 - y0 + 1, s = Math.min(1, maxH / chh);
+  const out = document.createElement('canvas'); out.width = Math.max(1, Math.round(cw * s)); out.height = Math.max(1, Math.round(chh * s));
+  out.getContext('2d').drawImage(cv, x0, y0, cw, chh, 0, 0, out.width, out.height);
+  return out;
+}
+
 function tryLoad(key, entry) {
-  const exts = ['png', 'jpg'];
+  const exts = ['png', 'jpg', 'webp', 'jpeg'];
+  const figure = /^portrait_/.test(key), strip = /^anim_/.test(key);
   const attempt = (i) => {
     if (i >= exts.length) return;
     const img = new Image();
     img.onload = () => {
-      entry.img = img;
-      for (const t of entry.users) { t.image = img; t.needsUpdate = true; }
+      const use = figure ? prepCutout(img) : strip ? prepCutout(img, { crop: false, maxH: 512 }) : img;
+      entry.img = use; entry.url = null;
+      for (const t of entry.users) { t.image = use; t.needsUpdate = true; }
     };
     img.onerror = () => attempt(i + 1);
     img.src = `assets/art/${key}.${exts[i]}`;
@@ -596,7 +651,7 @@ export function texture(key, spec = {}, repeat = null) {
 export function artURL(key) {
   const e = cache.get(key);
   if (!e) return null;
-  if (e.img) return e.img.src;
+  if (e.img) return e.img.src || (e.url = e.url || e.img.toDataURL());
   try { return e.canvas.toDataURL(); } catch { return null; }
 }
 export function hasRealArt(key) { return !!cache.get(key)?.img; }
