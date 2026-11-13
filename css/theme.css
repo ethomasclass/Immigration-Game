@@ -237,3 +237,23 @@ body.touch #dlg-next { background: var(--brass); color: var(--inkc); border: 1px
 /* the key reminder steps back once you have been playing a while (press Esc to see the keys again) */
 #hud-keys { animation: keys-fade 1.2s ease 45s forwards; }
 @keyframes keys-fade { to { opacity: .28; } }
+
+/* ---------- "Rivka will remember that." ---------- */
+#remember { position: fixed; left: 18px; top: 172px; z-index: 32; pointer-events: none; display: flex; align-items: center; gap: 10px; padding: 9px 16px 10px 12px; max-width: min(420px, 80vw);
+  background: linear-gradient(90deg, rgba(34, 18, 10, .95), rgba(34, 18, 10, .78)); border-left: 4px solid var(--brass-l); border-radius: 0 4px 4px 0; box-shadow: 0 4px 14px rgba(0,0,0,.45);
+  font-family: var(--display); font-style: italic; font-size: 1.1rem; color: #f3e6c4; }
+#remember i { font-style: normal; color: var(--brass-l); font-size: 1.2rem; }
+#remember.go { animation: remember-go 5.2s ease-out both; }
+@keyframes remember-go { 0% { opacity: 0; transform: translateX(-18px); } 7% { opacity: 1; transform: none; } 84% { opacity: 1; } 100% { opacity: 0; } }
+@media (max-height: 520px) { #remember { top: 96px; font-size: .95rem; } }
+
+/* ---------- the ending: what kind of photographer were you? ---------- */
+.kind { margin: 4px 0 16px; padding: 14px 18px; background: #fbf2d8; border: 1px solid var(--brass-d); border-left: 6px solid var(--brass-m); border-radius: 4px; }
+.kind h3 { font-family: var(--display); font-size: 1.5rem; margin: 2px 0 6px; color: #3a2414; }
+.kind .kind-label { font-size: .78rem; letter-spacing: .14em; text-transform: uppercase; color: #7a6238; }
+.kind ul { margin: 10px 0 0; padding-left: 0; list-style: none; }
+.kind li { padding: 3px 0 3px 26px; position: relative; line-height: 1.4; }
+.kind li::before { position: absolute; left: 2px; top: 3px; font-weight: 700; }
+.kind li.cam::before { content: "\25C9"; color: #8a3a2a; }
+.kind li.per::before { content: "\2665"; color: #2f5a4a; }
+.kind li.none::before { content: "\2013"; color: #7a6a52; }

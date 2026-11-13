@@ -56,6 +56,8 @@ export class Dialogue {
     if (node.note && addNote(this.game.zoneId, node.note)) this.game.toast('<b>Notebook:</b> new note added (J)');
     if (node.spend) this.game.spend(node.spend, node.spendFor);
     if (node.keep) this.game.keep(node.keep);
+    if (node.photo) this.game.photo.take(node.photo);            // a picture taken as part of the scene
+    if (node.remember) this.game.remember(node.remember);         // "Rivka will remember that."
     this.lineIndex = -1;
     this.choiceList = null;
     save();

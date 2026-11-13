@@ -389,6 +389,14 @@ class Game {
     sfx('print');
     clearTimeout(this._printT); this._printT = setTimeout(() => el.classList.add('hidden'), 3300);
   }
+  /** A big choice has landed on someone. */
+  remember(text) {
+    const el = $('remember');
+    el.querySelector('span').textContent = text;
+    el.classList.remove('hidden', 'go'); void el.offsetWidth; el.classList.add('go');
+    sfx('page');
+    clearTimeout(this._remT); this._remT = setTimeout(() => el.classList.add('hidden'), 5200);
+  }
   banner(title, sub = '') {
     const el = $('banner');
     el.querySelector('.banner-title').textContent = title; el.querySelector('.banner-sub').innerHTML = sub;

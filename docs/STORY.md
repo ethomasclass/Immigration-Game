@@ -2,9 +2,27 @@
 
 The game runs about **45–50 minutes over two class periods**. Students should finish caring about specific people: Rivka, Giuseppe, old Mr. Novak, little Sarah. They should be angry at a boss, worried about a fall, and invested in an election they cannot change.
 
+## The hero, the purpose, and the shape of the hour
+
+**The hero is the student.** They play a 15-year-old apprentice at the Evening Courier, born in New York to parents who came through Castle Garden. The Editor has put a camera in their hands and given them one week: "Bring me a front page and the job is yours. Come back with nothing, and I find another kid." Rivka is 16 and notices at once that the photographer is no older than she is.
+
+**What the hero wants:** to keep the job. **What stands in the way:** the people they photograph become friends, and the pictures the Editor wants most are the ones that could hurt them.
+
+**The purpose of the game, in one line:** decide what a camera is for. Every big moment asks the same question in a new form: take the picture, or put the camera down and be a person? Jacob Riis faced it. So does anyone with a phone today, which is the bridge to students' own lives.
+
+**The arc (three acts in under an hour):**
+
+| Act | Chapters | What it does |
+|---|---|---|
+| 1. The assignment | The Crossing, Castle Garden | The hero gets a goal and a deadline, meets the people, and makes the first promises (Rivka's print, Mr. Novak's telegram). |
+| 2. The cost | Hester Street, the front page, One Week Later | The first camera-or-person moment (Mr. Kessler docks Chana's pay). The midpoint is the front page: print Sarah's face or keep a promise. Day 2 opens with what that choice did. |
+| 3. The test | Park Row, Election Night | The crisis is Giuseppe's fall: the picture every paper wants, or his hand. Then the endorsement, the election nobody can change, and an ending that names who the student became. |
+
+**How students feel their choices:** a short stamp appears the moment a choice lands ("Rivka will remember that."), and the ending lists each promise kept or broken and names their path: **The Witness** (the picture came first), **The Neighbor** (the person came first), or **The Go-Between**. None is the right answer.
+
 **Design rules**
 - **Real stakes, no deaths.** People are cheated, fired, hurt, and sent away, but nobody dies.
-- **The protagonist is silent.** Students speak only through choices, so the feelings stay theirs.
+- **The hero never speaks aloud.** Students speak only through choices, so the feelings stay theirs. People call them "kid."
 - **Required dialogue is short.** The emotional beats are written into required scenes, and everything else is optional.
 - **History doesn't bend.** Hugh J. Grant wins on November 6, 1888, whatever students do. Their choices change what happens to the *people*.
 
@@ -117,6 +135,8 @@ The game runs about **45–50 minutes over two class periods**. Students should 
 | 4 | Hester St: union card | `rivka_union` / `rivka_wait` | Rivka's job, election-night scene, epilogue |
 | 5 | Park Row: Quinn's demand | `gius_refuse` / `gius_repeat` / `gius_expose` | Who helps after the fall; epilogue |
 | 6 | Courier office | `endorse_grant` / `endorse_hewitt` / `endorse_erhardt` | Headline; characters' reactions on election night |
+| 7 | Hester St: Kessler docks Chana | `shot_kessler` / `spoke_kessler` | A photograph ("The Docked Pay") or Chana's ten cents; the ending |
+| 8 | Park Row: Giuseppe on the sidewalk | `shot_fall` / `helped_fall` | A photograph ("The Fall") or his hand; the Editor's reaction; the ending |
 
 There are no wrong answers. Every choice costs someone something. That is the discussion.
 

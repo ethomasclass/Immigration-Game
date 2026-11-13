@@ -32,6 +32,7 @@ export const DIALOGUE = {
       start: {
         lines: [
           'You are the one with the camera box? Mama says not to stare. But everyone stares at it.',
+          'You are no older than me. And a newspaper sends you across the ocean alone?',
         ],
         next: 'hub',
       },
@@ -93,6 +94,7 @@ export const DIALOGUE = {
         next: 'hub',
       },
       photo: {
+        remember: 'Rivka will remember that.',
         mood: 'up',
         set: ['promised_print'],
         lines: [
@@ -506,6 +508,7 @@ export const DIALOGUE = {
         ],
       },
       pay: {
+        remember: 'Mr. Novak will remember that.',
         mood: 'up',
         set: ['paid_telegram', 'novak_decided'],
         spend: 25, spendFor: 'for Mr. Novak\'s telegram to Chicago',
@@ -518,6 +521,7 @@ export const DIALOGUE = {
         end: true,
       },
       nopay: {
+        remember: 'Mr. Novak will remember that.',
         mood: 'down',
         set: ['novak_decided'],
         lines: [
@@ -552,6 +556,7 @@ export const DIALOGUE = {
       },
       wait: { lines: ['All right. But hurry, please. Shmuel is hungry.'], end: true },
       jack: {
+        remember: 'Rivka\'s family will remember that.',
         set: ['gate_done', 'swindled'],
         lines: [
           { who: 'narrator', text: 'Jack grabs the bags and leads them to a crowded boardinghouse on Greenwich Street.' },
@@ -564,6 +569,7 @@ export const DIALOGUE = {
         end: true,
       },
       changer: {
+        remember: 'Rivka\'s family will remember that.',
         set: ['gate_done', 'shortchanged'],
         lines: [
           { who: 'narrator', text: 'The money changer counts quickly and hands over a small pile of American coins.' },
@@ -575,6 +581,7 @@ export const DIALOGUE = {
         end: true,
       },
       carver: {
+        remember: 'Rivka\'s family will remember that.',
         mood: 'up',
         set: ['gate_done', 'safe'],
         lines: [
@@ -820,16 +827,33 @@ export const DIALOGUE = {
           { who: 'narrator', text: 'Chana says nothing. Her hands are shaking.' },
         ],
         choices: [
-          { text: 'That seam looks straight to me.', next: 'straight' },
+          { text: '(Raise your camera. Get the picture of him taking her ten cents.)', next: 'shot', key: true },
+          { text: '(Lower the camera.) "That seam looks straight to me."', next: 'straight', key: true },
           { text: '(Say nothing.)', next: 'nothing' },
         ],
       },
+      shot: {
+        mood: 'down',
+        set: ['shot_kessler'],
+        photo: 'docked',
+        remember: 'Mr. Kessler will remember that.',
+        lines: [
+          { who: 'narrator', text: 'The shutter clicks. You have him, coins in his hand, Chana looking at the floor.' },
+          'Put that thing away! You print my face, boy, and this family sews no more coats for me. You understand?',
+          { who: 'narrator', text: 'You have the picture. Chana is still out her ten cents.' },
+        ],
+        action: 'kesslerLeaves',
+        end: true,
+      },
       straight: {
         mood: 'down',
+        set: ['spoke_kessler'],
+        remember: 'Chana will remember that.',
         lines: [
-          'You are the photographer? Listen, mister.',
+          'You are the newspaper\'s boy? Listen, kid.',
           'The manufacturer on Broadway pays me less every season. If I don\'t squeeze, I lose the contract, and nobody in this building eats.',
           'You want a villain for your newspaper? Go photograph the man on Broadway.',
+          { who: 'narrator', text: 'He slaps Chana\'s ten cents down on the table and goes. You have no picture of any of it.' },
         ],
         action: 'kesslerLeaves',
         end: true,
@@ -1002,7 +1026,7 @@ export const DIALOGUE = {
         note: 'ETHNIC NEWSPAPERS: Papers in Yiddish, Italian, German, and other languages gave news from home and helped immigrants find jobs, housing, and lawyers.',
         lines: [
           'Extra, extra! Papers in every language! Two cents!',
-          'Yiddish paper! Italian paper! The German Staats-Zeitung! The Irish World! What\'ll it be, mister?',
+          'Yiddish paper! Italian paper! The German Staats-Zeitung! The Irish World! What\'ll it be, pal?',
         ],
         choices: [
           { text: 'Why so many languages?', next: 'why' },
@@ -1018,7 +1042,7 @@ export const DIALOGUE = {
         ],
         end: true,
       },
-      buy: { spend: 2, spendFor: 'for a newspaper', keep: 'paper', lines: ['Two cents! Thanks, mister! Read the back pages, that\'s where the jobs are.'], end: true },
+      buy: { spend: 2, spendFor: 'for a newspaper', keep: 'paper', lines: ['Two cents! Thanks, pal! Read the back pages, that\'s where the jobs are.'], end: true },
       bye: { lines: ['Suit yourself! Extra, extra!'], end: true },
     },
   },
@@ -1521,7 +1545,7 @@ export const DIALOGUE = {
     nodes: {
       start: {
         lines: [
-          'Going up! Mr. Otis\'s safety elevator, sir. If the rope breaks, the brakes catch us. Probably.',
+          'Going up! Mr. Otis\'s safety elevator, young fellow. If the rope breaks, the brakes catch us. Probably.',
           'Eleven floors in under a minute. Nobody would rent an office up there if they had to climb.',
         ],
         end: true,
@@ -1653,6 +1677,7 @@ export const DIALOGUE = {
         ],
       },
       sign: {
+        remember: 'Rivka will remember that.',
         mood: 'up',
         set: ['rivka_union', 'rivka_decided'],
         lines: [
@@ -1662,6 +1687,7 @@ export const DIALOGUE = {
         next: 'vote',
       },
       wait: {
+        remember: 'Rivka will remember that.',
         mood: 'down',
         set: ['rivka_wait', 'rivka_decided'],
         lines: [
@@ -1733,7 +1759,7 @@ export const DIALOGUE = {
           'Union, union. You know what the manufacturer told me? Cut prices ten percent, or he gives the contract to the next man.',
           'So I hold the pay a little. I pay it! Eventually.',
           'I came over in \'72 with nothing. I sewed in a room like theirs for nine years. Now I am the boss, and everyone hates me.',
-          'This is America, mister. Somebody squeezes you, you squeeze somebody.',
+          'This is America, kid. Somebody squeezes you, you squeeze somebody.',
         ],
         end: true,
       },
@@ -1982,6 +2008,7 @@ export const DIALOGUE = {
         ],
       },
       refuse: {
+        remember: 'Giuseppe will remember that.',
         mood: 'up',
         set: ['gius_refuse', 'gius_decided'],
         lines: [
@@ -1992,6 +2019,7 @@ export const DIALOGUE = {
         next: 'climb',
       },
       repeat: {
+        remember: 'Giuseppe will remember that.',
         mood: 'down',
         set: ['gius_repeat', 'gius_decided'],
         lines: [
@@ -2001,6 +2029,7 @@ export const DIALOGUE = {
         next: 'climb',
       },
       expose: {
+        remember: 'Giuseppe will remember that.',
         mood: 'up',
         set: ['gius_expose', 'gius_decided'],
         lines: [
@@ -2060,6 +2089,30 @@ export const DIALOGUE = {
         lines: [
           'Photographer... I am alive. The arm is broken. Maybe two ribs.',
           { who: 'foreman', text: 'He can\'t carry a hod with one arm. No work, no pay. That\'s the rule. I don\'t make it.' },
+          { who: 'narrator', text: 'A crowd is gathering. No paper on Park Row has a picture of this yet. Your camera is in your hands.' },
+        ],
+        choices: [
+          { text: '(Take the picture. This is the front page.)', next: 'shot', key: true },
+          { text: '(Put the camera down. Kneel and hold his arm still.)', next: 'helped', key: true },
+        ],
+      },
+      shot: {
+        mood: 'down',
+        set: ['shot_fall'],
+        photo: 'fallen',
+        remember: 'Giuseppe will remember that.',
+        lines: [
+          { who: 'narrator', text: 'The shutter clicks. Giuseppe looks up into the lens, then away.' },
+          'Even now, the camera? ...Go on. Maybe somebody should see.',
+        ],
+        next: 'who',
+      },
+      helped: {
+        set: ['helped_fall'],
+        remember: 'Giuseppe will remember that.',
+        lines: [
+          { who: 'narrator', text: 'You set the camera on the paving stones and take his good hand. Across the street, a man from the World gets the picture instead.' },
+          'Grazie. Stay a minute. Only a minute.',
         ],
         next: 'who',
       },
@@ -2104,8 +2157,25 @@ export const DIALOGUE = {
         branch: [{ if: 'endorsed', next: 'done' }, { next: 'ask' }],
       },
       ask: {
+        branch: [{ if: 'shot_fall', next: 'ask_shot' }, { if: 'helped_fall', next: 'ask_helped' }, { next: 'ask2' }],
+      },
+      ask_shot: {
         lines: [
-          'There you are. I\'ve seen your plates. Good work. Hard work.',
+          'There you are, kid. That plate of the man on the sidewalk: every paper on the Row wishes it had it.',
+          'It will sell ten thousand copies. I hope he forgives you. I would not ask him.',
+        ],
+        next: 'ask2',
+      },
+      ask_helped: {
+        lines: [
+          'There you are, kid. The World has a picture of that fall and the Courier does not. I hear you were holding the man\'s hand.',
+          'I hired a photographer. It seems I also hired a decent person. Do not tell the other editors.',
+        ],
+        next: 'ask2',
+      },
+      ask2: {
+        lines: [
+          'I\'ve seen your plates. Good work. Hard work.',
           'Tomorrow, New York picks a mayor. The Courier has to say who it backs, and I want to hear it from someone who has walked those streets.',
           'Here is what each man stands for.',
         ],
@@ -2121,16 +2191,19 @@ export const DIALOGUE = {
         ],
       },
       grant: {
+        remember: 'The whole city will read that.',
         set: ['endorse_grant', 'endorsed'],
         lines: ['Tammany\'s man. He\'ll feed the hungry, and the treasury will feed Tammany. Bold. All right, we print it.'],
         next: 'night',
       },
       hewitt: {
+        remember: 'The whole city will read that.',
         set: ['endorse_hewitt', 'endorsed'],
         lines: ['Honest Abe Hewitt. Clean and careful, and he can\'t stand half the people you photographed. All right, we print it.'],
         next: 'night',
       },
       erhardt: {
+        remember: 'The whole city will read that.',
         set: ['endorse_erhardt', 'endorsed'],
         lines: ['The Republican. Law and order. Hester Street will laugh at us, but all right, we print it.'],
         next: 'night',
@@ -2424,7 +2497,7 @@ export const CARDS = {
     num: 'DAY TWO · IV',
     title: 'One Week Later',
     sub: 'Hester Street · Monday, November 5, 1888',
-    text: 'A week has passed. Tomorrow, New York elects a mayor, and the Lower East Side is loud with it.\n\nGo back to Hester Street. Find out what happened to Rivka\'s family, and what your choices have done.',
+    text: 'A week has passed. Tomorrow, New York elects a mayor, and the Lower East Side is loud with it.\n\nThe Editor wants his front page by election night, or he finds another kid.\n\nGo back to Hester Street. Find out what happened to Rivka\'s family, and what your choices have done.',
   },
   night: {
     num: 'VI',
@@ -2434,9 +2507,9 @@ export const CARDS = {
   },
   intro: {
     num: 'THE ASSIGNMENT',
-    title: 'A Letter From Your Editor',
+    title: 'One Week',
     sub: 'The New York Evening Courier, October 1888',
-    text: 'To our photographer:\n\nThousands of newcomers arrive in New York every week. Our readers want to know: who are these people? Why do they come? And is America really a land of opportunity for them?\n\nI have bought you a steerage ticket on a steamship from Europe. Travel with them. Listen to them. Photograph everything.\n\nBring me the true story.\n\nYour Editor',
+    text: 'You are fifteen. Your mother and father landed at Castle Garden before you were born. A month ago the Evening Courier hired you to carry glass plates and sweep the darkroom.\n\nThen the Editor put a camera in your hands.\n\n"Thousands of newcomers land here every week, kid. Our readers argue about them and have never met one. Who are they? Why do they come? Is America what they were promised?"\n\nHe sent you across the ocean on a mail ship. You are coming home the hard way: in steerage, with a camera and $2.50.\n\n"Bring me a front page and the job is yours. Come back with nothing, and I find another kid."',
   },
   ship: {
     num: 'I',

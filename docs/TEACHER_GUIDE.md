@@ -51,7 +51,9 @@ The full story, every choice, and every consequence are in **[STORY.md](STORY.md
 | VI. Election Night | ~5 min | Election returns on Park Row; the real result; how each person's week ended | Hear the returns; find 3 friends |
 | Wrap-Up B | ~3 min | **Did the growing city and its political machines help newcomers, or take advantage of them?** | Evidence chart; answer; read "What became of them" |
 
-**Six choices** change what happens: Novak's telegram, who to trust at the gate, Sarah's photo, Rivka's union card, Giuseppe and Quinn, and the endorsement. None is "right": every one costs someone something. That makes them strong discussion starters. Consider polling the class: *How many of you printed Sarah's face? Why?*
+**Who the student plays:** a 15-year-old apprentice at the Evening Courier with one week to bring back a front page or lose the job. The game's question is what a camera is for.
+
+**Eight choices** change what happens: Novak's telegram, who to trust at the gate, Sarah's photo, Rivka's union card, Giuseppe and Quinn, the endorsement, and two "camera or person" moments (photograph Mr. Kessler docking Chana's pay, or speak up; photograph Giuseppe after his fall, or put the camera down and help). When a choice lands, a stamp says who it touched ("Rivka will remember that"). The ending names the student's path (The Witness, The Neighbor, or The Go-Between) and lists each promise kept or broken. None is "right": every one costs someone something. That makes them strong discussion starters. Consider polling the class: *Who took the picture of Giuseppe? Who put the camera down? Why?*
 
 **If students change computers between days:** the game saves on each computer. On a new computer, Day 2 opens with a "Previously…" card that explains which Day 1 choices the story will assume. Chapter Select can start any chapter.
 

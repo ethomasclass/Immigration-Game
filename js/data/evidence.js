@@ -44,6 +44,7 @@ export const SUBJECTS = {
   boss:       { title: 'The Coal Sack', desc: 'A man from the Tammany club hands out free coal before an election.', col: 'government', zone: 'les' },
   banner:     { title: 'The Banner', desc: 'A Tammany banner for the 1888 mayoral election hangs over Hester Street.', col: 'government', zone: 'les' },
   club:       { title: 'The Club', desc: 'A Tammany district club offers jobs, coal, and help with citizenship papers.', col: 'government', zone: 'les' },
+  docked:     { title: 'The Docked Pay', desc: 'Mr. Kessler takes ten cents off Chana\'s pay for a seam that was straight.', col: 'business', zone: 'les' },
   // ---- Zone 4 ----
   nast:       { title: 'The Cartoon', desc: 'Thomas Nast\'s 1871 cartoon of the Tweed Ring.', col: 'machine', zone: 'city' },
   courthouse: { title: 'The Courthouse', desc: 'The "Tweed Courthouse," where the Tweed Ring stole millions.', col: 'machine', zone: 'city' },
@@ -52,6 +53,7 @@ export const SUBJECTS = {
   oldrep:     { title: 'The Old Reporter', desc: 'A reporter who saw the newspapers bring down Boss Tweed.', col: 'machine', zone: 'city' },
   tribune:    { title: 'The Tower', desc: 'The Tribune Building (1875), one of the tallest in New York.', col: 'growth', zone: 'city' },
   frame:      { title: 'The Builders', desc: 'Immigrant workers raise the new 13-story Times Building around the old one.', col: 'growth', zone: 'city' },
+  fallen:     { title: 'The Fall', desc: 'Giuseppe on the sidewalk after his fall from the Times Building scaffold. "No work, no pay."', col: 'growth', zone: 'city' },
   bridge:     { title: 'The Bridge', desc: 'The Brooklyn Bridge, opened in 1883.', col: 'growth', zone: 'city' },
   horsecar:   { title: 'The Horsecar', desc: 'A horse-drawn streetcar on rails.', col: 'growth', zone: 'city' },
   el:         { title: 'The Iron Road', desc: 'The elevated railway ("the El") runs steam trains above the street.', col: 'growth', zone: 'city' },

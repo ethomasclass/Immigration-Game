@@ -1,19 +1,21 @@
 "file","character","voice_notes","text"
 "card.les2.mp3","The Editor","Warm, measured adult narrator. 1880s newspaper editor reading a letter.","A week has passed. Tomorrow, New York elects a mayor, and the Lower East Side is loud with it.
 
+The Editor wants his front page by election night, or he finds another kid.
+
 Go back to Hester Street. Find out what happened to Rivka's family, and what your choices have done."
 "card.night.mp3","The Editor","Warm, measured adult narrator. 1880s newspaper editor reading a letter.","The polls have closed. Thousands of New Yorkers pack Park Row, waiting for the returns to be posted outside the newspaper offices.
 
 Find your friends in the crowd. Watch the results come in."
-"card.intro.mp3","The Editor","Warm, measured adult narrator. 1880s newspaper editor reading a letter.","To our photographer:
+"card.intro.mp3","The Editor","Warm, measured adult narrator. 1880s newspaper editor reading a letter.","You are fifteen. Your mother and father landed at Castle Garden before you were born. A month ago the Evening Courier hired you to carry glass plates and sweep the darkroom.
 
-Thousands of newcomers arrive in New York every week. Our readers want to know: who are these people? Why do they come? And is America really a land of opportunity for them?
+Then the Editor put a camera in your hands.
 
-I have bought you a steerage ticket on a steamship from Europe. Travel with them. Listen to them. Photograph everything.
+""Thousands of newcomers land here every week, kid. Our readers argue about them and have never met one. Who are they? Why do they come? Is America what they were promised?""
 
-Bring me the true story.
+He sent you across the ocean on a mail ship. You are coming home the hard way: in steerage, with a camera and $2.50.
 
-Your Editor"
+""Bring me a front page and the job is yours. Come back with nothing, and I find another kid."""
 "card.ship.mp3","The Editor","Warm, measured adult narrator. 1880s newspaper editor reading a letter.","Day 12 at sea. Below deck, hundreds of passengers crowd into the hold.
 
 Talk to the passengers. Find out what pushed them to leave home, and what pulled them to America. Use your camera to collect evidence."
@@ -27,6 +29,7 @@ Find Cousin Moishe's tenement. See how newcomers live, work, and help each other
 
 Giuseppe is waiting at the Times Building. Your editor wants to see you at the Courier office before tonight's deadline."
 "rivka.start.1.mp3","Rivka Abramowitz","Girl, about 16. Jewish, from near Kiev. Light Yiddish/Russian accent. Brave but tired.","You are the one with the camera box? Mama says not to stare. But everyone stares at it."
+"rivka.start.2.mp3","Rivka Abramowitz","Girl, about 16. Jewish, from near Kiev. Light Yiddish/Russian accent. Brave but tired.","You are no older than me. And a newspaper sends you across the ocean alone?"
 "rivka.from.1.mp3","Rivka Abramowitz","Girl, about 16. Jewish, from near Kiev. Light Yiddish/Russian accent. Brave but tired.","From a small town near Kiev, in the Russian Empire. We are Jews."
 "rivka.from.2.mp3","Rivka Abramowitz","Girl, about 16. Jewish, from near Kiev. Light Yiddish/Russian accent. Brave but tired.","My father fixed shoes. Everyone in town knew his little shop."
 "rivka.why.1.mp3","Rivka Abramowitz","Girl, about 16. Jewish, from near Kiev. Light Yiddish/Russian accent. Brave but tired.","In 1881, someone killed the Tsar. People blamed the Jews."
@@ -201,9 +204,13 @@ Giuseppe is waiting at the Times Building. Your editor wants to see you at the C
 "kessler1.start.3.mp3","Mr. Kessler","Man, 40s, Yiddish-German accent, brusque and defensive, tired; not a cartoon villain.","Then next week it is straight. This week, ten cents off."
 "kessler1.start.4.mp3","Mr. Kessler","Man, 40s, Yiddish-German accent, brusque and defensive, tired; not a cartoon villain.","You want the work, Mrs. Abramowitz, or should I give it to the Rosenbergs upstairs?"
 "kessler1.start.5.mp3","The Editor","Warm, measured adult narrator. 1880s newspaper editor reading a letter.","Chana says nothing. Her hands are shaking."
-"kessler1.straight.1.mp3","Mr. Kessler","Man, 40s, Yiddish-German accent, brusque and defensive, tired; not a cartoon villain.","You are the photographer? Listen, mister."
+"kessler1.shot.1.mp3","The Editor","Warm, measured adult narrator. 1880s newspaper editor reading a letter.","The shutter clicks. You have him, coins in his hand, Chana looking at the floor."
+"kessler1.shot.2.mp3","Mr. Kessler","Man, 40s, Yiddish-German accent, brusque and defensive, tired; not a cartoon villain.","Put that thing away! You print my face, boy, and this family sews no more coats for me. You understand?"
+"kessler1.shot.3.mp3","The Editor","Warm, measured adult narrator. 1880s newspaper editor reading a letter.","You have the picture. Chana is still out her ten cents."
+"kessler1.straight.1.mp3","Mr. Kessler","Man, 40s, Yiddish-German accent, brusque and defensive, tired; not a cartoon villain.","You are the newspaper's boy? Listen, kid."
 "kessler1.straight.2.mp3","Mr. Kessler","Man, 40s, Yiddish-German accent, brusque and defensive, tired; not a cartoon villain.","The manufacturer on Broadway pays me less every season. If I don't squeeze, I lose the contract, and nobody in this building eats."
 "kessler1.straight.3.mp3","Mr. Kessler","Man, 40s, Yiddish-German accent, brusque and defensive, tired; not a cartoon villain.","You want a villain for your newspaper? Go photograph the man on Broadway."
+"kessler1.straight.4.mp3","The Editor","Warm, measured adult narrator. 1880s newspaper editor reading a letter.","He slaps Chana's ten cents down on the table and goes. You have no picture of any of it."
 "kessler1.nothing.1.mp3","Mr. Kessler","Man, 40s, Yiddish-German accent, brusque and defensive, tired; not a cartoon villain.","Good. A man who knows when to keep quiet. Next Friday, Moishe. Fourteen coats."
 "chana.start.1.mp3","Chana","Woman, 30s, Yiddish accent, practical and quick.","Hand me that thread. No, the black one. Thank you."
 "chana.start.2.mp3","Chana","Woman, 30s, Yiddish accent, practical and quick.","I am a finisher. Moishe sews the seams. I do buttonholes, hems, linings. A few pennies for each coat."
@@ -238,11 +245,11 @@ Giuseppe is waiting at the Times Building. Your editor wants to see you at the C
 "peddler2.start.1.mp3","Herschel","Man, 50s, Yiddish accent.","Pots! Pans! Tin cups! In the old country, I was a teacher."
 "peddler2.start.2.mp3","Herschel","Man, 50s, Yiddish accent.","Here, I sell pots. My English is not good enough to teach. But my son? My son will be the teacher."
 "newsboy.start.1.mp3","Tony the Newsboy","Boy, about 11, New York street accent, fast.","Extra, extra! Papers in every language! Two cents!"
-"newsboy.start.2.mp3","Tony the Newsboy","Boy, about 11, New York street accent, fast.","Yiddish paper! Italian paper! The German Staats-Zeitung! The Irish World! What'll it be, mister?"
+"newsboy.start.2.mp3","Tony the Newsboy","Boy, about 11, New York street accent, fast.","Yiddish paper! Italian paper! The German Staats-Zeitung! The Irish World! What'll it be, pal?"
 "newsboy.why.1.mp3","Tony the Newsboy","Boy, about 11, New York street accent, fast.","People want news from home! And they can't read English yet. Not good enough, anyway."
 "newsboy.why.2.mp3","Tony the Newsboy","Boy, about 11, New York street accent, fast.","Look at the back pages: jobs, rooms for rent, lawyers, steamship tickets. Everything a greenhorn needs."
 "newsboy.why.3.mp3","Tony the Newsboy","Boy, about 11, New York street accent, fast.","These ethnic newspaper tell you how to be an American, in your own language. Funny, huh?"
-"newsboy.buy.1.mp3","Tony the Newsboy","Boy, about 11, New York street accent, fast.","Two cents! Thanks, mister! Read the back pages, that's where the jobs are."
+"newsboy.buy.1.mp3","Tony the Newsboy","Boy, about 11, New York street accent, fast.","Two cents! Thanks, pal! Read the back pages, that's where the jobs are."
 "newsboy.bye.1.mp3","Tony the Newsboy","Boy, about 11, New York street accent, fast.","Suit yourself! Extra, extra!"
 "rabbi.start.1.mp3","Mr. Kaplan","Man, 60s, Yiddish accent, warm and formal.","Welcome to the new synagogue on Eldridge Street, finished just last year. I am Kaplan, secretary of the Kiever Society."
 "rabbi.start.2.mp3","Mr. Kaplan","Man, 60s, Yiddish accent, warm and formal.","We are a landsmanshaft: everyone from Kiev and the towns nearby."
@@ -297,7 +304,7 @@ Giuseppe is waiting at the Times Building. Your editor wants to see you at the C
 "oldrep.fall.1.mp3","Mr. Haskins","Man, 60s, American, dry humor, a bit cynical.","The newspapers and Nast's cartoons turned the city against him. Tweed hated the cartoons most. He said his voters couldn't read, but they could see pictures!"
 "oldrep.fall.2.mp3","Mr. Haskins","Man, 60s, American, dry humor, a bit cynical.","He was convicted, escaped to Spain, and was caught. Some say a Spanish officer knew his face from a Nast cartoon. He died in jail in 1878."
 "oldrep.tammany.1.mp3","Mr. Haskins","Man, 60s, American, dry humor, a bit cynical.","Gone? Ha! Tweed is gone. Tammany got smarter."
-"oldrep.tammany.2.mp3","Mr. Haskins","Man, 60s, American, dry humor, a bit cynical.","Go talk to Plunkitt. He sits at the bootblack stand by the courthouse, of all places. He'll tell you how it works. He loves to talk."
+"oldrep.tammany.2.mp3","Mr. Haskins","Man, 60s, American, dry humor, a bit cynical.","Go talk to Plunkitt. He sits at the bootblack stand inside the courthouse, of all places. He'll tell you how it works. He loves to talk."
 "oldrep.bye.1.mp3","Mr. Haskins","Man, 60s, American, dry humor, a bit cynical.","A picture is worth a thousand votes, kid. Remember that."
 "plunkitt.start.1.mp3","George Washington Plunkitt","Man, mid-40s, Irish-New York accent, folksy, proud, chuckles at his own jokes.","Sit down, young fella! Get a shine! This here bootblack stand is my office."
 "plunkitt.start.2.mp3","George Washington Plunkitt","Man, mid-40s, Irish-New York accent, folksy, proud, chuckles at his own jokes.","George Washington Plunkitt, Tammany leader of the Fifteenth District. What can I do for you?"
@@ -343,7 +350,7 @@ Giuseppe is waiting at the Times Building. Your editor wants to see you at the C
 "hodcarrier.start.1.mp3","Dominic","Man, 30s, Italian accent, out of breath, wry.","Hey, camera man! You want a picture? Take it quick. The foreman docks my pay if I stand still."
 "hodcarrier.start.2.mp3","Dominic","Man, 30s, Italian accent, out of breath, wry.","I carry bricks up the ladders, eleven stories, all day. No rope. No net. A dollar and a half."
 "hodcarrier.start.3.mp3","Dominic","Man, 30s, Italian accent, out of breath, wry.","Last month a man fell from the ninth floor. The next morning, another man had his job."
-"elevator.start.1.mp3","Elevator Operator","Young man, 18, New York accent, cheerful, rehearsed patter.","Going up! Mr. Otis's safety elevator, sir. If the rope breaks, the brakes catch us. Probably."
+"elevator.start.1.mp3","Elevator Operator","Young man, 18, New York accent, cheerful, rehearsed patter.","Going up! Mr. Otis's safety elevator, young fellow. If the rope breaks, the brakes catch us. Probably."
 "elevator.start.2.mp3","Elevator Operator","Young man, 18, New York accent, cheerful, rehearsed patter.","Eleven floors in under a minute. Nobody would rent an office up there if they had to climb."
 "keeper.start.1.mp3","Park Keeper","Man, 50s, Scottish accent, strict but kind.","Welcome to Central Park! Kindly stay on the paths."
 "keeper.who.1.mp3","Park Keeper","Man, 50s, Scottish accent, strict but kind.","Mr. Frederick Law Olmsted and Mr. Calvert Vaux designed it. They started back in 1858. Took twenty years."
@@ -388,7 +395,7 @@ Giuseppe is waiting at the Times Building. Your editor wants to see you at the C
 "kessler2.start.2.mp3","Mr. Kessler","Man, 40s, Yiddish-German accent, brusque and defensive, tired; not a cartoon villain.","Union, union. You know what the manufacturer told me? Cut prices ten percent, or he gives the contract to the next man."
 "kessler2.start.3.mp3","Mr. Kessler","Man, 40s, Yiddish-German accent, brusque and defensive, tired; not a cartoon villain.","So I hold the pay a little. I pay it! Eventually."
 "kessler2.start.4.mp3","Mr. Kessler","Man, 40s, Yiddish-German accent, brusque and defensive, tired; not a cartoon villain.","I came over in '72 with nothing. I sewed in a room like theirs for nine years. Now I am the boss, and everyone hates me."
-"kessler2.start.5.mp3","Mr. Kessler","Man, 40s, Yiddish-German accent, brusque and defensive, tired; not a cartoon villain.","This is America, mister. Somebody squeezes you, you squeeze somebody."
+"kessler2.start.5.mp3","Mr. Kessler","Man, 40s, Yiddish-German accent, brusque and defensive, tired; not a cartoon villain.","This is America, kid. Somebody squeezes you, you squeeze somebody."
 "moishe2.printed.1.mp3","Cousin Moishe","Man, 30s, Yiddish accent, kind, overworked, coughs a little.","So. You came back."
 "moishe2.printed.2.mp3","Cousin Moishe","Man, 30s, Yiddish accent, kind, overworked, coughs a little.","Your picture was in every hand on Hester Street. My Sarah's face, at the machine."
 "moishe2.printed.3.mp3","Cousin Moishe","Man, 30s, Yiddish accent, kind, overworked, coughs a little.","The next morning, Mr. Kessler came up those stairs and took the coats away. All of them. ""Troublemakers,"" he said."
@@ -460,6 +467,11 @@ Giuseppe is waiting at the Times Building. Your editor wants to see you at the C
 "fall.start.5.mp3","The Editor","Warm, measured adult narrator. 1880s newspaper editor reading a letter.","The men are lowering him down the ladders. Hurry down to the street."
 "aftermath.start.1.mp3","Giuseppe Russo","Man, 20s, southern Italian accent, cheerful and proud, a little homesick.","Photographer... I am alive. The arm is broken. Maybe two ribs."
 "aftermath.start.2.mp3","Mr. Halvorsen","Man, 40s, Norwegian accent, loud over noise, proud of the work.","He can't carry a hod with one arm. No work, no pay. That's the rule. I don't make it."
+"aftermath.start.3.mp3","The Editor","Warm, measured adult narrator. 1880s newspaper editor reading a letter.","A crowd is gathering. No paper on Park Row has a picture of this yet. Your camera is in your hands."
+"aftermath.shot.1.mp3","The Editor","Warm, measured adult narrator. 1880s newspaper editor reading a letter.","The shutter clicks. Giuseppe looks up into the lens, then away."
+"aftermath.shot.2.mp3","Giuseppe Russo","Man, 20s, southern Italian accent, cheerful and proud, a little homesick.","Even now, the camera? ...Go on. Maybe somebody should see."
+"aftermath.helped.1.mp3","The Editor","Warm, measured adult narrator. 1880s newspaper editor reading a letter.","You set the camera on the paving stones and take his good hand. Across the street, a man from the World gets the picture instead."
+"aftermath.helped.2.mp3","Giuseppe Russo","Man, 20s, southern Italian accent, cheerful and proud, a little homesick.","Grazie. Stay a minute. Only a minute."
 "aftermath.quinn.1.mp3","Mr. Quinn","Man, 40s, Irish-New York accent, booming and friendly. Fictional Tammany ward boss.","Easy, easy, son! Tammany takes care of its own. I sent for Dr. Malone, and he's paid for."
 "aftermath.quinn.2.mp3","Mr. Quinn","Man, 40s, Irish-New York accent, booming and friendly. Fictional Tammany ward boss.","And Halvorsen, the job is his again when the arm heals. Isn't that right, Halvorsen?"
 "aftermath.quinn.3.mp3","Mr. Halvorsen","Man, 40s, Norwegian accent, loud over noise, proud of the work.","...If you say so, Mr. Quinn."
@@ -471,9 +483,13 @@ Giuseppe is waiting at the Times Building. Your editor wants to see you at the C
 "aftermath.expose.2.mp3","Signor Bellini","Man, 50s, southern Italian accent, calm, fatherly.","And the Società will pay for the doctor. Coraggio, Giuseppe."
 "aftermath.expose.3.mp3","Giuseppe Russo","Man, 20s, southern Italian accent, cheerful and proud, a little homesick.","Tomorrow everyone knows I talked. Quinn will never give me work again."
 "aftermath.expose.4.mp3","Giuseppe Russo","Man, 20s, southern Italian accent, cheerful and proud, a little homesick.","But maybe no one else gets asked to be a dead man."
-"editor.ask.1.mp3","The Editor","Same voice as the narrator: warm, measured, a little gruff in person.","There you are. I've seen your plates. Good work. Hard work."
-"editor.ask.2.mp3","The Editor","Same voice as the narrator: warm, measured, a little gruff in person.","Tomorrow, New York picks a mayor. The Courier has to say who it backs, and I want to hear it from someone who has walked those streets."
-"editor.ask.3.mp3","The Editor","Same voice as the narrator: warm, measured, a little gruff in person.","Here is what each man stands for."
+"editor.ask_shot.1.mp3","The Editor","Same voice as the narrator: warm, measured, a little gruff in person.","There you are, kid. That plate of the man on the sidewalk: every paper on the Row wishes it had it."
+"editor.ask_shot.2.mp3","The Editor","Same voice as the narrator: warm, measured, a little gruff in person.","It will sell ten thousand copies. I hope he forgives you. I would not ask him."
+"editor.ask_helped.1.mp3","The Editor","Same voice as the narrator: warm, measured, a little gruff in person.","There you are, kid. The World has a picture of that fall and the Courier does not. I hear you were holding the man's hand."
+"editor.ask_helped.2.mp3","The Editor","Same voice as the narrator: warm, measured, a little gruff in person.","I hired a photographer. It seems I also hired a decent person. Do not tell the other editors."
+"editor.ask2.1.mp3","The Editor","Same voice as the narrator: warm, measured, a little gruff in person.","I've seen your plates. Good work. Hard work."
+"editor.ask2.2.mp3","The Editor","Same voice as the narrator: warm, measured, a little gruff in person.","Tomorrow, New York picks a mayor. The Courier has to say who it backs, and I want to hear it from someone who has walked those streets."
+"editor.ask2.3.mp3","The Editor","Same voice as the narrator: warm, measured, a little gruff in person.","Here is what each man stands for."
 "editor.choose.1.mp3","The Editor","Same voice as the narrator: warm, measured, a little gruff in person.","So. Who does the Evening Courier endorse?"
 "editor.grant.1.mp3","The Editor","Same voice as the narrator: warm, measured, a little gruff in person.","Tammany's man. He'll feed the hungry, and the treasury will feed Tammany. Bold. All right, we print it."
 "editor.hewitt.1.mp3","The Editor","Same voice as the narrator: warm, measured, a little gruff in person.","Honest Abe Hewitt. Clean and careful, and he can't stand half the people you photographed. All right, we print it."
@@ -608,6 +624,15 @@ Nast's cartoons helped turn New Yorkers against the Tweed Ring."
 "doc.courthouse.mp3","The Editor","Warm, measured adult narrator. 1880s newspaper editor reading a letter.","The New York County Courthouse stands behind City Hall. It took about twenty years to build and cost the city around 13 million dollars, more than the United States paid for Alaska.
 
 Much of that money went into the pockets of the Tweed Ring, through fake and padded bills."
+"doc.graft.mp3","The Editor","Warm, measured adult narrator. 1880s newspaper editor reading a letter.","In July 1871 The New York Times printed copies of the county's secret account books. They showed what friends of the Tweed Ring charged the city for this courthouse:
+
+• Andrew J. Garvey, a plasterer: $133,187 for two days of work.
+• A carpenter: $360,751 for one month, in a building with very little woodwork.
+• Three tables and forty chairs: $179,729.
+
+The contractors padded every bill, kept part of the extra, and paid the rest back to the Ring. Using public office to get rich like this is called graft.
+
+Tweed was convicted in 1873 and died in the Ludlow Street Jail in 1878. Tammany Hall survived him."
 "doc.bridge.mp3","The Editor","Warm, measured adult narrator. 1880s newspaper editor reading a letter.","Opened in 1883, the Brooklyn Bridge was the longest suspension bridge in the world. Its stone towers rise above every building in the city.
 
 It connects New York to Brooklyn, which is still a separate city. Many of the workers who built it were immigrants. Some died building it."

@@ -27,7 +27,7 @@ for (const [tid, t] of Object.entries(TREES)) {
   for (const id of Object.keys(N)) if (!seen.has(id)) P.push(`${tid}.${id}: node can never be reached`);
   if (!src.includes(`'${tid}'`)) P.push(`${tid}: conversation is never started by any scene`);
 }
-for (const [id, s] of Object.entries(SUBJ)) if (!new RegExp(`['"\`]${id}['"\`]`).test(src)) P.push(`photo subject "${id}" (${s.title}) cannot be photographed anywhere`);
+for (const [id, s] of Object.entries(SUBJ)) if (!new RegExp(`['"\`]${id}['"\`]`).test(src) && !JSON.stringify(TREES).includes(`"photo":"${id}"`)) P.push(`photo subject "${id}" (${s.title}) cannot be photographed anywhere`);
 for (const id of Object.keys(D.DOCS)) if (!src.includes(`'${id}'`) && !JSON.stringify(TREES).includes(`"doc":"${id}"`)) P.push(`document "${id}" is never shown`);
 for (const id of Object.keys(K)) if (!JSON.stringify(TREES).includes(`"${id}"`) && !src.includes(`'${id}'`)) P.push(`keepsake "${id}" is never given`);
 for (const m of src.matchAll(/this\.(?:person|walker)\('?(\w+)'?|id: '(\w+)'/g)) { const id = m[1] || m[2]; if (id && isNaN(id) && !C[id] && !/^(crowd|i|n)$/.test(id)) P.push(`scene uses unknown character "${id}"`); }

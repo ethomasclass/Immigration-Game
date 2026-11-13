@@ -133,6 +133,23 @@ export class Wrapup {
     this.wire();
   }
 
+  /** The ending names the path the student took: the camera first, the person first, or torn between. */
+  kind() {
+    const f = (k) => flag(k), rows = [];
+    let cam = 0, per = 0;
+    const add = (side, text) => { rows.push([side, text]); if (side === 'cam') cam++; else if (side === 'per') per++; };
+    if (f('photo_rivka')) add('per', 'You took the picture Rivka asked for, and brought her the print.'); else add('none', 'Rivka asked for a picture for her grandmother. You never took it.');
+    if (f('paid_telegram')) add('per', 'You spent your own 25 cents on Mr. Novak\'s telegram.'); else add('none', 'You kept your 25 cents. Mr. Novak\'s son never got a telegram.');
+    if (f('shot_kessler')) add('cam', 'You photographed Mr. Kessler taking Chana\'s ten cents.'); else if (f('spoke_kessler')) add('per', 'You lowered the camera and told Mr. Kessler the seam was straight.'); else add('none', 'When Mr. Kessler docked Chana\'s pay, you stayed out of it.');
+    if (f('printed_sarah')) add('cam', 'You printed Sarah\'s face, after her father begged you not to.'); else add('per', 'You kept your word to Moishe and left Sarah out of the paper.');
+    if (f('shot_fall')) add('cam', 'You photographed Giuseppe on the sidewalk.'); else if (f('helped_fall')) add('per', 'You put the camera down and held Giuseppe\'s hand.'); else add('none', 'You were not there when Giuseppe fell.');
+    if (f('gius_expose')) add('cam', 'You took Giuseppe\'s trouble to a reporter, and the repeaters made the papers.');
+    const k = cam >= 3 && cam > per ? ['The Witness', 'You believed the picture mattered most. People uptown saw things they could not unsee, and some of them acted. Some of the people in your pictures paid for it.', 'The Editor gives you a desk and a raise. "You have the eye, kid. Try to keep your friends."']
+      : per >= 3 && per > cam + 1 ? ['The Neighbor', 'When it came to it, you put the camera down. The people you met will remember a friend. The city never saw some of what you saw.', 'The Editor keeps you on, grumbling. "A soft heart is expensive in this business. Bring me more plates next time."']
+        : ['The Go-Between', 'Sometimes you took the picture and sometimes you put the camera down. You never found a rule for it. Neither did Jacob Riis.', 'The Editor keeps you on. "You think too much before you shoot. Good. Most of them never think at all."'];
+    return `<div class="kind"><div class="kind-label">What kind of photographer were you?</div><h3>${esc(k[0])}</h3><p>${esc(k[1])}</p><ul>${rows.map(([c, t]) => `<li class="${c}">${esc(t)}</li>`).join('')}</ul><p style="margin-top:10px"><b>Your job.</b> ${esc(k[2])}</p></div>`;
+  }
+
   epilogue() {
     const f = (k) => flag(k);
     const fates = [];
@@ -182,7 +199,7 @@ export class Wrapup {
         ${lead ? `<img src="${lead.img}" alt=""><p style="text-align:center;font-style:italic;margin:4px 0 12px">${esc(lead.title)}: ${esc(lead.caption || lead.desc)}</p>` : ''}
         <div class="cols"><p><b>${esc(this.cfg.question)}</b></p><p>${esc(a.text || '(Your answer goes here.)')}</p></div>
       </div>
-      ${this.part === 'B' ? `<div class="handout" style="margin-top:20px"><h2>What Became of Them</h2>${this.epilogue()}</div>` : ''}
+      ${this.part === 'B' ? `<div class="handout" style="margin-top:20px"><h2>Your Week</h2>${this.kind()}<h2>What Became of Them</h2>${this.epilogue()}</div>` : ''}
       <div class="handout" style="margin-top:20px">
         <h2>Copy This to Your Handout</h2>
         <p><b>Question:</b> ${esc(this.cfg.question)}<br><b>My answer:</b> ${esc(a.stance || '(not chosen)')}</p>
@@ -206,8 +223,8 @@ export class Wrapup {
       else if (act === 'print') window.print();
       else if (act === 'back') { this.close(); this.game.resumeFromWrapup(); }
       else if (act === 'day2') { this.close(); this.game.startDay2(); }
-      else if (act === 'printSarah') { state.flags.printed_sarah = true; save(); this.step++; this.render(); }
-      else if (act === 'keepSarah') { state.flags.sarah_kept = true; save(); this.step++; this.render(); }
+      else if (act === 'printSarah') { state.flags.printed_sarah = true; save(); this.game.remember('Moishe will remember that.'); this.step++; this.render(); }
+      else if (act === 'keepSarah') { state.flags.sarah_kept = true; save(); this.game.remember('Moishe will remember that.'); this.step++; this.render(); }
       else if (act === 'menu') { this.close(); this.game.showMenu(); }
     }));
   }

@@ -73,6 +73,25 @@ export class PhotoMode {
     vfLabel.textContent = s ? `${s.title}${already ? ' (already photographed)' : ''}` : '';
   }
 
+  /** Take a named photograph as part of a scene (a choice to raise the camera at a hard moment). */
+  take(subjectId) {
+    const s = SUBJECTS[subjectId], g = this.game;
+    if (!s || !g.zone) return;
+    g.renderer.render(g.zone.scene, g.camera);
+    const img = capture(g.renderer.domElement);
+    flashEl.classList.add('on');
+    requestAnimationFrame(() => requestAnimationFrame(() => flashEl.classList.remove('on')));
+    sfx('flash'); sfx('shutter');
+    const photo = { id: 'p' + Date.now().toString(36), subject: subjectId, title: s.title, desc: s.desc, zone: g.zoneId, img, caption: '' };
+    state.flags['photo_' + subjectId] = true;
+    const i = state.photos.findIndex(p => p.subject === subjectId);
+    if (i >= 0) state.photos[i] = photo; else state.photos.push(photo);
+    if (state.photos.length > MAX_PHOTOS) state.photos.shift();
+    save();
+    g.showPrint(photo, i >= 0);
+    g.refreshObjectives();
+  }
+
   snap() {
     if (this.cooldown > 0) return;
     this.cooldown = 0.8;
