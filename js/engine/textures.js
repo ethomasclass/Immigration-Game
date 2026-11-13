@@ -583,6 +583,9 @@ export function prepCutout(img, { crop = true, maxH = 640 } = {}) {
       if (x > 0) push(x - 1, y); if (x < w - 1) push(x + 1, y); if (y > 0) push(x, y - 1); if (y < h - 1) push(x, y + 1);
     }
     const greenish = bg > br + 40 && bg > bb + 40;
+    // A strongly colored key (green screen) is not used anywhere in the cast, so pockets of it that the
+    // edge fill could not reach (the loop of an arm, a basket handle) are cleared too.
+    if (Math.max(br, bg, bb) - Math.min(br, bg, bb) > 80) for (let n = 0; n < w * h; n++) if (!seen[n] && dist(n * 4) < 70) seen[n] = 1;
     for (let n = 0; n < w * h; n++) {
       const i = n * 4;
       if (seen[n]) { d[i + 3] = 0; continue; }

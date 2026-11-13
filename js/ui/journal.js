@@ -2,6 +2,7 @@
 import { state, save } from '../state.js';
 import { GLOSSARY } from '../data/glossary.js';
 import { KEEPSAKES } from '../data/keepsakes.js';
+import { CURIOS } from '../data/curiosities.js';
 import { esc, richText } from './text.js';
 
 const ZONE_NAMES = { ship: 'I. Steerage', castle: 'II. Castle Garden', les: 'III. The Lower East Side', city: 'IV. The City' };
@@ -90,9 +91,18 @@ Journal.prototype.renderKeeps = function () {
     const k = KEEPSAKES[id]; if (!k) return '';
     return `<div class="keep"><div class="keep-icon" style="background-image:url(assets/art/keep_${id}.png)"><span>${k.glyph}</span></div><div><div class="keep-name">${esc(k.name)}</div><div class="keep-text">${esc(k.text)}</div></div></div>`;
   }).join('') + '</div>';
+  // curiosities: found ones with their story, the rest as blanks that say where to look
+  const CH = { ship: 'Steerage', castle: 'Castle Garden', les: 'the Lower East Side', city: 'Park Row and Central Park' };
+  const ids = Object.keys(CURIOS), got = ids.filter(id => state.curios.includes(id));
+  html += `<div class="curio-head">Curiosities <span class="muted">(${got.length} of ${ids.length} found. They glint when you are near; press E to look.)</span></div><div class="keep-grid">` + ids.map(id => {
+    const c = CURIOS[id];
+    return state.curios.includes(id)
+      ? `<div class="keep"><div class="keep-icon" style="background-image:url(assets/art/curio_${id}.png)"><span>${c.glyph}</span></div><div><div class="keep-name">${esc(c.name)}</div><div class="keep-text">${esc(c.text)}</div></div></div>`
+      : `<div class="keep unfound"><div class="keep-icon"><span>?</span></div><div><div class="keep-name">Not found yet</div><div class="keep-text">Somewhere in ${CH[c.zone]}.</div></div></div>`;
+  }).join('') + '</div>';
   content.innerHTML = html;
   // hide the placeholder glyph when real art loads
-  content.querySelectorAll('.keep-icon').forEach(el => { const img = new Image(); img.onload = () => { el.querySelector('span').style.display = 'none'; }; img.onerror = () => { el.style.backgroundImage = 'none'; }; img.src = el.style.backgroundImage.slice(5, -2); });
+  content.querySelectorAll('.keep:not(.unfound) .keep-icon').forEach(el => { const img = new Image(); img.onload = () => { el.querySelector('span').style.display = 'none'; }; img.onerror = () => { el.style.backgroundImage = 'none'; }; img.src = el.style.backgroundImage.slice(5, -2); });
 };
 
 Journal.prototype.renderMap = function () {

@@ -47,6 +47,7 @@ export class CastleZone extends Zone {
   streetLife() {
     const L = this.life;
     this.surface = (p) => (Math.hypot(p.x, p.z) < R || (Math.abs(p.x) < 4.5 && p.z > 20)) ? 'wood' : (p.x < -44 && p.z < 12 ? 'grass' : 'stone');
+    this.curio('check', -8.0, 11.6); this.curio('ticket', 9.4, -4.2); this.curio('flag', 2.6, 58.6);
     L.gulls(4, 48, { n: 8, r: 30, y: 14 }); L.gulls(-70, 40, { n: 5, r: 36, y: 20 });
     L.pigeons(-58, -6, 10, 3); L.pigeons(30, -44, 8, 2.5);
     L.smoke([[20, 7.8, 62]], { per: 10, rise: 1.6, size: 4.5, windX: 0.9 });

@@ -81,6 +81,11 @@ export class CityZone extends Zone {
     const L = this.life, n = this.night, cry = (s, off, lines) => { const [x, z] = along(s, off); L.cry(x, z, lines); };
     this.surface = (p) => (p.x > 3000 ? 'grass' : 'stone');
     L.pigeons(-33, 58, 12, 3); L.pigeons(3, -46, 9, 2.5);
+    if (!n) {
+      this.curio('wire', -31, -45.5); this.curio('ribbon', 7, 18.6);
+      if (this.potterDoor) this.curio('brake', this.potterDoor[0] - PR.n[0] * 1.7 + PR.d[0] * 2.2, this.potterDoor[1] - PR.n[1] * 1.7 + PR.d[1] * 2.2);
+      this.curio('dairy', PX + 9.5, 44);
+    }
     L.drift({ n: 30, where: (p) => p.x > 3000 || (p.x > -98 && p.x < 70 && p.z > -50 && p.z < 150) });
     if (n) {
       cry(120, PR_W - 6, ['Grant! Grant! Grant!', 'What is the count in the Fourth Ward?', 'Tammany wins it!']);

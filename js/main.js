@@ -18,6 +18,7 @@ import { DOCS, CARDS } from './data/dialogue.js';
 import { CHARACTERS } from './data/characters.js';
 import { placeholderURL } from './engine/cutout.js';
 import { KEEPSAKES } from './data/keepsakes.js';
+import { CURIOS, curiosIn } from './data/curiosities.js';
 import { ShipZone } from './zones/ship.js';
 import { CastleZone } from './zones/castle.js';
 import { LowerEastSideZone, LowerEastSideDay2 } from './zones/les.js';
@@ -204,12 +205,22 @@ class Game {
     const req = list.filter(o => !o.optional), leads = list.filter(o => o.optional);
     const goal = req.find(o => !o.done) || req[req.length - 1];
     const n = req.indexOf(goal) + 1;
-    if (!this.currentGoal || this.currentGoal.text !== goal.text) { const el = $('goal'); el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); }
+    if (!this.currentGoal || this.currentGoal.text !== goal.text) {
+      const el = $('goal'); el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
+      // the goal you were on is now done: say so
+      const prev = this.currentGoal && req.find(o => o.text === this.currentGoal.text);
+      if (prev && prev.done && this.mode !== 'menu') { sfx('success'); this.banner('Goal complete', `Next: ${goal.text}`); }
+    }
     this.currentGoal = goal;
     $('goal-label').textContent = `GOAL ${n} OF ${req.length}`;
     $('goal-text').innerHTML = goal.text;
     const found = leads.filter(o => o.done).length;
-    $('goal-leads').textContent = leads.length ? `Leads to follow: ${found}/${leads.length} (${this.touch?.enabled ? 'tap the book' : 'J'} to see)` : '';
+    const cur = curiosIn(this.zoneId), curGot = cur.filter(k => state.curios.includes(k)).length;
+    $('goal-leads').textContent = (leads.length ? `Leads: ${found}/${leads.length} (${this.touch?.enabled ? 'tap the book' : 'J'} to see)` : '') + (cur.length ? `${leads.length ? ' · ' : ''}Curiosities: ${curGot}/${cur.length}` : '');
+    // a lead was just followed
+    const lk = this.zoneId + ':' + found;
+    if (this._leadZone === this.zoneId && found > (this._leadN || 0)) { sfx('chime'); this.toast(`<b>Lead followed</b> <span class="muted">(${found} of ${leads.length})</span>`, 3000); }
+    this._leadZone = this.zoneId; this._leadN = found;
   }
 
   // ------------------------------------------------------------------ modes
@@ -356,6 +367,33 @@ class Game {
     state.cents = Math.max(0, state.cents - cents); save();
     this.toast(`<b>Paid ${cents}¢</b>${what ? ' ' + what : ''}. <span class="muted">Purse: $${(state.cents / 100).toFixed(2)}</span>`);
     this.showPurse(true);
+  }
+  /** A hidden curiosity was found: show its card and count it. */
+  findCurio(id) {
+    const c = CURIOS[id];
+    if (!c || state.curios.includes(id)) return;
+    state.curios.push(id); save(); sfx('find');
+    const all = curiosIn(this.zoneId), got = all.filter(k => state.curios.includes(k)).length;
+    DOCS['curio_' + id] = { title: c.name, text: c.text, source: `Curiosity ${got} of ${all.length} in this chapter. They are kept in your journal, under Keepsakes.` };
+    this.readDoc('curio_' + id);
+    this.refreshObjectives();
+  }
+  /** The photograph "develops" into a print that tucks itself away in the journal. */
+  showPrint(photo, retake) {
+    const el = $('print');
+    el.querySelector('.print-photo').style.backgroundImage = `url(${photo.img})`;
+    el.querySelector('.print-title').textContent = photo.title;
+    const n = state.photos.filter(p => p.subject).length;
+    el.querySelector('.print-sub').textContent = retake ? 'Retaken' : `Plate ${n} · saved to your journal`;
+    el.classList.remove('hidden', 'go'); void el.offsetWidth; el.classList.add('go');
+    sfx('print');
+    clearTimeout(this._printT); this._printT = setTimeout(() => el.classList.add('hidden'), 3300);
+  }
+  banner(title, sub = '') {
+    const el = $('banner');
+    el.querySelector('.banner-title').textContent = title; el.querySelector('.banner-sub').innerHTML = sub;
+    el.classList.remove('hidden', 'go'); void el.offsetWidth; el.classList.add('go');
+    clearTimeout(this._banT); this._banT = setTimeout(() => el.classList.add('hidden'), 3200);
   }
   keep(id) {
     const k = KEEPSAKES[id];

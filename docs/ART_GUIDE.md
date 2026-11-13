@@ -10,7 +10,9 @@ Characters are **flat 2D illustrations standing in the 3D world**, like a paper 
 
 | File | What it is | Size |
 |---|---|---|
-| `portrait_<id>.png` | **Required.** The full-body figure on a **transparent background**, feet at the bottom edge. Used in the world *and* in the dialogue box. | about 600 × 1200 px (1:2), under 400 KB |
+| `portrait_<id>.png` | **Required.** The full-body figure, whole person visible. Used in the world *and* in the dialogue box. **You do not need to remove the background:** the game clears a flat background (green screen works best), trims the picture to the figure, and shrinks it. Transparent PNGs work too. | tall (9:16), any size; JPG or PNG |
+| `portrait_<id>_up.png`, `portrait_<id>_down.png` | **Optional, main characters.** Head-and-shoulders close-ups for a good moment and a hard moment. The dialogue box switches to them at marked points in the story (`mood: 'up'` or `mood: 'down'` on a conversation step in `js/data/dialogue.js`). | tall (3:4), any size |
+| `curio_<id>.png`, `keep_<id>.png` | **Optional.** Small round icons for curiosities and keepsakes in the journal (ids are in `js/data/curiosities.js` and `js/data/keepsakes.js`). | about 200 × 200 |
 | `anim_<id>.png` | **Optional.** A sprite strip: animation frames side by side in one row, all the same size, e.g. 8 frames × 300 px wide = 2400 × 600. It replaces the still figure and loops (faster while the character talks). | frames set by `anim.frames` in characters.js (default 8) |
 
 ### Making the art

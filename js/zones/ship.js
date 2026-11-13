@@ -122,6 +122,7 @@ export class ShipZone extends Zone {
 
     // street life: voices in the dark, dust in the lantern light, boards underfoot
     this.surface = () => 'wood';
+    this.curio('tin', 0.9, -4.4, 1.0); this.curio('cork', -1.1, -15.6); this.curio('cards', 1.0, -24.6);
     this.life.cry(-2.6, -7, ['Mama, when will we see land?', 'Seven days more, they say.', 'Is it true the streets are paved?']);
     this.life.cry(2.8, -19, ['Hold on to your papers. Do not lose them.', 'My brother is in Chicago. He will meet me.', 'I have not eaten since Tuesday.']);
     this.life.cry(0.4, -26, ['Soup! Bring your tins!', 'Mind your heads on the ladder!']);

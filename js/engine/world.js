@@ -5,6 +5,7 @@ import { material, colorMat, texture } from './textures.js';
 import { CHARACTERS } from '../data/characters.js';
 import { makeCutout, animateCutout } from './cutout.js';
 import { Life } from './life.js';
+import { state } from '../state.js';
 import { mergeGeometries } from '../../lib/BufferGeometryUtils.js';
 
 /** A copy of vertices [start, start+count) of a non-indexed geometry (position, normal, uv). */
@@ -303,6 +304,29 @@ export class Zone {
     const it = { pos: new THREE.Vector3(x, y, z), r, prompt, action, cond, once, used: false };
     this.interactables.push(it);
     return it;
+  }
+
+  /** A hidden curiosity (js/data/curiosities.js): a small brass glint you notice only when close. */
+  curio(id, x, z, y = 0.8) {
+    if (state.curios.includes(id)) return;
+    if (!Zone.glint) {
+      const c = document.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d');
+      const gr = g.createRadialGradient(32, 32, 1, 32, 32, 30); gr.addColorStop(0, 'rgba(255,244,190,1)'); gr.addColorStop(0.25, 'rgba(240,200,90,.55)'); gr.addColorStop(1, 'rgba(240,200,90,0)');
+      g.fillStyle = gr; g.fillRect(0, 0, 64, 64);
+      g.strokeStyle = 'rgba(255,250,220,.95)'; g.lineWidth = 2; g.beginPath(); g.moveTo(32, 3); g.lineTo(32, 61); g.moveTo(3, 32); g.lineTo(61, 32); g.stroke();
+      Zone.glint = new THREE.CanvasTexture(c); Zone.glint.colorSpace = THREE.SRGBColorSpace;
+    }
+    const spr = new THREE.Sprite(new THREE.SpriteMaterial({ map: Zone.glint, transparent: true, depthWrite: false }));
+    spr.position.set(x, y, z); this.scene.add(spr);
+    const it = this.interact({ x, y, z, r: 2.0, prompt: 'Look closer', action: () => { spr.visible = false; it.hidden = true; this.game.findCurio(id); } });
+    const ph = x * 1.3 + z;
+    this.updaters.push((dt, t) => {
+      if (it.hidden) return;
+      const pp = this.game.controls.pos, d = Math.hypot(pp.x - x, pp.z - z);
+      spr.visible = d < 15;
+      const k = 0.26 + Math.abs(Math.sin(t * 2.2 + ph)) * 0.2 + (d < 4 ? 0.1 : 0);
+      spr.scale.set(k, k, 1); spr.material.rotation = t * 0.6;
+    });
   }
 
   /** Something the camera can photograph. */

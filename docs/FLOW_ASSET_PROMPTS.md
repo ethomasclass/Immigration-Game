@@ -86,3 +86,27 @@ Covered in [ART_GUIDE.md](ART_GUIDE.md#optional-animated-characters-with-flow-ve
 ## 8. Sound (ElevenLabs, not Flow)
 
 Looping background sound per zone: `assets/audio/amb_ship.mp3`, `amb_castle.mp3`, `amb_les.mp3`, `amb_city.mp3`. For the Lower East Side, try "busy 1880s street market, peddlers calling in Yiddish and Italian, horse hooves on stone, an elevated steam train passing overhead."
+
+## Curiosity icons (optional)
+
+Thirteen small objects are hidden through the game (see `js/data/curiosities.js`). Each shows a round icon in the journal. Until you add art, an emoji stands in. To make matching icons, use this prompt once per object, square (1:1), and save as `assets/art/curio_<id>.png`:
+
+```
+A single small object drawn as a hand-inked Art Nouveau tarot-style emblem: [OBJECT]. Centered, filling most of the square, on a plain warm cream background. Bold black ink outline, flat muted color with watercolor texture (ochre gold, deep teal, brick red, sepia brown), no text, no border, no frame, no hands, no other objects. New York, 1888.
+```
+
+| File id | Replace [OBJECT] with |
+|---|---|
+| `tin` | a dented tin plate with a tin cup and spoon |
+| `cork` | a canvas-covered cork life preserver of the 1880s |
+| `cards` | a worn deck of playing cards tied with string |
+| `check` | a numbered brass baggage tag on a leather strap |
+| `ticket` | a long printed railroad ticket, the lettering only illegible marks |
+| `flag` | a small United States flag with 38 stars |
+| `paper` | a folded newspaper printed in Hebrew letters, the lettering only illegible marks |
+| `ash` | a wooden barrel heaped with coal ashes |
+| `mezuzah` | a small carved wooden mezuzah case |
+| `wire` | a coil of fallen telegraph wire with a glass insulator |
+| `ribbon` | a silk campaign ribbon with a brass token, no lettering |
+| `brake` | a brass elevator maker's plate, the lettering only illegible marks |
+| `dairy` | a small glass cup of milk |

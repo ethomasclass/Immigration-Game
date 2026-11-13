@@ -842,6 +842,7 @@ export const DIALOGUE = {
     speaker: 'chana',
     nodes: {
       start: {
+        mood: 'down',
         lines: [
           'Hand me that thread. No, the black one. Thank you.',
           'I am a finisher. Moishe sews the seams. I do buttonholes, hems, linings. A few pennies for each coat.',
@@ -1096,6 +1097,7 @@ export const DIALOGUE = {
     speaker: 'lee',
     nodes: {
       start: {
+        mood: 'up',
         lines: ['Welcome to my shop. Tea, dried fish, rice, medicine. Letters from home. You want something?'],
         next: 'hub',
       },
@@ -1126,6 +1128,7 @@ export const DIALOGUE = {
         next: 'hub',
       },
       exclusion: {
+        mood: 'down',
         set: ['learned_exclusion'],
         note: 'CHINESE EXCLUSION ACT (1882): Banned Chinese laborers from coming to the U.S. and barred Chinese immigrants from becoming citizens. Merchants could still come, but laborers could not.',
         lines: [
@@ -1575,6 +1578,7 @@ export const DIALOGUE = {
     speaker: 'chana',
     nodes: {
       start: {
+        mood: 'up',
         lines: [
           'Photographer! Yes, it\'s us. Sunday is the only day we don\'t sew.',
           'Five cents each way, for each of us. So we come once a summer. But look how Sarah runs!',
@@ -1912,6 +1916,7 @@ export const DIALOGUE = {
     speaker: 'lee',
     nodes: {
       start: {
+        mood: 'down',
         set: ['heard_lee2'],
         lines: [
           'All of Mott Street talks about the election. Grant, Hewitt, Erhardt.',

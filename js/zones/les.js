@@ -667,6 +667,7 @@ export class LowerEastSideZone extends Zone {
     // ---- pigeons, chimney smoke, scraps in the wind, and the cries of Hester Street ----
     const L = this.life, d2 = this.day2;
     this.surface = (p) => (p.x > MX && p.x < MX + LOT && p.z < MZ && p.z > MZ - BLD) ? 'wood' : (p.x > MX && p.x < MX + LOT && p.z <= MZ - BLD && p.z > MZ - BLD - YARD) ? 'grass' : 'stone';
+    this.curio('paper', -41, 5.9); this.curio('ash', 12.5, -5.8); this.curio('mezuzah', MX + 3.3, MZ + 0.5, 1.5);
     L.pigeons(-22, 0.5, 10, 2.4); L.pigeons(-84, -1, 8, 2); L.pigeons(33, 2, 7, 1.8);
     const stacks = []; for (const x of [-98, -64, -27, 10, 47, 84]) for (const z of [-28, 27]) stacks.push([x + (z > 0 ? 4 : -3), 21.5, z]);
     L.smoke(stacks, { per: 5, rise: 1.1, size: 3.6, windX: 0.7, windZ: 0.2 });

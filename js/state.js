@@ -11,6 +11,7 @@ const DEFAULTS = () => ({
   answers: { A: { stance: '', text: '' }, B: { stance: '', text: '' } },
   cents: 250,       // the photographer's expense money ($2.50)
   keeps: [],        // keepsake ids, in the order found
+  curios: [],       // curiosity ids found
   settings: { sens: 1, quality: 0, qv: 2, vo: 1, amb: 0.5, tts: false, drag: false, touch: 'auto' },
 });
 
@@ -29,6 +30,7 @@ export function load() {
     state.answers = Object.assign(d.answers, data.answers || {});
     if (typeof state.cents !== 'number') state.cents = 250;
     if (!Array.isArray(state.keeps)) state.keeps = [];
+    if (!Array.isArray(state.curios)) state.curios = [];
     return !!state.zone;
   } catch (e) { return false; }
 }

@@ -1,7 +1,10 @@
 // Every person in the game. `voice` is a casting note for ElevenLabs.
-// Art: assets/art/portrait_<id>.png, a full-body 2D figure on a transparent
-// background (see docs/CHARACTER_ART_PROMPTS.md). Optional animated sprite
-// strip: assets/art/anim_<id>.png (`frames` frames side by side).
+// Art: assets/art/portrait_<id>.png, a full-body 2D figure. A flat background
+// (green screen) is removed automatically and the picture is cropped to the
+// figure; transparent PNGs work too. Main characters can also have two
+// expression close-ups, portrait_<id>_up.png and portrait_<id>_down.png, shown
+// in the dialogue box on happy and hard moments (see docs/CHARACTER_ART_PROMPTS.md).
+// Optional animated sprite strip: assets/art/anim_<id>.png (`frames` frames side by side).
 // `coat`, `skin`, `hat` only drive the placeholder silhouette.
 // `anim`: idle = breathe | sway | bounce | fidget | rock | shiver | still
 //         talk = nod | gesture | bounce | lean      speed = 1 is normal

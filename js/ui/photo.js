@@ -103,8 +103,8 @@ export class PhotoMode {
     if (subjectId) {
       state.flags['photo_' + subjectId] = true;   // the story remembers who you photographed
       const i = state.photos.findIndex(p => p.subject === subjectId);
-      if (i >= 0) { photo.caption = state.photos[i].caption; state.photos[i] = photo; g.toast(`Retook <b>${photo.title}</b>`); }
-      else { state.photos.push(photo); g.toast(`Photograph: <b>${photo.title}</b><br><span class="muted">${photo.desc}</span>`); }
+      if (i >= 0) { photo.caption = state.photos[i].caption; state.photos[i] = photo; g.showPrint(photo, true); }
+      else { state.photos.push(photo); g.showPrint(photo, false); g.toast(`<b>${photo.title}</b><br><span class="muted">${photo.desc}</span>`, 5200); }
     } else {
       const untitled = state.photos.filter(p => !p.subject);
       if (untitled.length >= 6) state.photos.splice(state.photos.indexOf(untitled[0]), 1);
