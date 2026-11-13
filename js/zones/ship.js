@@ -120,6 +120,12 @@ export class ShipZone extends Zone {
     const ex = this.exit(lx, lz + 0.4, 'Climb the ladder to the deck', () => this.ready(), () => this.game.loadZone('castle'), 1.8);
     ex.lockedMsg = 'Before you go up, finish your goal (top left).';
 
+    // street life: voices in the dark, dust in the lantern light, boards underfoot
+    this.surface = () => 'wood';
+    this.life.cry(-2.6, -7, ['Mama, when will we see land?', 'Seven days more, they say.', 'Is it true the streets are paved?']);
+    this.life.cry(2.8, -19, ['Hold on to your papers. Do not lose them.', 'My brother is in Chicago. He will meet me.', 'I have not eaten since Tuesday.']);
+    this.life.cry(0.4, -26, ['Soup! Bring your tins!', 'Mind your heads on the ladder!']);
+    this.life.drift({ n: 26, color: 'rgba(255,220,160,0.5)', size: 0.05, box: 10, top: 2.1, fall: 0.03, windX: 0.05, windZ: 0.02 });
     this.spawn = { x: 0, z: -1.2, yaw: 0 };
 
     this.updaters.push((dt, t) => {

@@ -197,3 +197,9 @@ body.touch #dlg-next { background: var(--brass); color: var(--inkc); border: 1px
 #dlg-text.line-in { animation: line-in .22s ease-out; }
 @keyframes line-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
 @media (max-height: 520px) { #dlg-portrait { flex-basis: 78px; height: 112px; } }
+
+/* ---------- street cries: overheard lines floating above the crowd ---------- */
+#cries { position: fixed; inset: 0; pointer-events: none; z-index: 4; overflow: hidden; }
+.cry { position: absolute; left: 0; top: 0; max-width: 260px; padding: 5px 11px 6px; font-family: "Lora", Georgia, serif; font-style: italic; font-size: .95rem; line-height: 1.25;
+  color: #2a1c10; background: rgba(244, 233, 205, .93); border: 1px solid rgba(110, 80, 30, .7); border-radius: 12px 12px 12px 2px; box-shadow: 0 2px 8px rgba(0, 0, 0, .35);
+  white-space: normal; text-align: center; opacity: 0; will-change: transform, opacity; }

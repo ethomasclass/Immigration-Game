@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import { material, colorMat, texture } from './textures.js';
 import { CHARACTERS } from '../data/characters.js';
 import { makeCutout, animateCutout } from './cutout.js';
+import { Life } from './life.js';
 import { mergeGeometries } from '../../lib/BufferGeometryUtils.js';
 
 /** A copy of vertices [start, start+count) of a non-indexed geometry (position, normal, uv). */
@@ -60,7 +61,11 @@ export class Zone {
       animateCutout(n.group, this.time, cam, speaker && speaker === n.id && n.talking !== false && d.currentTree === n.talkTree, walking);
     }
     this.stepShadows();
+    if (this._life) this._life.update(dt, pp, cam, this.game.mode === 'play');
   }
+
+  /** Street life effects (cries, birds, smoke, drifting leaves). Created on first use. */
+  get life() { return this._life || (this._life = new Life(this)); }
 
   /** Move a static group's meshes into the scene (keeping their placement) so optimize() can merge them. */
   bake(g) {

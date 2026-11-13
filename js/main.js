@@ -5,7 +5,7 @@
 import * as THREE from 'three';
 import { state, load, save, resetProgress } from './state.js';
 import { Controls } from './engine/controls.js';
-import { startAmbience, stopAmbience, setAmbienceVolume, unlockAudio, playVoice, stopVoice, sfx } from './engine/audio.js';
+import { startAmbience, stopAmbience, setAmbienceVolume, unlockAudio, playVoice, stopVoice, sfx, ambientTick } from './engine/audio.js';
 import { artURL, hasRealArt, texture, requested } from './engine/textures.js';
 import { Dialogue } from './ui/dialogue.js';
 import { PhotoMode } from './ui/photo.js';
@@ -190,6 +190,7 @@ class Game {
   disposeZone() {
     this.isBackdrop = false; $('menu').classList.remove('live');
     if (!this.zone) return;
+    if (this.zone._life) this.zone._life.dispose();
     this.zone.scene.traverse(o => { if (o.geometry) o.geometry.dispose(); });
     this.zone = null;
   }
@@ -511,6 +512,13 @@ class Game {
     this.zone.update(dt);
     this.controls.update(dt, this.zone.colliders, this.zone.bounds);
     this.photo.update(dt);
+    if (this.mode === 'play') {
+      // footsteps follow the walking bob; occasional sounds of the place
+      const c = this.controls, stepN = Math.floor(c.bob / Math.PI);
+      if (stepN !== this.stepN && Math.hypot(c.vel.x, c.vel.z) > 1.2) sfx('step', { surface: this.zone.surface ? this.zone.surface(c.pos) : 'stone', vol: 0.5 });
+      this.stepN = stepN;
+      ambientTick(dt, this.zone.where === 'park' ? 'park' : this.zoneId);
+    }
     this.minimap.update(dt);
     this.rotateHint();
     this.updateWaypoint(this.zone.time);

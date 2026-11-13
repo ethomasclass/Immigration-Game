@@ -64,6 +64,7 @@ export class CityZone extends Zone {
     this.election();
     this.streetLife();
     if (this.night) this.nightScene(); else this.story();
+    this.cityLife();
     if (this.night) { this.skyCity.material.color.set(0x2a3048); }
     this.streetCols = this.colliders;
     this.where = flag('in_park') ? 'park' : 'street';
@@ -73,6 +74,32 @@ export class CityZone extends Zone {
     this.spawn = { x: spx, z: spz, yaw: Math.atan2(-PR.d[0], -PR.d[1]) };
     if (flag('in_park') && !this.night) { this.spawn = { x: PX, z: 62, yaw: 0 }; this.bounds = this.boundsPark; }
     else this.where = 'street';
+  }
+
+  // ------------------------------------------------------------ pigeons, gulls, leaves, street cries
+  cityLife() {
+    const L = this.life, n = this.night, cry = (s, off, lines) => { const [x, z] = along(s, off); L.cry(x, z, lines); };
+    this.surface = (p) => (p.x > 3000 ? 'grass' : 'stone');
+    L.pigeons(-33, 58, 12, 3); L.pigeons(3, -46, 9, 2.5);
+    L.drift({ n: 30, where: (p) => p.x > 3000 || (p.x > -98 && p.x < 70 && p.z > -50 && p.z < 150) });
+    if (n) {
+      cry(120, PR_W - 6, ['Grant! Grant! Grant!', 'What is the count in the Fourth Ward?', 'Tammany wins it!']);
+      cry(190, PR_W - 6, ['Read the returns! The Courier has them first!', 'Hewitt is finished!', 'Wait for the uptown districts!']);
+      cry(60, PR_W - 8, ['Hot chestnuts! Keep your hands warm!', 'Three cheers for the new mayor!']);
+    } else {
+      cry(60, PR_W - 3, ['World! Tribune! Sun! Two cents!', 'Paper, mister? All the election news!']);
+      cry(128, PR_W - 3, ['Shine, mister? Five cents!', 'Shine them up for election day!']);
+      cry(205, PR_W - 3, ['Hot chestnuts! A nickel a bag!', 'Roasted fresh!']);
+      cry(286, PR_W - 3, ['Step lively! All aboard for Harlem!', 'Mind the gap! Stand clear!']);
+      L.cry(-42, 44, ['Vote for Grant! Tammany takes care of its own!', 'Erhardt and honest government!', 'Hewitt! Hewitt for Mayor!']);
+      L.cry(0, -46, ['Court is in session! Quiet in the hall!', 'Citizenship papers, second floor!']);
+      // Central Park
+      L.gulls(PX, -92, { n: 6, r: 30, y: 9 }); L.pigeons(PX + 2.5, 30, 10, 2.5);
+      L.cry(PX - 5, 50, ['Hokey-pokey! A penny a lump!', 'Ice cream! Cold and sweet!']);
+      L.cry(PX - 13, -6, ['The band plays at four o\u2019clock!', 'Programs! Get your program!']);
+      L.cry(PX + 5, -28, ['Rowboats for hire, by the hour!', 'What a view of the Lake!']);
+      L.cry(PX + 40, 6, ['Whoa! Carriage coming through!', 'Mind the horses, children!']);
+    }
   }
 
   // ------------------------------------------------------------ ground: streets + the park triangle

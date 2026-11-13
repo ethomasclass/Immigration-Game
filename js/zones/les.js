@@ -664,6 +664,23 @@ export class LowerEastSideZone extends Zone {
     for (let i = 0; i < 3; i++) this.walker(5, loop, { speed: 2.4, scale: 0.72, id: 'child0', loop: true });
     // the lamplighter making his evening round along Hester Street
     this.walker(0, [[-70, 5.4], [-34, 5.4], [-12, -5.2], [16, 5.2], [40, 5.2], [57, -5.2]], { speed: 0.8, id: 'lamplighter' });
+    // ---- pigeons, chimney smoke, scraps in the wind, and the cries of Hester Street ----
+    const L = this.life, d2 = this.day2;
+    this.surface = (p) => (p.x > MX && p.x < MX + LOT && p.z < MZ && p.z > MZ - BLD) ? 'wood' : (p.x > MX && p.x < MX + LOT && p.z <= MZ - BLD && p.z > MZ - BLD - YARD) ? 'grass' : 'stone';
+    L.pigeons(-22, 0.5, 10, 2.4); L.pigeons(-84, -1, 8, 2); L.pigeons(33, 2, 7, 1.8);
+    const stacks = []; for (const x of [-98, -64, -27, 10, 47, 84]) for (const z of [-28, 27]) stacks.push([x + (z > 0 ? 4 : -3), 21.5, z]);
+    L.smoke(stacks, { per: 5, rise: 1.1, size: 3.6, windX: 0.7, windZ: 0.2 });
+    L.drift({ n: 22, color: 'rgba(214,204,180,0.9)', size: 0.11, box: 22, top: 6, fall: 0.35, windX: 1.4, windZ: 0.2 });
+    L.cry(-62, 3.5, ['Pickles! A penny a pickle!', 'Sour, half-sour, come and taste!']);
+    L.cry(-30, -3.5, ['Hot corn! Here is your nice hot corn!', 'Two for a penny!']);
+    L.cry(-6, 3.5, ['Fresh carp for Shabbos! Still swimming!', 'Missus, feel how heavy!']);
+    L.cry(15, -3.5, ['Rags! Bottles! Old iron!', 'I buy rags, I buy bottles!']);
+    L.cry(40, 3.5, ['Suspenders! Collar buttons! Cheap!', 'Needles and thread, a penny!']);
+    L.cry(-95, 2.5, ['Brot! Frisches Brot!', 'Fresh bread, still warm!']);
+    L.cry(-123, -18, d2 ? ['Extra! Election tomorrow! Who will be mayor?', 'Read it in the Courier!'] : ['Extra! Extra! Steamer lands a thousand more!', 'Paper, mister? Two cents!']);
+    L.cry(-165, 62, ['Good tea! Good rice!', 'Laundry! Shirts washed and ironed!']);
+    L.cry(9, 17, d2 ? ['Vote for Grant! Tammany takes care of its own!', 'A glass of beer for every voter!'] : ['Lager beer, five cents!', 'Free lunch with every glass!']);
+    if (d2) { L.cry(-46, 3.5, ['Tomorrow we vote! Grant for Mayor!', 'Hewitt insulted the Irish!', 'What has any of them done for Hester Street?']); L.cry(24, -4, ['Meeting tonight! United Hebrew Trades!', 'Ten hours is enough! Join the union!']); }
     // wagons on the Bowery and Canal Street, a horsecar on the Bowery tracks
     this.mover(this.wagon('#5a4630', '#8a7a5a'), [[-131, -100], [-131, 104], [-134, 104], [-134, -100]], 2.6);
     this.mover(this.wagon('#3a4a3a', '#c8b080'), [[-90, 52], [70, 52], [70, 58], [-90, 58]], 2.3);

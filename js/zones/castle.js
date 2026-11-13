@@ -38,8 +38,25 @@ export class CastleZone extends Zone {
     this.yard();
     this.street();
 
+    this.streetLife();
     this.spawn = { x: 0, z: 56, yaw: 0 };
     if (flag('gate_opened')) this.openGate(true);
+  }
+
+  // ------------------------------------------------------------ gulls, pigeons, voices
+  streetLife() {
+    const L = this.life;
+    this.surface = (p) => (Math.hypot(p.x, p.z) < R || (Math.abs(p.x) < 4.5 && p.z > 20)) ? 'wood' : (p.x < -44 && p.z < 12 ? 'grass' : 'stone');
+    L.gulls(4, 48, { n: 8, r: 30, y: 14 }); L.gulls(-70, 40, { n: 5, r: 36, y: 20 });
+    L.pigeons(-58, -6, 10, 3); L.pigeons(30, -44, 8, 2.5);
+    L.smoke([[20, 7.8, 62]], { per: 10, rise: 1.6, size: 4.5, windX: 0.9 });
+    L.drift({ n: 30, where: (p) => Math.hypot(p.x, p.z) > 31 && p.z < 12 });
+    L.cry(1.5, 44, ['Keep moving! Up the pier!', 'Mind the baggage!', 'Have your papers ready!']);
+    L.cry(-14.4, 18.4, ['Bread! Coffee! Sausage!', 'Milk for the little ones!']);
+    L.cry(0, 10.5, ['Next! Name? Where from?', 'How much money do you carry?', 'Who is meeting you?']);
+    L.cry(11, -6, ['Tickets for Chicago! Milwaukee! St. Paul!', 'The emigrant train leaves at six!']);
+    L.cry(-11, -9, ['Change your money here, at the posted rate!', 'Marks, rubles, lire, pounds!']);
+    L.cry(26, -27, ['Cheap board! Clean beds, this way!', 'Carry your bags, mister?', 'Do not trust him. Ask at the desk.']);
   }
 
   // ------------------------------------------------------------ harbor, pier, statue

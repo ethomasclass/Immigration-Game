@@ -108,10 +108,39 @@ export function setAmbienceVolume(v) {
 }
 
 /** Short synthesized sounds: 'shutter', 'flash', 'train', 'page' */
-export function sfx(name) {
+export function sfx(name, opt = {}) {
   const c = ensureCtx(); if (!c) return;
   const t = c.currentTime;
-  const vol = Math.max(0.15, state.settings.amb);
+  const vol = Math.max(0.15, state.settings.amb) * (opt.vol ?? 1);
+  const noise = (type, freq, peak, dur, q = 1, at = t) => {
+    const src = brownNoise(c), f = c.createBiquadFilter(); f.type = type; f.frequency.value = freq; f.Q.value = q;
+    const g = c.createGain(); g.gain.setValueAtTime(peak * vol, at); g.gain.exponentialRampToValueAtTime(0.001, at + dur);
+    src.connect(f); f.connect(g); g.connect(c.destination); src.start(at); src.stop(at + dur + 0.05); return f;
+  };
+  const tone = (type, f0, f1, peak, dur, at = t) => {
+    const o = c.createOscillator(); o.type = type; o.frequency.setValueAtTime(f0, at); if (f1 !== f0) o.frequency.exponentialRampToValueAtTime(f1, at + dur);
+    const g = c.createGain(); g.gain.setValueAtTime(0.0001, at); g.gain.exponentialRampToValueAtTime(peak * vol, at + 0.02); g.gain.exponentialRampToValueAtTime(0.001, at + dur);
+    o.connect(g); g.connect(c.destination); o.start(at); o.stop(at + dur + 0.05);
+  };
+  switch (name) {
+    case 'step': {   // footsteps: boards knock, paving clicks, grass and gravel hush
+      const k = opt.surface || 'stone', j = 0.9 + Math.random() * 0.2;
+      if (k === 'wood') { noise('lowpass', 210 * j, 0.9, 0.11, 2); noise('bandpass', 900 * j, 0.12, 0.04, 3); }
+      else if (k === 'grass') noise('highpass', 2600 * j, 0.22, 0.1);
+      else { noise('bandpass', 1500 * j, 0.3, 0.05, 2.5); noise('lowpass', 300, 0.35, 0.06); }
+      return;
+    }
+    case 'wings': for (let i = 0; i < 9; i++) noise('bandpass', 1400 + Math.random() * 900, 0.5 - i * 0.04, 0.05, 1.5, t + i * 0.07 + Math.random() * 0.02); return;
+    case 'gull': for (let i = 0; i < 3; i++) tone('sawtooth', 1500 - i * 60, 1050, 0.05, 0.22, t + i * 0.3); return;
+    case 'horn': tone('sawtooth', 98, 96, 0.16, 2.2); tone('sawtooth', 147, 145, 0.08, 2.2); return;
+    case 'hoof': for (let i = 0; i < 6; i++) noise('bandpass', 1100 + (i % 2) * 300, 0.3, 0.045, 4, t + i * 0.19 + (i % 2) * 0.05); return;
+    case 'bell': tone('sine', 523, 523, 0.14, 2.4); tone('sine', 1046, 1046, 0.05, 1.6); tone('sine', 1569, 1569, 0.02, 0.9); return;
+    case 'creak': { const f = noise('bandpass', 260, 0.5, 1.1, 9); f.frequency.linearRampToValueAtTime(420, t + 1.0); return; }
+    case 'murmur': for (let i = 0; i < 5; i++) noise('bandpass', 380 + Math.random() * 500, 0.16, 0.28, 3, t + i * 0.22 + Math.random() * 0.1); return;
+    case 'success': [523, 659, 784, 1046].forEach((f, i) => tone('triangle', f, f, 0.16, 0.5, t + i * 0.09)); return;
+    case 'find': [784, 988, 1318].forEach((f, i) => tone('sine', f, f, 0.14, 0.7, t + i * 0.07)); return;
+    case 'print': noise('highpass', 1800, 0.35, 0.5); tone('sine', 880, 880, 0.05, 0.25, t + 0.35); return;
+  }
   if (name === 'shutter' || name === 'page') {
     const src = brownNoise(c);
     const f = c.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = name === 'page' ? 1500 : 2500;
@@ -135,3 +164,20 @@ export function sfx(name) {
 }
 
 export function unlockAudio() { ensureCtx(); }
+
+// Occasional sounds of the place (a gull, a ship's horn, hooves on paving, a church bell).
+const ONESHOTS = {
+  ship: ['creak', 'creak', 'murmur'],
+  castle: ['gull', 'gull', 'horn', 'murmur', 'creak'],
+  les: ['hoof', 'bell', 'murmur', 'hoof'],
+  les2: ['hoof', 'bell', 'murmur', 'hoof'],
+  city: ['hoof', 'hoof', 'bell', 'murmur'],
+  park: ['gull', 'murmur'],
+};
+let oneT = 5;
+export function ambientTick(dt, zone) {
+  oneT -= dt; if (oneT > 0) return;
+  oneT = 6 + Math.random() * 9;
+  const list = ONESHOTS[zone]; if (!list || state.settings.amb <= 0.01) return;
+  sfx(list[Math.floor(Math.random() * list.length)], { vol: 0.45 });
+}
