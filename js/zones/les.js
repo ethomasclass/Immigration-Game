@@ -183,15 +183,15 @@ export class LowerEastSideZone extends Zone {
     this.box(X((hall[1] + LOT) / 2), 0, Z(8), LOT - hall[1], H, 4, '#3a3228');
     // hall
     this.room(X(hall[0]), X(hall[1]), Z(BLD), Z(0), H, PLASTER,
-      [{ side: 's', from: X(hall[0]), to: X(hall[1]) }, { side: 'n', from: X(hall[0]), to: X(hall[1]) }, { side: 'e', from: Z(14.2), to: Z(13.3) }], 0.1);
+      [{ side: 's', from: X(hall[0]), to: X(hall[1]) }, { side: 'n', from: X(hall[0]), to: X(hall[1]) }, { side: 'e', from: Z(14.45), to: Z(13.05) }], 0.1);
     this.floor(X((hall[0] + hall[1]) / 2), Z(BLD / 2), hall[1] - hall[0], BLD, [FLOOR[0], FLOOR[1], { repeat: [1, 8] }], 0.02);
-    for (let i = 0; i < 8; i++) this.box(X(hall[0] + 0.35), i * 0.3, Z(7 + i * 0.3), 0.6, 0.06, 0.3, WOOD, { collide: false }); // stair going up
-    this.box(X(hall[0] + 0.25), 0, Z(8.2), 0.5, 1.0, 2.4, WOOD, { collide: true });
+    for (let i = 0; i < 8; i++) this.box(X(hall[0] + 0.22), i * 0.3, Z(7 + i * 0.3), 0.34, 0.06, 0.3, WOOD, { collide: false }); // stair going up
+    this.box(X(hall[0] + 0.2), 0, Z(8.2), 0.3, 1.0, 2.4, WOOD, { collide: true });   // kept slim so the hall stays easy to walk
     // Moishe's apartment (rear, east of hall): bedroom | kitchen | front room
     const ax0 = X(hall[1]), ax1 = X(LOT);
-    this.room(ax0, ax1, Z(12.6), Z(10), H, PLASTER, [{ side: 'n', from: X(5.2), to: X(6.1) }], 0.1);            // bedroom (no window)
-    this.room(ax0, ax1, Z(15.2), Z(12.6), H, PLASTER, [{ side: 's', from: X(5.2), to: X(6.1) }, { side: 'w', from: Z(14.2), to: Z(13.3) }, { side: 'n', from: X(5.2), to: X(6.1) }], 0.1); // kitchen
-    this.room(ax0, ax1, Z(BLD), Z(15.2), H, PLASTER, [{ side: 's', from: X(5.2), to: X(6.1) }], 0.1);            // front room (yard windows)
+    this.room(ax0, ax1, Z(12.6), Z(10), H, PLASTER, [{ side: 'n', from: X(4.95), to: X(6.35) }], 0.1);            // bedroom (no window)
+    this.room(ax0, ax1, Z(15.2), Z(12.6), H, PLASTER, [{ side: 's', from: X(4.95), to: X(6.35) }, { side: 'w', from: Z(14.45), to: Z(13.05) }, { side: 'n', from: X(4.95), to: X(6.35) }], 0.1); // kitchen
+    this.room(ax0, ax1, Z(BLD), Z(15.2), H, PLASTER, [{ side: 's', from: X(4.95), to: X(6.35) }], 0.1);            // front room (yard windows)
     this.floor((ax0 + ax1) / 2, Z(14), ax1 - ax0, 8, [FLOOR[0], FLOOR[1], { repeat: [2, 5] }], 0.02);
     this.ceiling(X(LOT / 2), Z(BLD / 2), LOT, BLD, ['ceiling_tenement', { type: 'plaster', color: '#5f5444' }], H - 0.01);
     // windows: front room -> yard; bedroom -> air shaft (dark)
@@ -208,7 +208,7 @@ export class LowerEastSideZone extends Zone {
     this.target('sweatshop', X(5.9), 1.0, Z(16.6), 6);
     // kitchen: stove + washtub
     this.range(X(7.1), Z(14.4));
-    const tub = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.3, 0.35, 12), colorMat('#8a8a84')); tub.position.set(X(5.0), 0.18, Z(12.9)); this.scene.add(tub);
+    const tub = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.3, 0.35, 12), colorMat('#8a8a84')); tub.position.set(X(4.75), 0.18, Z(14.85)); this.scene.add(tub);
     this.lamp(X(5.9), 2.4, Z(16.2), 0xffb860, 3.5, 7);
     // bedroom: two chairs pushed together, a straw tick on the floor
     this.box(X(5.9), 0, Z(10.6), 2.2, 0.16, 1.0, ['mattress_straw', { type: 'solid', color: '#8a7a58' }], { collide: false });
@@ -219,7 +219,7 @@ export class LowerEastSideZone extends Zone {
     // Rivka's family at the hall door
     if (!this.day2) {
       // They wait at the street door, then walk in through the hall to Moishe's rooms.
-      const inside = [[X(5.3), Z(13.6)], [X(6.1), Z(13.0)], [X(5.0), Z(12.9)]];
+      const inside = [[X(6.55), Z(13.3)], [X(7.15), Z(12.95)], [X(6.7), Z(13.8)]];   // by the east wall, clear of the three doorways
       const out = [[X(2.6), Z(0) + 2.0], [X(1.6), Z(0) + 2.4], [X(5.6), Z(0) + 2.2]];
       const at = flag('family_inside') ? inside : out;
       this.family = [
@@ -230,9 +230,13 @@ export class LowerEastSideZone extends Zone {
       this.familyPath = (i) => [[X(3.75), Z(0) + 1.2 + i * 0.5], [X(3.75), Z(13.75)], [X(4.9), Z(13.75)], inside[i]];
       this.kesslerPath = [[X(5.6), Z(13.75)], [X(3.75), Z(13.75)], [X(3.75), Z(0) + 1.5], [X(-6), Z(0) + 3.5]];
     } else {
-      this.person('mama', X(5.4), Z(13.9), 0, { talk: 'mama2', photo: null });
-      this.person('shmuel', X(6.0), Z(12.9), 0, { talk: 'shmuel2', photo: null, scale: 1 });
+      this.flatFolk = [this.person('mama', X(6.6), Z(13.25), 0, { talk: 'mama2', photo: null }),
+        this.person('shmuel', X(7.15), Z(13.0), 0, { talk: 'shmuel2', photo: null, scale: 1 })];
     }
+
+    // The flat is two small rooms and a closet of a bedroom: the people in it never block your way.
+    for (const n of [...(this.family || []), ...(this.flatFolk || []), this.kessler].filter(Boolean)) if (n.col) n.col.off = true;
+    for (const n of this.npcs) if (['boarder', 'moishe'].includes(n.id) && n.col) n.col.off = true;
 
     // ---- back yard ----
     const yz = Z(BLD), yz1 = Z(BLD + YARD);
@@ -313,7 +317,7 @@ export class LowerEastSideZone extends Zone {
     // KITCHEN: mantel shelf with Sabbath candlesticks, washboard by the tub, a tin on a nail
     this.box(X(LOT) - 0.15, 1.55, Z(13.6), 0.22, 0.04, 0.9, WOODC, { collide: false });
     for (const dz of [-0.15, 0.15]) { const cs = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.05, 0.24, 8), colorMat('#b8913a')); cs.position.set(X(LOT) - 0.15, 1.69, Z(13.6) + dz); this.scene.add(cs); const cn = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.014, 0.12, 6), colorMat('#f0ead8')); cn.position.set(X(LOT) - 0.15, 1.87, Z(13.6) + dz); this.scene.add(cn); }
-    const wb = this.box(X(5.35), 0, Z(12.75), 0.38, 0.6, 0.03, '#8a7a5a', { collide: false }); wb.rotation.x = -0.2;
+    const wb = this.box(X(4.62), 0, Z(15.08), 0.38, 0.6, 0.03, '#8a7a5a', { collide: false }); wb.rotation.x = -0.2;
     this.box(X(LOT) - 0.12, 1.25, Z(12.9), 0.03, 0.3, 0.24, '#7a7a74', { collide: false });
     // BEDROOM: the steamer trunk they carried from Europe, clothes on a line
     this.box(X(4.85), 0, Z(11.9), 0.75, 0.48, 0.45, ['trunk_steamer', { type: 'planks', color: '#6a4a2a', n: 3 }], { collide: false });
@@ -476,9 +480,17 @@ export class LowerEastSideZone extends Zone {
     this.panel(-108.6, 2.7, 9.56, 1.6, 0.5, ['sign_horsecar_stop', { type: 'sign', title: 'BOWERY CARS · PARK ROW', w: 224, h: 72 }], 0);
     this.horsecarStatic(-112, 16);
     const ex = this.day2
-      ? this.exit(-109.5, 9.5, 'Take the horsecar down the Bowery to Park Row', () => this.ready(), () => { this.game.spend(5, 'horsecar fare'); this.game.goParkRow(); })
+      ? this.exit(-109.5, 9.5, 'Take the horsecar down the Bowery to Park Row', () => this.ready(), () => { this.game.spend(5, 'horsecar fare'); this.game.goParkRow(flag('been_city')); })
       : this.exit(-109.5, 9.5, 'Take the horsecar down the Bowery to the Courier office (finish the story)', () => this.ready(), () => { this.game.spend(5, 'horsecar fare'); this.game.openWrapup('A'); });
     ex.lockedMsg = 'Not yet. Finish your goal (top left) first.';
+    state.flags.been_les = true;
+    if (this.day2) { ex.soft = true; ex.lockedMsg = 'You have not finished on Hester Street.'; }
+    else {
+      // Day 1: you can walk back down to the Battery and Castle Garden whenever you like
+      this.box(-108.6, 0, 96, 0.1, 2.6, 0.1, '#222');
+      this.panel(-108.6, 2.7, 96.06, 2.2, 0.5, ['sign_to_battery', { type: 'sign', title: 'TO THE BATTERY · CASTLE GARDEN', w: 288, h: 56 }], 0);
+      this.exit(-109.5, 97.5, 'Walk back down to Castle Garden', () => true, () => this.game.loadZone('castle', { skipCard: true, spawn: { x: 40, z: -62, yaw: Math.PI } }));
+    }
 
     // street name signs at corners
     for (const [nm, x] of Object.entries(NS)) this.streetSign(nm.toUpperCase() === 'BOWERY' ? 'BOWERY' : nm.toUpperCase() + ' ST', x[1] + 1.2, -6.2);

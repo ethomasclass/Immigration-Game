@@ -65,6 +65,13 @@ export class CityZone extends Zone {
     this.streetLife();
     if (this.night) this.nightScene(); else this.story();
     this.cityLife();
+    state.flags.been_city = true;
+    // Day 2 runs both ways: the Bowery horsecar will take you back to Hester Street at any time
+    if (!this.night) {
+      this.box(-103.2, 0, 38, 0.1, 2.6, 0.1, '#222');
+      this.panel(-103.2, 2.7, 38.06, 2.2, 0.5, ['sign_cars_uptown', { type: 'sign', title: 'BOWERY CARS · HESTER ST', w: 288, h: 56 }], 0);
+      this.exit(-103.2, 39.2, 'Take the horsecar back up to Hester Street', () => true, () => { this.game.spend(5, 'horsecar fare'); this.game.loadZone('les2', { skipCard: true, spawn: { x: -108.6, z: 4.5, yaw: -Math.PI / 2 } }); });
+    }
     if (this.night) { this.skyCity.material.color.set(0x2a3048); }
     this.streetCols = this.colliders;
     this.where = flag('in_park') ? 'park' : 'street';
@@ -375,6 +382,7 @@ export class CityZone extends Zone {
     this.rowSign((s0 + s1) / 2, 3.2, 'NEW TIMES BUILDING · 13 STORIES', 9);
     const [px, pz] = along((s0 + s1) / 2 - 6, PR_W - 2.5);
     this.person('foreman', px, pz, 0);
+    if (!this.night) { const [dx, dz] = along((s0 + s1) / 2 - 10.5, PR_W - 3.4); this.person('hodcarrier', dx, dz, 0, { photo: null }); }   // Dominic, catching his breath between loads
     this.crowd(4, px + 3, pz - 1, 0); this.crowd(2, px - 2.5, pz + 1.5, 0);
     const [tx, tz] = along((s0 + s1) / 2, PR_W + 4);
     this.target('frame', tx, 30, tz, 80);
@@ -608,7 +616,7 @@ export class CityZone extends Zone {
   // ------------------------------------------------------------ people and traffic in motion
   streetLife() {
     for (let i = 0; i < 6; i++) this.walker(i, [[BW - 4 - (i % 2), 200 - i * 20], [BW - 4 - (i % 2), -100 + i * 12]], { speed: 1.1 });          // Broadway sidewalk
-    for (let i = 0; i < 5; i++) this.walker(i + 3, [[-43.7 + (i % 2) * 7.4, 130 - i * 8], [-43.7 + (i % 2) * 7.4, 22 + i * 4]], { speed: 0.9 });  // park walk
+    for (let i = 0; i < 5; i++) this.walker(i + 3, [[-39 - (i % 2) * 3, 130 - i * 8], [-39 - (i % 2) * 3, 82], [-44.2 - (i % 2) * 1.2, 78], [-44.2 - (i % 2) * 1.2, 62], [-39 - (i % 2) * 3, 58], [-39 - (i % 2) * 3, 22 + i * 4]], { speed: 0.9 });  // park walk
     for (let i = 0; i < 4; i++) this.walker(i + 1, [[-58 + i * 6, -45.3], [58 - i * 5, -45.3]], { speed: 1 });                                  // in front of the courthouse
     for (let i = 0; i < 8; i++) this.walker(i + 2, [along(15 + i * 12, PR_W - 4.6 + (i % 2)), along(250 - i * 9, PR_W - 4.6 + (i % 2))], { speed: 1.15 }); // Newspaper Row
     for (let i = 0; i < 3; i++) this.walker(5, [along(150 + i * 3, PR_W - 6), along(120 - i * 5, PR_W - 6.5)], { speed: 2.2, scale: 0.75, id: 'newsboy' }); // newsboys running papers
@@ -709,7 +717,8 @@ export class CityZone extends Zone {
     this.person('keeper', X + 1.6, 56, 0);
     this.person('chana', X + 7.5, 22, 0, { talk: 'chanapark', photo: 'sunday' });
     this.person('girl', X + 5.2, 20.5, 0, { talk: 'girlpark', photo: 'sunday' });
-    [[-2, 40, 0], [2, 30, 3], [-1, 5, 4], [3, -10, 2], [-3, -20, 7], [-16, -14, 5], [-20, -9, 1]].forEach(([dx, dz, n]) => this.crowd(n, X + dx, dz, 0));
+    [[-2, 40, 0], [2, 30, 3], [-1, 5, 4], [3, -10, 2], [-3, -20, 7]].forEach(([dx, dz, n]) => this.crowd(n, X + dx, dz, 0));
+    [[-16.5, -13, 4], [-19.5, -11, 2], [-18, -9.6, 7]].forEach(([dx, dz, n]) => this.crowd(n, X + dx, dz, 0, { y: 0.5 }));   // the band, up on the bandstand
     [[-5, -48, 1], [6, -50, 6], [-12, -60, 2], [9, -62, 3]].forEach(([dx, dz, n]) => this.crowd(n, X + dx, dz, 0, { y: -3.5 }));
     this.floor(X + 45, -5, 8, 140, [PATH[0], PATH[1], { repeat: [2, 35] }], 0.012);
     this.carriage = this.horsecar(X + 45, 40, 0, '#1d1d24');

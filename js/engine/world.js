@@ -346,7 +346,7 @@ export class Zone {
     const npc = { id, group: g, height, talkTree: talk, speed: 1.25 };
     this.npcs.push(npc);
     if (seated) this.box(x - Math.sin(ry) * 0.25, y, z - Math.cos(ry) * 0.25, 0.45, 0.45, 0.45, '#4a3420', { collide: false });
-    if (!y) { npc.col = { minX: x - 0.3, maxX: x + 0.3, minZ: z - 0.3, maxZ: z + 0.3 }; this.colliders.push(npc.col); }
+    if (!y) { npc.col = { minX: x - 0.22, maxX: x + 0.22, minZ: z - 0.22, maxZ: z + 0.22 }; this.colliders.push(npc.col); }   // slim, so people never wall off a doorway or a queue
     if (talk) npc.it = this.interact({ x, y: y + height * 0.8, z, r: 2.4, prompt: prompt || `Talk to ${c.name || id}`, action: () => this.game.talk(npc.talkTree) });
     if (photo) npc.tg = this.target(photo, x, y + height * 0.7, z, 9);
     return npc;
@@ -363,7 +363,7 @@ export class Zone {
     const p = n.group.position;
     if (n.it) { n.it.pos.x = p.x; n.it.pos.z = p.z; }
     if (n.tg) { n.tg.pos.x = p.x; n.tg.pos.z = p.z; }
-    if (n.col) { n.col.minX = p.x - 0.3; n.col.maxX = p.x + 0.3; n.col.minZ = p.z - 0.3; n.col.maxZ = p.z + 0.3; }
+    if (n.col) { n.col.minX = p.x - 0.22; n.col.maxX = p.x + 0.22; n.col.minZ = p.z - 0.22; n.col.maxZ = p.z + 0.22; }
   }
   stepGoto(n, dt) {
     const g = n.goto, p = n.group.position, [tx, tz] = g.pts[g.i];
@@ -487,7 +487,7 @@ export class Zone {
     g.position.set(x, y, z);
     this.scene.add(g);
     this.npcs.push({ id: 'crowd' + i, group: g });
-    if (!y) this.colliders.push({ minX: x - 0.28, maxX: x + 0.28, minZ: z - 0.28, maxZ: z + 0.28 });
+    if (!y) this.colliders.push({ minX: x - 0.2, maxX: x + 0.2, minZ: z - 0.2, maxZ: z + 0.2 });
     return g;
   }
 

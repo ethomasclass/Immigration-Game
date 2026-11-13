@@ -259,7 +259,7 @@ export class CastleZone extends Zone {
     // ---- 1. Medical check just inside the pier door ----
     this.box(-1.5, 0, 22, 0.08, 1.0, 5, '#2a2a2a');
     this.box(1.5, 0, 22, 0.08, 1.0, 5, '#2a2a2a');
-    for (let i = 0; i < 2; i++) this.crowd(i + 2, (i % 2 ? 0.45 : -0.45), 22.6 - i * 1.3, 0);
+    for (let i = 0; i < 2; i++) this.crowd(i + 2, -0.95 + i * 0.12, 22.6 - i * 1.3, 0);   // the queue keeps left, leaving a wide lane in
     this.box(-4.2, 0, 17.6, 2.2, 0.95, 0.8, DESK);
     this.person('doctor', -4.2, 16.6, 0);
     this.sign2(-4.2, 2.5, 18.05, 'MEDICAL OFFICER', 0);
@@ -322,6 +322,7 @@ export class CastleZone extends Zone {
     this.barrier.userData.keep = true;
     this.sign2(d.x - d.nx * 1.6, 3.4, d.z - d.nz * 1.6, 'TO NEW YORK · NACH NEW YORK', Math.atan2(-d.nx, -d.nz));
     this.interact({ x: d.x - d.nx * 2.6, z: d.z - d.nz * 2.6, r: 2.4, prompt: 'Go through the gate', cond: () => this.inspected(), action: () => this.openGate() }).lockedMsg = 'Not yet. Finish your goal (top left) first.';
+    this.interactables[this.interactables.length - 1].soft = true;
   }
 
   // ------------------------------------------------------------ documented fixtures (1871-1880 accounts)
@@ -428,8 +429,12 @@ export class CastleZone extends Zone {
     this.gateBar = this.box(37, 0, -40, 14, 3.9, 0.3, FENCE);
     this.gateBar.userData.keep = true;
     this.gateCol = this.colliders[this.colliders.length - 1];
-    const ex = this.exit(40, -66, 'Walk up to Hester Street', () => flag('gate_done'), () => this.game.loadZone('les'));
-    ex.lockedMsg = 'Help Rivka\'s family decide who to trust first.';
+    const ex = this.exit(40, -66, 'Walk up to Hester Street', () => flag('gate_done'), () => this.game.loadZone('les', { skipCard: flag('been_les') }));
+    ex.lockedMsg = 'Rivka\'s family still has to decide who to trust.'; ex.soft = true;
+    // once they have chosen, the family waits up the street, ready to walk to Hester Street
+    this.awaySpots = [[39.0, -62.6], [40.2, -63.2], [38.2, -63.4]];
+    if (flag('gate_done')) this.gateFamily.forEach((n, i) => { n.group.position.set(this.awaySpots[i][0], 0, this.awaySpots[i][1]); });
+    if (flag('gate_done')) { this.gateTalk.pos.x = this.awaySpots[0][0]; this.gateTalk.pos.z = this.awaySpots[0][1]; }
     this.panel(40, 2.8, -71.9, 2.2, 0.4, ['sign_street_STATE ST', { type: 'sign', title: 'STATE ST', color: '#1d2a3a', ink: '#f0e8d0', w: 192, h: 40 }]);
   }
 
@@ -454,6 +459,10 @@ export class CastleZone extends Zone {
       this.familyWalking = true;
       this.indoorFamily.forEach((n, i) => this.walkTo(n, [[-1.5 + i * 0.8, 14.5], [4.6 - i * 0.4, 13.2], this.deskSpots[i]], i === 0 ? () => { this.familyAtDesk = true; this.game.refreshObjectives(); } : null, 1.5 - i * 0.12));
       this.game.toast('Rivka\'s family is walking to the registration desk. Follow them.');
+    } else if (name === 'gateDone') {
+      // the choice is made: the family sets off up State Street
+      this.gateTalk.hidden = true;
+      this.gateFamily.forEach((n, i) => this.walkTo(n, [[39.4 + i * 0.9, -50 - i], this.awaySpots[i]], i === 0 ? () => { this.gateTalk.pos.x = this.awaySpots[0][0]; this.gateTalk.pos.z = this.awaySpots[0][1]; this.gateTalk.hidden = false; } : null, 1.35));
     } else if (name === 'afterClerk') {
       const d = this.exitDoor;
       this.indoorFamily.forEach((n, i) => this.walkTo(n, [[5.5, 13 - i], [d.x - d.nx * (4.5 + i), d.z - d.nz * (4.5 + i) + (i - 1) * 0.9]], null, 1.3));

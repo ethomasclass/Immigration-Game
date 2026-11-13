@@ -339,9 +339,9 @@ class Game {
     } else go();
   }
 
-  goParkRow() {
+  goParkRow(skipCard = false) {
     state.flags.election_night = false; state.flags.in_park = false; save();
-    this.loadZone('city');
+    this.loadZone('city', { skipCard });
   }
 
   toNight() {
@@ -482,7 +482,16 @@ class Game {
   useFocus() {
     const f = this.focus;
     if (!f) return;
-    if (f.cond && !f.cond()) { this.toast(f.lockedMsg || 'Not yet. Check your objectives.'); return; }
+    if (f.cond && !f.cond()) {
+      // A "soft" exit warns once, then lets you go anyway: places can be visited out of order.
+      const now = performance.now();
+      if (!f.soft || !(f.softAt && now - f.softAt < 9000)) {
+        f.softAt = now;
+        this.toast((f.lockedMsg || 'Not yet. Check your objectives.') + (f.soft ? ` <b>${this.touch?.enabled ? 'Tap' : 'Press E'} again to go anyway.</b> <span class="muted">You can come back.</span>` : ''), f.soft ? 7000 : 4000);
+        return;
+      }
+      f.softAt = 0;
+    }
     if (f.once) f.used = true;
     f.action();
   }

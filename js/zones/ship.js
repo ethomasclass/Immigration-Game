@@ -69,7 +69,7 @@ export class ShipZone extends Zone {
     const rows = [[AFT - 1.2, MID + 2.6], [MID - 0.8, FWD + 1.0]];
     for (const [z0, z1] of rows) for (const sx of [-1, 1]) this.berthRow(sx * (W - BERTH_L / 2), z0, z1);
     // a short cross block in each compartment
-    this.berthRow(-1.9, -8.2, -10.6, true); this.berthRow(1.9, -21, -23.4, true);
+    this.berthRow(-2.5, -8.2, -10.6, true);   /* leaves a clear aisle (1.1 m) beside the benches */ this.berthRow(1.9, -21, -23.4, true);
 
     // ---- trestle tables & benches down the middle, tin pans ----
     for (const tz of [-5.5, -11.8, -18.2, -26]) {

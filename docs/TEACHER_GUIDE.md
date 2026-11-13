@@ -13,6 +13,11 @@ Students play a newspaper photographer in **1888**. They cross the Atlantic in s
 - **People move:** some scenes play out physically. After the doctor, Rivka's family walks to the registration desk; follow them and the scene starts on its own. They also walk into Moishe's tenement.
 - **Purse:** students start with $2.50 in expense money (top center). The telegram for Mr. Novak costs 25 cents, a newspaper 2 cents, a pickle 1 cent, a horsecar or El ride 5 cents. They cannot run out.
 - **Keepsakes:** objects people hand the student (Giuseppe's lemon, a union leaflet, Mr. Novak's letter) collect on the Keepsakes page of the journal. They make good writing prompts.
+- **Going out of order:** students are not locked onto one path.
+  - Inside a chapter every place is open from the start: the tenement and its rooms, the courthouse rotunda, Mr. Lee's shop, the settlement house, Central Park.
+  - On Day 1 they can walk between Castle Garden and Hester Street in both directions. On Day 2 the Bowery horsecar runs both ways between Hester Street and Park Row (5 cents a ride).
+  - Most exits can be taken early. The game warns once ("You have not finished on Hester Street") and a second press goes anyway. They can come back.
+  - Three things stay locked until the work is done, because they end a day: the ship's ladder (the short tutorial), the Day 1 horsecar to the Courier office, and the Editor and the final Courier office door on Day 2.
 - **Street life:** as students walk they overhear street cries ("Pickles! A penny a pickle!"), pigeons scatter, and gulls circle the harbor. These are there to make walking worthwhile; the cries are real sales calls and campaign shouts of the period.
 - **Curiosities:** each chapter hides three or four small period objects (a cork life preserver, a brass baggage check, a Yiddish newspaper). They glint when a student is close; pressing **E** shows a short card. They are optional and are kept on the Keepsakes page of the journal. The goal box shows how many are left in the chapter. There are 13 in all.
 - **Photographs develop:** when a student photographs a subject, the picture appears as a print, then tucks itself into the journal. Finishing a goal shows a "Goal complete" banner.
