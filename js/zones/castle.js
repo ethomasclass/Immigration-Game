@@ -11,7 +11,10 @@ import { Zone } from '../engine/world.js';
 import { colorMat, material } from '../engine/textures.js';
 import { state, flag } from '../state.js';
 
-const R = 28, T = 2.4, RI = R - T, H = 7.5;
+// Enlarged from the true 56 m to 70 m across and raised to 13 m, to match the 1860s-80s engravings of the depot.
+const R = 35, T = 2.4, RI = R - T, H = 13;
+const PZ = R - 28;            // the pier, wharf and harbor-side buildings moved out this far when the fort was enlarged
+const GAL_Y = 5.6, GAL_D = 3.4; // the upper gallery: floor height and depth (shown as before the 1876 fire)
 const SANDSTONE = ['wall_castle_sandstone', { type: 'ashlar', color: '#8a5a44', rows: 6, w: 512, h: 512 }];
 const PAVE = ['pavement_battery', { type: 'stone', color: '#7d776c', rows: 5 }];
 const FLOOR = ['floor_castle', { type: 'planks', color: '#8c7350', n: 10, w: 512, h: 512 }];
@@ -28,7 +31,7 @@ export class CastleZone extends Zone {
   build() {
     this.setSky('#c4c2b4', 260, 2600, '#c9c6b8');
     this.lights({ ambient: 0x9a9080, ambientI: 1.3, sky: 0xe8e4d4, ground: 0x4a4038, hemiI: 1.0, sun: { color: 0xfff0d8, i: 1.4, pos: [-30, 50, 40] } });
-    this.bounds = { minX: -80, maxX: 90, minZ: -72, maxZ: 62 };
+    this.bounds = { minX: -80, maxX: 90, minZ: -72, maxZ: 62 + PZ };
 
     this.skyline('castle', { kind: 'harbor', top: '#a9b4b8', haze: '#c9c6b8', ground: '#2c4a5a' });
     this.harbor();
@@ -40,25 +43,25 @@ export class CastleZone extends Zone {
 
     this.streetLife();
     this.loadBaked();
-    this.spawn = { x: 0, z: 56, yaw: 0 };
+    this.spawn = { x: 0, z: 56 + PZ, yaw: 0 };
     if (flag('gate_opened')) this.openGate(true);
   }
 
   // ------------------------------------------------------------ gulls, pigeons, voices
   streetLife() {
     const L = this.life;
-    this.surface = (p) => (Math.hypot(p.x, p.z) < R || (Math.abs(p.x) < 4.5 && p.z > 20)) ? 'wood' : (p.x < -44 && p.z < 12 ? 'grass' : 'stone');
-    this.curio('check', -8.0, 11.6); this.curio('ticket', 9.4, -4.2); this.curio('flag', 2.6, 58.6);
-    L.gulls(4, 48, { n: 8, r: 30, y: 14 }); L.gulls(-70, 40, { n: 5, r: 36, y: 20 });
+    this.surface = (p) => (Math.hypot(p.x, p.z) < R || (Math.abs(p.x) < 4.5 && p.z > R - 8)) ? 'wood' : (p.x < -44 && p.z < 12 ? 'grass' : 'stone');
+    this.curio('check', -8.0, 11.6 + PZ); this.curio('ticket', 9.4, -4.2); this.curio('flag', 2.6, 58.6 + PZ);
+    L.gulls(4, 48 + PZ, { n: 8, r: 30, y: 14 }); L.gulls(-70, 40, { n: 5, r: 36, y: 20 });
     L.pigeons(-58, -6, 10, 3); L.pigeons(30, -44, 8, 2.5);
-    L.smoke([[20, 7.8, 62]], { per: 10, rise: 1.6, size: 4.5, windX: 0.9 });
-    L.drift({ n: 30, where: (p) => Math.hypot(p.x, p.z) > 31 && p.z < 12 });
-    L.cry(1.5, 44, ['Keep moving! Up the pier!', 'Mind the baggage!', 'Have your papers ready!']);
-    L.cry(-14.4, 18.4, ['Bread! Coffee! Sausage!', 'Milk for the little ones!']);
+    L.smoke([[20, 7.8, 62 + PZ]], { per: 10, rise: 1.6, size: 4.5, windX: 0.9 });
+    L.drift({ n: 30, where: (p) => Math.hypot(p.x, p.z) > R + 3 && p.z < 12 });
+    L.cry(1.5, 44 + PZ, ['Keep moving! Up the pier!', 'Mind the baggage!', 'Have your papers ready!']);
+    L.cry(...pt(5.62, RI - 3.2), ['Bread! Coffee! Sausage!', 'Milk for the little ones!']);
     L.cry(0, 10.5, ['Next! Name? Where from?', 'How much money do you carry?', 'Who is meeting you?']);
     L.cry(11, -6, ['Tickets for Chicago! Milwaukee! St. Paul!', 'The emigrant train leaves at six!']);
     L.cry(-11, -9, ['Change your money here, at the posted rate!', 'Marks, rubles, lire, pounds!']);
-    L.cry(26, -27, ['Cheap board! Clean beds, this way!', 'Carry your bags, mister?', 'Do not trust him. Ask at the desk.']);
+    L.cry(34, -33, ['Cheap board! Clean beds, this way!', 'Carry your bags, mister?', 'Do not trust him. Ask at the desk.']);
   }
 
   // ------------------------------------------------------------ harbor, pier, statue
@@ -70,7 +73,7 @@ export class CastleZone extends Zone {
     this.floor(-62, -14, 36, 52, [GRASS[0], GRASS[1], { repeat: [8, 8] }], 0.01);
     // sea wall railing (gaps where the fort sits)
     // Granite seawall with an iron pipe railing, gas lamps, slat benches (the Battery promenade)
-    for (const [cx, w] of [[-53, 54], [58, 64]]) {
+    for (const [cx, w] of [[-57.5, 45], [62, 56]]) {
       this.box(cx, -0.5, 12.5, w, 0.75, 0.9, ['seawall_granite', { type: 'ashlar', color: '#9a9892', mortar: '#6e6c68', rows: 2, w: 512, h: 128 }, { repeat: [w / 6, 1] }]);
       for (const y of [0.55, 1.0]) this.box(cx, y, 12.3, w, 0.05, 0.05, '#1e1e1e', { collide: false });
       for (let x = cx - w / 2; x <= cx + w / 2; x += 3) this.box(x, 0.25, 12.3, 0.07, 0.8, 0.07, '#1e1e1e', { collide: false });
@@ -78,15 +81,17 @@ export class CastleZone extends Zone {
     for (const x of [-72, -60, -50, 66, 78]) this.bench(x, 9.6, 0);
     for (const x of [-66, -54, 72, 84]) { this.box(x, 0, 10.6, 0.14, 2.9, 0.14, '#23261f'); const l = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.15, 0.5, 4), colorMat('#b8a888')); l.position.set(x, 3.15, 10.6); l.rotation.y = Math.PI / 4; this.scene.add(l); }
     // barge pier on the south (water) side
-    this.floor(0, 43.4, 8, 35.4, [FLOOR[0], FLOOR[1], { repeat: [3, 12] }], 0.02);
-    for (const x of [-4.1, 4.1]) this.box(x, -0.4, 44, 0.25, 1.4, 34, '#3a2a1a');
+    this.floor(0, 43.4 + PZ, 8, 35.4, [FLOOR[0], FLOOR[1], { repeat: [3, 12] }], 0.02);
+    for (const x of [-4.1, 4.1]) this.box(x, -0.4, 44 + PZ, 0.25, 1.4, 34, '#3a2a1a');
     // the covered landing shed: heavy posts and beams with a plank roof (Harper's Weekly, 1880)
-    for (let z = 30; z <= 56; z += 4.33) for (const x of [-3.8, 3.8]) this.box(x, 0, z, 0.32, 4.2, 0.32, '#4a3a2a', { collide: false });
-    for (let z = 30; z <= 56; z += 4.33) this.box(0, 4.2, z, 8.2, 0.34, 0.3, '#4a3a2a', { collide: false });
-    this.shed(-4.4, 4.4, 29, 57.5, 4.5, { open: true, rise: 1.4, roof: ['roof_landing', { type: 'planks', color: '#5a4a3a', n: 10 }] });
-    for (const [x, z] of [[-2.6, 34], [-2.9, 35.2], [2.8, 41], [2.5, 47.5]]) this.hamper(x, z);
-    for (const [x, z, c] of [[-2.4, 37, '#6a4a3a'], [2.7, 44, '#5a6a7a'], [-2.8, 50, '#7a6a4a']]) this.bundle(x, z, c);
-    this.box(0, -0.4, 61.2, 8.4, 1.4, 0.25, '#3a2a1a');
+    for (let z = 30 + PZ; z <= 56 + PZ; z += 4.33) for (const x of [-3.8, 3.8]) this.box(x, 0, z, 0.32, 4.2, 0.32, '#4a3a2a', { collide: false });
+    for (let z = 30 + PZ; z <= 56 + PZ; z += 4.33) this.box(0, 4.2, z, 8.2, 0.34, 0.3, '#4a3a2a', { collide: false });
+    this.shed(-4.4, 4.4, 29 + PZ, 57.5 + PZ, 4.5, { open: true, rise: 1.4, roof: ['roof_landing', { type: 'planks', color: '#5a4a3a', n: 10 }] });
+    for (const [x, z] of [[-2.6, 34], [-2.9, 35.2], [2.8, 41], [2.5, 47.5]]) this.hamper(x, z + PZ);
+    for (const [x, z, c] of [[-2.4, 37, '#6a4a3a'], [2.7, 44, '#5a6a7a'], [-2.8, 50, '#7a6a4a']]) this.bundle(x, z + PZ, c);
+    this.box(0, -0.4, 61.2 + PZ, 8.4, 1.4, 0.25, '#3a2a1a');
+    // the pier reaches back to the fort's water door
+    this.floor(0, (R - 1.4 + 25.7 + PZ) / 2, 8, 25.7 + PZ - (R - 1.4), [FLOOR[0], FLOOR[1], { repeat: [3, 2] }], 0.021);
     // timber wharf around the harbor face of the fort, on either side of the pier
     // (the hospital and customs sheds stand on it; seen from the pier, not walked on)
     const wharf = (x0, x1, zEnd) => {
@@ -108,22 +113,22 @@ export class CastleZone extends Zone {
       this.box(sgn * xo, -0.5, (12 + zEnd) / 2, 0.35, 0.75, zEnd - 12, '#3a2a1a', { collide: false });
       for (let x = xi + 1; x < xo; x += 2.4) this.box(sgn * x, -2.2, zEnd, 0.32, 2.2, 0.32, '#2a2018', { collide: false });
     };
-    wharf(-4.2, -26, 37); wharf(4.2, 26, 30.5);
-    for (let z = 28; z <= 60; z += 4) for (const x of [-4, 4]) this.box(x, -2, z, 0.35, 2.6, 0.35, '#2a2018', { collide: false });
+    wharf(-4.2, -33, 37 + PZ); wharf(4.2, 33, 30.5 + PZ);
+    for (let z = 28 + PZ; z <= 60 + PZ; z += 4) for (const x of [-4, 4]) this.box(x, -2, z, 0.35, 2.6, 0.35, '#2a2018', { collide: false });
     // the barge that brought you from the steamship
     // (black hull, flat deck, low buff deckhouse), and the tug that towed it
-    this.box(9, -0.6, 44, 7, 1.2, 26, '#26221f', { collide: false });
-    this.box(9, 0.6, 44, 6.4, 0.12, 25, ['barge_deck', { type: 'planks', color: '#6a5034', n: 8 }], { collide: false });
+    this.box(9, -0.6, 44 + PZ, 7, 1.2, 26, '#26221f', { collide: false });
+    this.box(9, 0.6, 44 + PZ, 6.4, 0.12, 25, ['barge_deck', { type: 'planks', color: '#6a5034', n: 8 }], { collide: false });
     // the barge's long curved roof
     const hg = new THREE.CylinderGeometry(3.0, 3.0, 18, 16, 1, true, -Math.PI / 2, Math.PI); hg.rotateX(-Math.PI / 2);   // half-barrel lying along z, curve up
     const hood = new THREE.Mesh(hg, material('barge_hood', { type: 'boards', color: '#c8c0aa', n: 14 }, { side: THREE.DoubleSide }));
-    hood.position.set(9, 0.72, 43); hood.scale.set(1, 0.6, 1); this.scene.add(hood);
-    for (const z of [34, 52]) { const e = new THREE.Mesh(new THREE.CircleGeometry(3.0, 16, 0, Math.PI), colorMat('#b8b09a', { side: THREE.DoubleSide })); e.position.set(9, 0.72, z); e.scale.set(1, 0.6, 1); this.scene.add(e); }
-    this.box(20, -0.6, 62, 5, 1.6, 20, '#1e1c1a', { collide: false });
-    this.box(20, 1.0, 60, 3.4, 2.2, 8, '#7a3b2a', { collide: false });
-    this.box(20, 3.2, 57.6, 2.6, 1.6, 2.6, '#8a4a36', { collide: false });
-    const funnel = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.6, 4.6, 10), colorMat('#151515')); funnel.position.set(20, 5.4, 62); this.scene.add(funnel);
-    for (let i = 0; i < 5; i++) this.crowd(i, 8 + (i % 2) * 1.5, 38 + i * 2.6, 0);
+    hood.position.set(9, 0.72, 43 + PZ); hood.scale.set(1, 0.6, 1); this.scene.add(hood);
+    for (const z of [34 + PZ, 52 + PZ]) { const e = new THREE.Mesh(new THREE.CircleGeometry(3.0, 16, 0, Math.PI), colorMat('#b8b09a', { side: THREE.DoubleSide })); e.position.set(9, 0.72, z); e.scale.set(1, 0.6, 1); this.scene.add(e); }
+    this.box(20, -0.6, 62 + PZ, 5, 1.6, 20, '#1e1c1a', { collide: false });
+    this.box(20, 1.0, 60 + PZ, 3.4, 2.2, 8, '#7a3b2a', { collide: false });
+    this.box(20, 3.2, 57.6 + PZ, 2.6, 1.6, 2.6, '#8a4a36', { collide: false });
+    const funnel = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.6, 4.6, 10), colorMat('#151515')); funnel.position.set(20, 5.4, 62 + PZ); this.scene.add(funnel);
+    for (let i = 0; i < 5; i++) this.crowd(i, 8 + (i % 2) * 1.5, 38 + PZ + i * 2.6, 0);
     // your steamship at anchor
     this.steamship(-120, 300);
     // Governors Island with round Castle Williams (red sandstone), to the SE
@@ -139,7 +144,7 @@ export class CastleZone extends Zone {
     const sx = Math.sin(br) * dist, sz = -Math.cos(br) * dist;
     this.statue(sx, sz, 2.2 * dist / 2840);
     this.target('statue', sx, 15, sz, 1400);
-    this.readable('statue', -2, 1.2, 60.4, { prompt: 'Look out at the harbor' });
+    this.readable('statue', -2, 1.2, 60.4 + PZ, { prompt: 'Look out at the harbor' });
   }
 
   steamship(x, z) {
@@ -208,13 +213,13 @@ export class CastleZone extends Zone {
     }
     // low domed roof (post-1876) with a central lantern and flagpole
     // a shallow dome: rim radius R+0.6, rising 4.2 m
-    const rim = R + 0.6, rise = 4.2, Rs = (rim * rim + rise * rise) / (2 * rise), th = Math.asin(rim / Rs);
+    const rim = R + 0.6, rise = 6.0, Rs = (rim * rim + rise * rise) / (2 * rise), th = Math.asin(rim / Rs);
     // the roof is a ring around a raised lantern (drum of arched windows) carried on the column ring
-    const DR = 10, th0 = Math.asin(DR / Rs);
+    const DR = 12.5, th0 = Math.asin(DR / Rs);
     const b1 = this.scene.children.length;
     const roof = new THREE.Mesh(new THREE.SphereGeometry(Rs, 48, 8, 0, Math.PI * 2, th0, th - th0), material('roof_castle', { type: 'planks', color: '#6e6e6a', n: 16 }, { side: THREE.DoubleSide }));
     const roofY = H + 0.2 + rise - Rs; roof.position.y = roofY; this.scene.add(roof);
-    const drumY = roofY + Math.sqrt(Rs * Rs - DR * DR), drumH = 2.8;
+    const drumY = roofY + Math.sqrt(Rs * Rs - DR * DR), drumH = 3.2;
     this.drum = { r: DR, y: drumY };
     const drum = new THREE.Mesh(new THREE.CylinderGeometry(DR, DR, drumH, 36, 1, true), new THREE.MeshBasicMaterial({ map: (() => { const t = material('drum_clerestory', { type: 'clerestory', n: 6, w: 512, h: 128 }).map.clone(); t.repeat.set(4, 1); t.needsUpdate = true; return t; })(), side: THREE.DoubleSide }));
     drum.position.y = drumY + drumH / 2 - 0.05; this.scene.add(drum);
@@ -255,6 +260,22 @@ export class CastleZone extends Zone {
     }
     const ring = new THREE.Mesh(new THREE.TorusGeometry(DR, 0.2, 6, 48), colMat); ring.rotation.x = Math.PI / 2; ring.position.y = cy - 0.05; this.scene.add(ring);
     this.tagBaked(b2);   // columns, capitals, arched braces and ring beam
+    // the upper gallery all round the wall, carried on slender posts (the engravings; it burned in 1876)
+    const b3 = this.scene.children.length, GR = RI - GAL_D;
+    const gg = new THREE.RingGeometry(GR, RI, 72); gg.rotateX(-Math.PI / 2);
+    const gal = new THREE.Mesh(gg, colorMat('#6e5a44', { side: THREE.DoubleSide })); gal.position.y = GAL_Y; this.scene.add(gal);
+    const rail = new THREE.Mesh(new THREE.TorusGeometry(GR, 0.05, 4, 96), colorMat('#d8d2c2')); rail.rotation.x = Math.PI / 2; rail.position.y = GAL_Y + 1.0; this.scene.add(rail);
+    for (let i = 0; i < 40; i++) {
+      const a = (i + 0.5) * Math.PI * 2 / 40;
+      if (a > CH0 - 0.06 && a < CH1 + 0.06) continue;            // open in front of the office block
+      if (Math.abs(a) < 0.1 || Math.abs(a - Math.PI * 2) < 0.1) continue;   // and at the water door
+      const [x, z] = pt(a, GR);
+      this.box(x, 0, z, 0.24, GAL_Y, 0.24, '#d8d2c2', { collide: false });
+      this.colliders.push({ minX: x - 0.18, maxX: x + 0.18, minZ: z - 0.18, maxZ: z + 0.18, see: true });
+    }
+    this.tagBaked(b3);
+    // the posts must stay solid even after the baked model replaces the visible ones
+    for (const o of this.scene.children.slice(b3)) o.userData.baked = true;
     this.lamp(-8, 6, 8, 0xfff0d0, 9, 22); this.lamp(8, 6, -8, 0xfff0d0, 9, 22); this.lamp(0, 7.5, 0, 0xfff4e0, 8, 24);
     // benches around the wall (also used as beds)
     for (let a = 0.35; a < Math.PI * 2 - 0.2; a += 0.16) {
@@ -267,12 +288,12 @@ export class CastleZone extends Zone {
     [[0.6, 1], [0.9, 3], [1.3, 6], [3.4, 2], [3.9, 4], [4.4, 7], [5.0, 0], [5.6, 5]].forEach(([a, n]) => { const [x, z] = pt(a, RI - 1.8); this.crowd(n, x, z, 0); });
 
     // ---- 1. Medical check just inside the pier door ----
-    this.box(-1.5, 0, 22, 0.08, 1.0, 5, '#2a2a2a');
-    this.box(1.5, 0, 22, 0.08, 1.0, 5, '#2a2a2a');
-    for (let i = 0; i < 2; i++) this.crowd(i + 2, -0.95 + i * 0.12, 22.6 - i * 1.3, 0);   // the queue keeps left, leaving a wide lane in
-    this.box(-4.2, 0, 17.6, 2.2, 0.95, 0.8, DESK);
-    this.person('doctor', -4.2, 16.6, 0);
-    this.sign2(-4.2, 2.5, 18.05, 'MEDICAL OFFICER', 0);
+    this.box(-1.5, 0, 22 + PZ, 0.08, 1.0, 5, '#2a2a2a');
+    this.box(1.5, 0, 22 + PZ, 0.08, 1.0, 5, '#2a2a2a');
+    for (let i = 0; i < 2; i++) this.crowd(i + 2, -0.95 + i * 0.12, 22.6 + PZ - i * 1.3, 0);   // the queue keeps left, leaving a wide lane in
+    this.box(-4.2, 0, 17.6 + PZ, 2.2, 0.95, 0.8, DESK);
+    this.person('doctor', -4.2, 16.6 + PZ, 0);
+    this.sign2(-4.2, 2.5, 18.05 + PZ, 'MEDICAL OFFICER', 0);
 
     // ---- 2. Registration: a square of clerks' desks behind wooden railings ----
     const S = 8;
@@ -280,7 +301,7 @@ export class CastleZone extends Zone {
     this.box(S, 0, 0, 0.9, 1.2, 7, DESK); this.box(-S, 0, 0, 0.9, 1.2, 7, DESK);
     // picket railings divide the floor into aisles and pens (1860s-80s engraving)
     this.picket(-3.5, S + 0.45, -6.5, S + 0.45); this.picket(3.5, S + 0.45, 6.5, S + 0.45);
-    this.picket(-1.6, 26.2, -1.6, 19.0); this.picket(1.6, 26.2, 1.6, 20.6);
+    this.picket(-1.6, 26.2 + PZ, -1.6, 19.0 + PZ); this.picket(1.6, 26.2 + PZ, 1.6, 20.6 + PZ);
     this.person('clerk', 2.4, S - 1.2, 0);
     this.crowd(4, -S + 1.3, 0, 0); this.crowd(4, S - 1.3, 1.5, 0); this.crowd(4, 0, -S + 1.3, 0);
     this.sign2(0, 3.2, S + 0.5, 'REGISTRY', 0);
@@ -288,7 +309,7 @@ export class CastleZone extends Zone {
     this.target('clerk', 2.4, 1.4, S, 8);
     // Rivka's family starts in the doctor's line, then WALKS to the clerk, then toward the exit.
     this.deskSpots = [[0.5, S + 1.9], [1.4, S + 2.5], [-0.4, S + 2.4]];
-    this.lineSpots = [[0.5, 19.2], [-0.5, 18.2], [0.4, 17.4]];
+    this.lineSpots = [[0.5, 19.2 + PZ], [-0.5, 18.2 + PZ], [0.4, 17.4 + PZ]];
     const at = flag('medical') ? this.deskSpots : this.lineSpots;
     this.indoorFamily = [
       this.person('rivka', at[0][0], at[0][1], 0, { talk: 'rivka_cg' }),
@@ -358,27 +379,33 @@ export class CastleZone extends Zone {
     const [bx, bz] = desk(5.62, RI - 2.2, 3, 'BREAD · MILK · COFFEE');
     for (let i = 0; i < 4; i++) { const l = new THREE.Mesh(new THREE.SphereGeometry(0.16, 8, 5), colorMat('#b98a4a')); l.scale.set(1.5, 0.7, 1); l.position.set(bx - 0.9 + i * 0.6, 1.14, bz); this.scene.add(l); }
     this.crowd(1, bx - Math.sin(5.62) * 1.5, bz - Math.cos(5.62) * 1.5, 0);
-    // two-story office block of the Commissioners of Emigration, with its outside stair (engraving)
-    const oa = 3.62, [ocx, ocz] = pt(oa, RI - 2.0), ux = Math.cos(oa), uz = -Math.sin(oa);   // u = along the block
-    const ob = new THREE.Mesh(new THREE.BoxGeometry(10, 6.4, 3.2), [colorMat('#cfc6b0'), colorMat('#cfc6b0'), colorMat('#5e5e5c'), colorMat('#cfc6b0'),
-      material('facade_cg_office', { type: 'facade', color: '#d6cdb6', floors: 2, bays: 5, storeFrac: 0.42, cornice: '#6a6a64', stone: '#a89c84', lit: 0.35, civic: true, w: 384, h: 256 }), colorMat('#cfc6b0')]);
-    ob.position.set(ocx, 3.2, ocz); ob.rotation.y = oa + Math.PI; this.scene.add(ob);
-    const fx = ocx - Math.sin(oa) * 1.62, fz = ocz - Math.cos(oa) * 1.62;
-    const osign = this.panel(fx, 6.0, fz, 8.6, 0.7, ['sign_cg_commissioners', { type: 'sign', title: 'OFFICE OF COMMISSIONERS OF EMIGRATION', color: '#f0ead8', ink: '#1e1610', w: 512, h: 48 }], oa + Math.PI);
-    for (let i = 0; i < 9; i++) this.box(fx + ux * (-4.6 + i * 0.36) - Math.sin(oa) * 0.6, i * 0.36, fz + uz * (-4.6 + i * 0.36) - Math.cos(oa) * 0.6, 0.4, 0.06, 1.1, '#2a2420', { collide: false });
-    this.blockLine(ocx + ux * 5 - Math.sin(oa) * 2.3, ocz + uz * 5 - Math.cos(oa) * 2.3, ocx - ux * 5 - Math.sin(oa) * 2.3, ocz - uz * 5 - Math.cos(oa) * 2.3);
+    // three-storey office block of the Commissioners of Emigration; its long outside stair climbs to the gallery (engravings)
+    const oa = 3.62, OD = 4, OW = 16, OH = 9, [ocx, ocz] = pt(oa, RI - OD / 2 - 0.2), ux = Math.cos(oa), uz = -Math.sin(oa);   // u = along the block
+    const ob = new THREE.Mesh(new THREE.BoxGeometry(OW, OH, OD), [colorMat('#cfc6b0'), colorMat('#cfc6b0'), colorMat('#5e5e5c'), colorMat('#cfc6b0'),
+      material('facade_cg_office3', { type: 'facade', color: '#d6cdb6', floors: 3, bays: 7, storeFrac: 0.3, cornice: '#6a6a64', stone: '#a89c84', lit: 0.35, civic: true, w: 448, h: 256 }), colorMat('#cfc6b0')]);
+    ob.position.set(ocx, OH / 2, ocz); ob.rotation.y = oa + Math.PI; this.scene.add(ob);
+    const off = OD / 2 + 0.02, fx = ocx - Math.sin(oa) * off, fz = ocz - Math.cos(oa) * off;
+    this.panel(fx, OH - 1.0, fz, 12, 0.8, ['sign_cg_commissioners', { type: 'sign', title: 'OFFICE OF COMMISSIONERS OF EMIGRATION', color: '#f0ead8', ink: '#1e1610', w: 640, h: 48 }], oa + Math.PI);
+    this.panel(fx, OH - 1.9, fz, 9, 0.6, ['sign_cg_agent', { type: 'sign', title: 'GENERAL AGENT & SUPERINTENDENT', color: '#f0ead8', ink: '#1e1610', w: 512, h: 40 }], oa + Math.PI);
+    // the stair: 16 treads up the face of the building to gallery level, with a sloping rail
+    const steps = 16, rise = GAL_Y / steps, run = 0.42, out = 0.75;
+    for (let k = 0; k < steps; k++) { const t = -OW / 2 + 0.6 + k * run; this.box(fx + ux * t - Math.sin(oa) * out, k * rise, fz + uz * t - Math.cos(oa) * out, run + 0.02, rise, 1.2, '#4a3a2c', { collide: false }); }
+    const sl = steps * run, sa = Math.atan2(GAL_Y, sl), sm = -OW / 2 + 0.6 + sl / 2;
+    const srail = this.box(fx + ux * sm - Math.sin(oa) * (out + 0.6), GAL_Y / 2 + 0.95, fz + uz * sm - Math.cos(oa) * (out + 0.6), Math.hypot(sl, GAL_Y), 0.06, 0.06, '#2a2420', { collide: false });
+    srail.rotation.set(0, oa + Math.PI, 0); srail.rotateZ(-sa);
+    this.blockLine(ocx + ux * OW / 2 - Math.sin(oa) * (off + 1.6), ocz + uz * OW / 2 - Math.cos(oa) * (off + 1.6), ocx - ux * OW / 2 - Math.sin(oa) * (off + 1.6), ocz - uz * OW / 2 - Math.cos(oa) * (off + 1.6));
     // pot-belly stoves and heaps of baggage: bundles, beds, and baskets
     this.stove(-11, 5.5); this.stove(11, -5.5);
     for (const [x, z] of [[-9, 13], [-10.2, 12.2], [12, 12.5], [-12, -12], [13.4, 11.6]]) this.hamper(x, z);
     for (const [x, z, c] of [[-9.6, 14.1, '#7a5a6a'], [11.2, 13.6, '#5a6a7a'], [-13.2, -11.2, '#8a7a5a'], [-11, -13, '#6a4a3a'], [14.6, 12.6, '#7a6a4a']]) this.bundle(x, z, c);
     // outside: the hospital shed (right of the water entrance) and the customs shed with baggage scales
-    this.shed(-21, -11.5, 29.5, 35, 3.4, { rise: 1.3 });
-    this.panel(-11.43, 2.5, 32.25, 3.6, 0.5, ['sign_cg_HOSPITAL', { type: 'sign', title: 'HOSPITAL', w: 192, h: 40 }], Math.PI / 2);
-    this.shed(-10.2, -6.2, 29, 34, 3, { rise: 1.1 });
-    this.panel(-6.13, 2.3, 31.5, 3.2, 0.5, ['sign_cg_CUSTOMS', { type: 'sign', title: 'CUSTOMS', w: 192, h: 40 }], Math.PI / 2);
-    this.box(-5.2, 0, 28.6, 1.1, 0.12, 1.1, '#3a3a3a'); this.box(-5.7, 0.12, 28.6, 0.08, 1.5, 0.08, '#3a3a3a', { collide: false }); this.box(-5.4, 1.5, 28.6, 0.7, 0.06, 0.06, '#b8913a', { collide: false });
-    for (const [x, z] of [[-3.2, 30], [-3.4, 31.2]]) this.hamper(x, z);
-    this.barrel(5.2, 27.5); this.barrel(5.9, 28.1); this.crate(5.6, 29.3, 0.8);
+    this.shed(-21, -11.5, 29.5 + PZ, 35 + PZ, 3.4, { rise: 1.3 });
+    this.panel(-11.43, 2.5, 32.25 + PZ, 3.6, 0.5, ['sign_cg_HOSPITAL', { type: 'sign', title: 'HOSPITAL', w: 192, h: 40 }], Math.PI / 2);
+    this.shed(-10.2, -6.2, 29 + PZ, 34 + PZ, 3, { rise: 1.1 });
+    this.panel(-6.13, 2.3, 31.5 + PZ, 3.2, 0.5, ['sign_cg_CUSTOMS', { type: 'sign', title: 'CUSTOMS', w: 192, h: 40 }], Math.PI / 2);
+    this.box(-5.2, 0, 28.6 + PZ, 1.1, 0.12, 1.1, '#3a3a3a'); this.box(-5.7, 0.12, 28.6 + PZ, 0.08, 1.5, 0.08, '#3a3a3a', { collide: false }); this.box(-5.4, 1.5, 28.6 + PZ, 0.7, 0.06, 0.06, '#b8913a', { collide: false });
+    for (const [x, z] of [[-3.2, 30], [-3.4, 31.2]]) this.hamper(x, z + PZ);
+    this.barrel(5.2, 27.5 + PZ); this.barrel(5.9, 28.1 + PZ); this.crate(5.6, 29.3 + PZ, 0.8);
   }
 
   sign2(x, y, z, text, ry) {
@@ -393,25 +420,25 @@ export class CastleZone extends Zone {
   // ------------------------------------------------------------ depot yard (inside the fence)
   yard() {
     this.box(-45, 0, -14, 0.3, 3.9, 52, FENCE);
-    this.box(60, 0, -14, 0.3, 3.9, 52, FENCE);
+    this.box(68, 0, -14, 0.3, 3.9, 52, FENCE);
     this.box(-7.5, 0, -40, 75, 3.9, 0.3, FENCE);
-    this.box(52, 0, -40, 16, 3.9, 0.3, FENCE);
+    this.box(56, 0, -40, 24, 3.9, 0.3, FENCE);
     // Labor Exchange (80 x 50 ft, brown wood, raised skylight)
-    this.shed(26, 50, -23.5, -8.5, 5, { rise: 2.2 });
-    this.box(38, 7.0, -16, 14, 1.2, 2.4, ['drum_clerestory', {}], { collide: false });   // raised skylight on the ridge
-    this.shed(31, 45, -17.2, -14.8, 8.2, { open: true, rise: 0.8 });
-    this.panel(38, 3.8, -8.45, 9, 0.8, ['sign_labor_exchange', { type: 'sign', title: 'LABOR EXCHANGE · ARBEITS-NACHWEIS', w: 448, h: 48 }]);
+    this.shed(40, 64, -23.5, -8.5, 5, { rise: 2.2 });
+    this.box(52, 7.0, -16, 14, 1.2, 2.4, ['drum_clerestory', {}], { collide: false });   // raised skylight on the ridge
+    this.shed(45, 59, -17.2, -14.8, 8.2, { open: true, rise: 0.8 });
+    this.panel(52, 3.8, -8.45, 9, 0.8, ['sign_labor_exchange', { type: 'sign', title: 'LABOR EXCHANGE · ARBEITS-NACHWEIS', w: 448, h: 48 }]);
     // baggage building
-    this.shed(-38, -18, -34, -22, 4.5, { rise: 2.0 });
+    this.shed(-44.4, -26, -39.6, -30, 4.5, { rise: 2.0 });
     this.shed(-44, -36, -20, -10, 3.8, { rise: 1.5 });
-    this.shed(12, 24, -37, -30, 3.6, { rise: 1.4 });
-    this.panel(-28, 3.4, -21.95, 7, 0.7, ['sign_baggage', { type: 'sign', title: 'BAGGAGE · GEPÄCK', w: 320, h: 48 }]);
-    for (let i = 0; i < 6; i++) this.box(-34 + i * 2.4, 0, -19.5, 1.0, 0.6, 0.6, ['trunk', { type: 'planks', color: '#6a4426', n: 3 }]);
+    this.shed(4, 16, -39.6, -36, 3.6, { rise: 1.4 });
+    this.panel(-35, 3.4, -29.95, 7, 0.7, ['sign_baggage', { type: 'sign', title: 'BAGGAGE · GEPÄCK', w: 320, h: 48 }]);
+    for (let i = 0; i < 6; i++) this.box(-43 + i * 2.4, 0, -27.6, 1.0, 0.6, 0.6, ['trunk', { type: 'planks', color: '#6a4426', n: 3 }]);
     for (const [x, z] of [[-55, -20], [-62, 0], [-70, -30], [-52, 4], [70, -10], [76, -28], [-76, -14], [-64, -34], [-58, -8], [82, -2], [68, -32], [-74, 4], [80, 4]]) this.tree(x, z, 2.2);
     this.pavilion(-66, -16); this.pavilion(-52, -32, 2.6);
     const walk = (cx, cz, r, a0, a1) => { const g = new THREE.RingGeometry(r - 1.3, r + 1.3, 32, 1, a0, a1 - a0); g.rotateX(-Math.PI / 2); const m = new THREE.Mesh(g, material('path_gravel', { type: 'plaster', color: '#a8987a' })); m.position.set(cx, 0.015, cz); this.scene.add(m); };
     walk(-62, -14, 14, 0, Math.PI * 2); walk(-38, 30, 46, Math.PI * 1.02, Math.PI * 1.32);
-    this.crowd(6, 20, -24, 0); this.crowd(1, 24, -30, 0); this.crowd(3, 8, -34, 0);
+    this.crowd(6, 30, -30, 0); this.crowd(1, 26, -34, 0); this.crowd(3, -4, -38, 0);
   }
 
   // ------------------------------------------------------------ outside the gate: State Street
@@ -492,7 +519,7 @@ export class CastleZone extends Zone {
   onAction(name) {
     if (name === 'afterDoctor' && !this.familyAtDesk && !this.familyWalking) {
       this.familyWalking = true;
-      this.indoorFamily.forEach((n, i) => this.walkTo(n, [[-1.5 + i * 0.8, 14.5], [4.6 - i * 0.4, 13.2], this.deskSpots[i]], i === 0 ? () => { this.familyAtDesk = true; this.game.refreshObjectives(); } : null, 1.5 - i * 0.12));
+      this.indoorFamily.forEach((n, i) => this.walkTo(n, [[-1.5 + i * 0.8, 14.5 + PZ], [4.6 - i * 0.4, 13.2], this.deskSpots[i]], i === 0 ? () => { this.familyAtDesk = true; this.game.refreshObjectives(); } : null, 1.5 - i * 0.12));
       this.game.toast('Rivka\'s family is walking to the registration desk. Follow them.');
     } else if (name === 'gateDone') {
       // the choice is made: the family sets off up State Street
@@ -507,12 +534,12 @@ export class CastleZone extends Zone {
 
   map() {
     return {
-      bounds: { minX: -80, maxX: 90, minZ: -72, maxZ: 62 },
-      streets: [{ x0: -80, x1: 90, z0: -72, z1: -40, name: 'State St' }, { x0: -45, x1: 60, z0: -40, z1: 12, name: 'Depot yard' }, { x0: -4, x1: 4, z0: 12, z1: 62, name: 'Pier' }],
+      bounds: { minX: -80, maxX: 90, minZ: -72, maxZ: 62 + PZ },
+      streets: [{ x0: -80, x1: 90, z0: -72, z1: -40, name: 'State St' }, { x0: -45, x1: 68, z0: -40, z1: 12, name: 'Depot yard' }, { x0: -4, x1: 4, z0: 12, z1: 62 + PZ, name: 'Pier' }],
       parks: [{ x0: -80, x1: -45, z0: -40, z1: 12 }],
       pois: [
-        { x: 0, z: 0, label: 'Castle Garden rotunda' }, { x: -4, z: 17, label: 'Doctor' }, { x: 2, z: 8, label: 'Registration' },
-        { x: 0, z: 58, label: 'Barge pier' }, { x: 38, z: -16, label: 'Labor Exchange' }, { x: 40, z: -40, label: 'Gate' },
+        { x: 0, z: 0, label: 'Castle Garden rotunda' }, { x: -4, z: 17 + PZ, label: 'Doctor' }, { x: 2, z: 8, label: 'Registration' },
+        { x: 0, z: 58 + PZ, label: 'Barge pier' }, { x: 52, z: -16, label: 'Labor Exchange' }, { x: 40, z: -40, label: 'Gate' },
         { x: 34, z: -46, label: 'Runners' }, { x: -60, z: 56, label: 'Statue (SW)' },
       ],
     };
@@ -524,15 +551,15 @@ export class CastleZone extends Zone {
     const talked = ['talked_runner', 'talked_changer', 'talked_agent'].filter(flag).length;
     const d = this.exitDoor;
     return [
-      { text: 'Walk up the pier into Castle Garden and see the doctor', done: flag('medical'), at: [-4.2, 16.6] },
+      { text: 'Walk up the pier into Castle Garden and see the doctor', done: flag('medical'), at: [-4.2, 16.6 + PZ] },
       { text: 'Follow Rivka\'s family to the registration desk and watch', done: flag('registered'), at: [2.0, 10.6] },
-      { text: 'Find Mr. Novak from the ship. He is being held on a bench.', done: flag('novak_decided'), at: [Math.sin(4.75) * 23, Math.cos(4.75) * 23] },
+      { text: 'Find Mr. Novak from the ship. He is being held on a bench.', done: flag('novak_decided'), at: pt(4.75, RI - 2.6) },
       { text: 'Go through the gate marked "To New York"', done: flag('gate_opened'), at: [d.x, d.z] },
       { text: 'Outside the fence, hear what a "helper" is offering', done: flag('talked_runner') || flag('talked_changer'), at: [34, -46] },
       { text: 'Talk to Rivka: help her family decide who to trust', done: flag('gate_done'), at: [40.3, -43.6] },
       { text: 'Walk up to Hester Street', done: false, at: [40, -66] },
-      { text: 'From the pier, photograph the Statue of Liberty (look southwest)', done: state.photos.some(p => p.subject === 'statue'), at: [0, 58], optional: true },
-      { text: 'Read the newspaper on the bench', done: flag('read_newspaper'), at: [Math.sin(4.62) * 24.6, Math.cos(4.62) * 24.6], optional: true },
+      { text: 'From the pier, photograph the Statue of Liberty (look southwest)', done: state.photos.some(p => p.subject === 'statue'), at: [0, 58 + PZ], optional: true },
+      { text: 'Read the newspaper on the bench', done: flag('read_newspaper'), at: pt(4.62, RI - 1.0), optional: true },
       { text: 'Ask Miss Carver at the information desk for advice', done: flag('talked_agent'), at: [7.3, -15.6], optional: true },
       { text: `Hear all three offers of help (${talked}/3)`, done: talked >= 3, optional: true },
     ];

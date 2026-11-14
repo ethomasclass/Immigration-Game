@@ -6,7 +6,8 @@ Castle Garden rotunda, modelled and light-baked in Blender for the game.
   preview : renders a still from inside (to check the look quickly)
   bake    : bakes light and shadow into textures and exports castle_interior.glb
 
-Matches js/zones/castle.js: R=28 (outer), RI=25.6 (inner face), H=7.5, lantern ring DR=10.
+Matches js/zones/castle.js: R=35 (outer), RI=32.6 (inner face), H=13, lantern ring DR=12.5,
+upper gallery at 5.6 m, 3.4 m deep. Modelled on the 1860s-80s engravings of the depot interior.
 Blender is Z-up; the game is Y-up. Game point (x, y, z) = Blender (x, -z, y).
 Requires the `bpy` package (Blender as a Python module).
 """
@@ -17,16 +18,17 @@ MODE = sys.argv[1] if len(sys.argv) > 1 else 'preview'
 OUT = os.path.abspath(sys.argv[2] if len(sys.argv) > 2 else '.')
 QUICK = os.environ.get('QUICK') == '1'
 
-R, T = 28.0, 2.4
-RI, H = R - T, 7.5
+R, T = 35.0, 2.4
+RI, H = R - T, 13.0
+GAL_Y, GAL_D = 5.6, 3.4
 CH0, CH1 = math.pi * 0.625, math.pi * 0.875
-DR = 10.0
-rim, rise = R + 0.6, 4.2
+DR = 12.5
+rim, rise = R + 0.6, 6.0
 Rs = (rim * rim + rise * rise) / (2 * rise)
 th, th0 = math.asin(rim / Rs), math.asin(DR / Rs)
 roofY = H + 0.2 + rise - Rs
 drumY = roofY + math.sqrt(Rs * Rs - DR * DR)
-drumH = 2.8
+drumH = 3.2
 
 def G(x, y, z):            # game -> blender
     return Vector((x, -z, y))
@@ -123,7 +125,7 @@ def srgb(h):
     return tuple(((c + 0.055) / 1.055) ** 2.4 if c > 0.04045 else c / 12.92 for c in v)
 
 M_WALL = mat_brick('wall', srgb('#9a7e66'), srgb('#7f6650'), srgb('#5e4c3c'), 1.1, 0.42, 'cyl', RI, 0.025, 0.1)
-M_FLOOR = mat_brick('floor', srgb('#94785a'), srgb('#7d6246'), srgb('#4a3826'), 3.2, 0.22, 'flat', mortar_size=0.008, bias=0.2, rough=0.7)
+M_FLOOR = mat_brick('floor', srgb('#b49a78'), srgb('#a08462'), srgb('#6a5440'), 3.2, 0.22, 'flat', mortar_size=0.008, bias=0.2, rough=0.7)
 M_DOME = mat_brick('dome', srgb('#7a6a58'), srgb('#6a5a48'), srgb('#3a2e24'), 3.0, 0.24, 'radial', mortar_size=0.01, rough=0.85)
 M_PAINT = mat_flat('paint', srgb('#ddd6c4'), 0.6)
 M_PLASTER = mat_flat('plaster', srgb('#e8dfc8'), 0.9)
@@ -150,13 +152,63 @@ for k in range(10):
 win_angles = [a for a in [0.25 + i * 0.28 for i in range(23)] if not (CH0 - 0.05 < a < CH1 + 0.05) and a < 2 * math.pi - 0.1]
 for a in win_angles:
     x, z = pt(a, RI + 0.7)
-    cut.append(box('win', G(x, 3.6, z), (1.1, 4.0, 1.5), rot_z=a))
+    cut.append(box('win', G(x, 3.0, z), (1.1, 4.0, 1.5), rot_z=a))
+# upper arcade: tall round-headed windows all round, above the gallery
+arc_angles = [a for a in [(i + 0.5) * 2 * math.pi / 44 for i in range(44)] if not (CH0 - 0.05 < a < CH1 + 0.05)]
+for a in arc_angles:
+    x, z = pt(a, RI + 0.7)
+    cut.append(box('arc', G(x, GAL_Y + 2.7, z), (1.7, 4.0, 3.4), rot_z=a))
+    c = cone('arch_top', 0.85, 0.85, 4.0, G(x, GAL_Y + 4.4, z), seg=14); c.rotation_euler = (math.pi / 2, 0, a)
+    bpy.context.view_layer.update(); c.data.transform(c.matrix_world); c.matrix_world = Matrix.Identity(4)
+    cut.append(c)
 apply_bool(wall, cut)
 wall.data.materials.append(M_WALL); objs.append(wall)
 # glass at the back of each gun port, so the openings glow
 for a in win_angles:
     x, z = pt(a, RI + 1.35)
-    g = box('pane', G(x, 3.6, z), (1.1, 0.04, 1.5), rot_z=a); g.data.materials.append(M_GLASS); objs.append(g)
+    g = box('pane', G(x, 3.0, z), (1.1, 0.04, 1.5), rot_z=a); g.data.materials.append(M_GLASS); objs.append(g)
+for a in arc_angles:
+    x, z = pt(a, RI + 1.35)
+    g = box('pane', G(x, GAL_Y + 3.0, z), (1.7, 0.04, 4.6), rot_z=a); g.data.materials.append(M_GLASS); objs.append(g)
+
+# ---- the upper gallery: plank floor slab, posts, a railing with balusters and small arched brackets
+GR = RI - GAL_D
+gal = ring_solid('gallery', GR, RI + 0.05, GAL_Y - 0.3, GAL_Y, seg=144); gal.data.materials.append(M_DOME); objs.append(gal)
+gparts = []
+def post_ok(a): return not (CH0 - 0.06 < a < CH1 + 0.06) and not (abs(a) < 0.1 or abs(a - 2 * math.pi) < 0.1)
+posts = [(i + 0.5) * 2 * math.pi / 40 for i in range(40)]
+for a in posts:
+    if not post_ok(a): continue
+    x, z = pt(a, GR + 0.15)
+    gparts.append(cone('gpost', 0.13, 0.11, GAL_Y - 0.3, G(x, (GAL_Y - 0.3) / 2, z), seg=10))
+    gparts.append(cone('gcap', 0.11, 0.3, 0.45, G(x, GAL_Y - 0.52, z), seg=10))
+def tube(name, pts, r):
+    cu = bpy.data.curves.new(name, 'CURVE'); cu.dimensions = '3D'; cu.bevel_depth = r; cu.bevel_resolution = 1
+    sp = cu.splines.new('POLY'); sp.points.add(len(pts) - 1)
+    for k, v in enumerate(pts): sp.points[k].co = (*v, 1)
+    ob = bpy.data.objects.new(name, cu); col.objects.link(ob)
+    dg = bpy.context.evaluated_depsgraph_get(); me = bpy.data.meshes.new_from_object(ob.evaluated_get(dg)); bpy.data.objects.remove(ob)
+    o2 = bpy.data.objects.new(name + 'm', me); col.objects.link(o2); return o2
+for a0 in posts:                      # shallow arched bracket under the slab between posts
+    a1 = a0 + 2 * math.pi / 40
+    if not (post_ok(a0) and post_ok(a1)): continue
+    pts = []
+    for k in range(9):
+        t = k / 8; a = a0 + (a1 - a0) * t; x, z = pt(a, GR + 0.15)
+        pts.append(G(x, GAL_Y - 0.35 - 0.55 * (1 - math.sin(math.pi * t)), z))
+    gparts.append(tube('gbr', pts, 0.06))
+rail_pts = [G(*((lambda q: (q[0], GAL_Y + 1.0, q[1]))(pt(2 * math.pi * k / 180, GR + 0.1)))) for k in range(181)]
+gparts.append(tube('grail', rail_pts, 0.05))
+for k in range(0, 360):
+    a = 2 * math.pi * k / 360
+    if not post_ok(a) and not (CH0 - 0.06 < a < CH1 + 0.06): continue
+    x, z = pt(a, GR + 0.1)
+    gparts.append(box('bal', G(x, GAL_Y + 0.5, z), (0.035, 0.035, 1.0)))
+for p in gparts: p.data.materials.clear(); p.data.materials.append(M_PAINT)
+bpy.ops.object.select_all(action='DESELECT')
+for p in gparts: p.select_set(True)
+bpy.context.view_layer.objects.active = gparts[0]; bpy.ops.object.join()
+gal_iron = bpy.context.view_layer.objects.active; gal_iron.name = 'gallery_iron'; objs.append(gal_iron)
 
 # low domed roof: an annulus of a sphere, with thickness so both sides bake
 bm = bmesh.new()
@@ -175,6 +227,22 @@ dome = new_obj('dome', bm)
 sol = dome.modifiers.new('s', 'SOLIDIFY'); sol.thickness = 0.18
 dg = bpy.context.evaluated_depsgraph_get(); me = bpy.data.meshes.new_from_object(dome.evaluated_get(dg)); dome.modifiers.clear(); dome.data = me
 dome.data.materials.append(M_DOME); objs.append(dome)
+ribs = []
+for i in range(36):                     # timber ribs under the roof, radiating from the lantern
+    a = 2 * math.pi * i / 36; pts = []
+    for j in range(12):
+        t_ = th0 + (th - th0) * j / 11; r, zz = (Rs - 0.12) * math.sin(t_), roofY + (Rs - 0.12) * math.cos(t_)
+        pts.append(Vector((math.cos(a) * r, math.sin(a) * r, zz)))
+    cu = bpy.data.curves.new('drib', 'CURVE'); cu.dimensions = '3D'; cu.bevel_depth = 0.11; cu.bevel_resolution = 1
+    sp = cu.splines.new('POLY'); sp.points.add(11)
+    for k, v in enumerate(pts): sp.points[k].co = (*v, 1)
+    ob = bpy.data.objects.new('drib', cu); col.objects.link(ob)
+    dg = bpy.context.evaluated_depsgraph_get(); me = bpy.data.meshes.new_from_object(ob.evaluated_get(dg)); bpy.data.objects.remove(ob)
+    o2 = bpy.data.objects.new('dribm', me); col.objects.link(o2); o2.data.materials.append(M_PAINT); ribs.append(o2)
+bpy.ops.object.select_all(action='DESELECT')
+for p in ribs: p.select_set(True)
+bpy.context.view_layer.objects.active = ribs[0]; bpy.ops.object.join()
+dribs = bpy.context.view_layer.objects.active; dribs.name = 'dome_ribs'; objs.append(dribs)
 
 # clerestory drum: a ring with tall arched windows, open to the sky so light pours down
 drum = ring_solid('drum', DR - 0.12, DR + 0.12, drumY - 0.05, drumY + drumH, seg=96)
@@ -200,8 +268,20 @@ cy = drumY
 parts = []
 for i in range(12):
     a = math.pi / 12 + i * math.pi * 2 / 12; x, z = pt(a, DR)
-    parts.append(cone('shaft', 0.22, 0.17, cy - 1.4, G(x, (cy - 1.4) / 2, z), seg=12))
-    parts.append(cone('cap', 0.2, 0.78, 1.4, G(x, cy - 0.7, z), seg=12, cap=True))
+    parts.append(cone('shaft', 0.26, 0.2, cy - 3.0, G(x, (cy - 3.0) / 2, z), seg=12))
+    parts.append(cone('collar', 0.26, 0.26, 0.3, G(x, cy - 3.0, z), seg=12))
+    for r_ in range(10):                  # palm-frond capital: ten ribs curling out and up to the ring
+        ra = 2 * math.pi * r_ / 10
+        pts = []
+        for k in range(10):
+            t = k / 9; rr = 0.2 + 2.3 * (1 - math.cos(t * math.pi / 2)); up = 2.95 * math.sin(t * math.pi / 2)
+            pts.append(G(x + math.sin(ra) * rr, cy - 3.0 + up, z + math.cos(ra) * rr))
+        rib = bpy.data.curves.new('rib', 'CURVE'); rib.dimensions = '3D'; rib.bevel_depth = 0.07; rib.bevel_resolution = 1
+        spr = rib.splines.new('POLY'); spr.points.add(9)
+        for k, v in enumerate(pts): spr.points[k].co = (*v, 1)
+        ro = bpy.data.objects.new('rib', rib); col.objects.link(ro)
+        dg = bpy.context.evaluated_depsgraph_get(); me = bpy.data.meshes.new_from_object(ro.evaluated_get(dg)); bpy.data.objects.remove(ro)
+        r2 = bpy.data.objects.new('ribm', me); col.objects.link(r2); parts.append(r2)
     parts.append(cone('base', 0.4, 0.34, 0.5, G(x, 0.25, z), seg=12))
     # arched brace to the next column: a bent tube
     a2 = a + math.pi * 2 / 12; x2, z2 = pt(a2, DR)
@@ -266,7 +346,7 @@ if MODE == 'none':
 elif MODE == 'preview':
     cam = bpy.data.cameras.new('cam'); cam.lens = 16
     co = bpy.data.objects.new('cam', cam); col.objects.link(co); scene.camera = co
-    eye, look = G(4, 1.6, 21), G(-2, 5.5, 0)
+    eye, look = G(5, 1.7, 28), G(-3, 6.5, 0)
     co.location = eye; co.rotation_euler = (look - eye).to_track_quat('-Z', 'Y').to_euler()
     scene.cycles.samples = 24 if QUICK else 96
     scene.render.resolution_x, scene.render.resolution_y = (960, 540) if QUICK else (1280, 720)
@@ -278,7 +358,7 @@ elif MODE == 'preview':
 if MODE != 'bake':
     sys.exit(0)
 # ------------------------------------------------------------------ bake light into textures, export for the game
-SIZES = {'floor': 2048, 'wall': 2048, 'dome': 1024, 'drum': 1024, 'lantern': 512, 'lantern_ceiling': 512, 'columns': 1024}
+SIZES = {'floor': 2048, 'wall': 2048, 'dome': 1024, 'drum': 1024, 'lantern': 512, 'lantern_ceiling': 512, 'columns': 1024, 'gallery': 1024, 'gallery_iron': 1024, 'dome_ribs': 512}
 scene.cycles.samples = 24 if QUICK else 128
 scene.render.bake.margin = 6
 baked = []
