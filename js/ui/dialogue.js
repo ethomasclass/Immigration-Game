@@ -36,7 +36,7 @@ export class Dialogue {
     const tree = DIALOGUE[treeId];
     if (!tree) { console.warn('No dialogue', treeId); return; }
     this.tree = tree; this.treeId = treeId; this.onEnd = onEnd;
-    this.active = true;
+    this.active = true; this.queues = {}; this.queueOrder = []; this.directed = false;
     this.startedAt = performance.now();
     el.box.classList.remove('hidden');
     this.goto('start');
@@ -45,6 +45,8 @@ export class Dialogue {
   goto(nodeId) {
     const node = this.tree.nodes[nodeId];
     if (!node) return this.close();
+    // Coming back to a listen node: carry on with the next thing they have to say.
+    if (this.queues[nodeId]) return this.continueListen();
     if (node.branch) {
       (node.set || []).forEach(setFlag);
       const b = node.branch.find(br => (!br.if || flag(br.if)) && (!br.ifNot || !flag(br.ifNot)));
@@ -97,9 +99,35 @@ export class Dialogue {
     if (node.action) this.game.zone.onAction(node.action);
     if (node.choices) {
       const list = node.choices.filter(c => (!c.if || flag(c.if)) && (!c.ifNot || !flag(c.ifNot)));
+      if (node.listen) {
+        // Listen-first: the person tells you what matters, in order. No menu of questions.
+        const q = [];
+        for (const id of node.listen) { const c = list.find(c => c.next === id); if (c && !q.includes(c.next)) q.push(c.next); }
+        this.queues[this.nodeId] = { q, ask: (node.ask || []).map(id => list.find(c => c.next === id)).filter(Boolean) };
+        this.queueOrder.push(this.nodeId);
+        return this.continueListen();
+      }
       if (list.length) return this.showChoices(list);
     }
     if (node.next) return this.goto(node.next);
+    if (this.queueOrder.length) return this.continueListen();
+    this.close();
+  }
+
+  /** Play the next item of the innermost open listen list; offer any small "ask" (a purchase, a ride) at the end. */
+  continueListen() {
+    while (this.queueOrder.length) {
+      const hub = this.queueOrder[this.queueOrder.length - 1], st = this.queues[hub];
+      if (st.q.length) { const next = st.q.shift(); return this.goto(next); }
+      if (st.ask.length) {
+        const ask = st.ask; st.ask = [];
+        this.node = this.tree.nodes[hub]; this.nodeId = hub;
+        return this.showChoices([...ask, { text: '(Move on.)', next: '__close' }]);
+      }
+      this.queueOrder.pop();
+    }
+    // Listen conversations end with a direction from the speaker: where to go next.
+    if (this.tree.direct && !this.directed) { this.directed = true; this.node = { lines: [this.tree.direct] }; this.nodeId = '__direct'; this.lineIndex = -1; return this.nextLine(); }
     this.close();
   }
 
@@ -124,6 +152,7 @@ export class Dialogue {
   choose(c) {
     sfx('page');
     stopVoice();
+    if (c.next === '__close') { this.queueOrder = []; return this.close(); }
     this.goto(c.next);
   }
 
@@ -138,7 +167,8 @@ export class Dialogue {
     this.currentWho = who; this.currentTree = this.treeId;
     const c = CHARACTERS[who] || {};
     const narr = who === 'narrator';
-    el.name.innerHTML = narr ? '' : `${esc(c.name || who)}<span class="role">${esc(c.role || '')}</span>`;
+    el.name.innerHTML = narr ? '' : `<span class="nm">${esc(c.name || who)}</span><span class="role">${esc(c.role || '')}</span>`;
+    el.box.classList.toggle('narr', narr);
     if (!keep) { el.text.innerHTML = richText(text); el.text.dataset.raw = text; }
     el.text.classList.toggle('narration', narr);
     // Portrait: the same portrait_<id> art used for the character in the world.

@@ -37,6 +37,7 @@ export const DIALOGUE = {
         next: 'hub',
       },
       hub: {
+        listen: ['why', 'letter', 'photo'],
         lines: [],
         choices: [
           { text: 'Where are you from?', next: 'from' },
@@ -164,6 +165,7 @@ export const DIALOGUE = {
         next: 'hub',
       },
       hub: {
+        listen: ['why', 'plan'],
         lines: [],
         choices: [
           { text: 'Where are you from?', next: 'from' },
@@ -224,6 +226,7 @@ export const DIALOGUE = {
         next: 'hub',
       },
       hub: {
+        listen: ['why', 'oldnew'],
         lines: [],
         choices: [
           { text: 'Why did you leave Germany?', next: 'why' },
@@ -250,6 +253,7 @@ export const DIALOGUE = {
         next: 'hub',
       },
       oldnew: {
+        listen: ['belong'],
         note: 'OLD vs. NEW IMMIGRANTS: Before 1880, most immigrants came from northern and western Europe (Germany, Ireland, Britain). After 1880, more came from southern and eastern Europe (Italy, Russia, Poland).',
         lines: [
           'Ja. We Germans, the Irish, the English, we have come to America for fifty years. People call us the [[old immigrants]].',
@@ -289,6 +293,7 @@ export const DIALOGUE = {
     speaker: 'novak',
     nodes: {
       start: {
+        listen: ['wrong'],
         set: ['met_novak_ship'],
         lines: [
           'Sit, sit. My hands need work, or they forget.',
@@ -316,6 +321,7 @@ export const DIALOGUE = {
         next: 'hub',
       },
       hub: {
+        listen: ['steerage', 'land'],
         lines: [],
         choices: [
           { text: 'Tell me about steerage.', next: 'steerage' },
@@ -374,6 +380,7 @@ export const DIALOGUE = {
   // ==========================================================================
   doctor: {
     speaker: 'doctor',
+    direct: 'Your friends go on to the registry desk in the middle. Follow them, and keep out of my line.',
     nodes: {
       start: {
         set: ['medical'],
@@ -390,6 +397,7 @@ export const DIALOGUE = {
         next: 'hub',
       },
       hub: {
+        listen: ['look', 'sick'],
         lines: [],
         choices: [
           { text: 'What are you looking for?', next: 'look' },
@@ -420,8 +428,10 @@ export const DIALOGUE = {
 
   clerk: {
     speaker: 'clerk',
+    direct: 'That old man from your ship is on the bench by the west wall. They are holding him. Go and see him, if you knew him.',
     nodes: {
       start: {
+        listen: ['showletter'],
         lines: [
           'Next! Family of three? All right, miss, you\'re translating?',
           { who: 'rivka', text: 'Yes, sir.' },
@@ -454,6 +464,7 @@ export const DIALOGUE = {
         next: 'after',
       },
       after: {
+        listen: ['who', 'address'],
         lines: [],
         choices: [
           { text: 'Why all the questions?', next: 'law' },
@@ -612,6 +623,7 @@ export const DIALOGUE = {
     speaker: 'runner',
     nodes: {
       start: {
+        listen: ['eager'],
         set: ['talked_runner'],
         lines: [
           'Welcome to America, friends! Welcome, welcome!',
@@ -648,6 +660,7 @@ export const DIALOGUE = {
     speaker: 'agent',
     nodes: {
       start: {
+        listen: ['runners'],
         set: ['talked_agent'],
         lines: [
           'Information desk. How can I help?',
@@ -704,6 +717,7 @@ export const DIALOGUE = {
 
   moishe: {
     speaker: 'moishe',
+    direct: 'Mr. Riis, the newspaper man, is out in the yard with his camera. Talk to him. Then take your pictures, but think first.',
     nodes: {
       start: {
         // branch: jump to the first node whose flag is set
@@ -739,6 +753,7 @@ export const DIALOGUE = {
         next: 'hub',
       },
       hub: {
+        listen: ['work', 'sarah'],
         set: ['met_moishe'],
         lines: [],
         choices: [
@@ -906,6 +921,7 @@ export const DIALOGUE = {
 
   riis: {
     speaker: 'riis',
+    direct: 'Go on. Photograph Chana and Sarah at their sewing, and the streets. Every plate you bring home is a witness.',
     nodes: {
       start: {
         set: ['met_riis'],
@@ -916,6 +932,7 @@ export const DIALOGUE = {
         next: 'hub',
       },
       hub: {
+        listen: ['consent', 'faces'],
         lines: [],
         choices: [
           { text: 'Why do you photograph the tenements?', next: 'why' },
@@ -977,6 +994,7 @@ export const DIALOGUE = {
     speaker: 'peddler',
     nodes: {
       start: {
+        listen: ['why'], ask: ['pickle'],
         lines: ['Pickles! Herring! Fresh onions! Cheaper than anywhere! You want? No? Then why are you standing in front of my cart?'],
         choices: [
           { text: 'Why sell from a pushcart?', next: 'why' },
@@ -1022,6 +1040,7 @@ export const DIALOGUE = {
     speaker: 'newsboy',
     nodes: {
       start: {
+        listen: ['why'], ask: ['buy'],
         set: ['learned_papers'],
         note: 'ETHNIC NEWSPAPERS: Papers in Yiddish, Italian, German, and other languages gave news from home and helped immigrants find jobs, housing, and lawyers.',
         lines: [
@@ -1062,6 +1081,7 @@ export const DIALOGUE = {
         next: 'more',
       },
       more: {
+        listen: ['govt', 'loan'],
         lines: [],
         choices: [
           { text: 'Why not ask the government for help?', next: 'govt' },
@@ -1126,6 +1146,7 @@ export const DIALOGUE = {
         next: 'hub',
       },
       hub: {
+        listen: ['store', 'exclusion'],
         lines: [],
         choices: [
           { text: 'How did you come to New York?', next: 'came' },
@@ -1171,6 +1192,7 @@ export const DIALOGUE = {
     speaker: 'brennan',
     nodes: {
       start: {
+        listen: ['when'],
         set: ['met_brennan'],
         lines: [
           'Would you look at this street! Pushcarts, foreign talk, garlic. It\'s not the neighborhood I knew.',
@@ -1182,6 +1204,7 @@ export const DIALOGUE = {
         ],
       },
       when: {
+        listen: ['welcomed'],
         lines: [
           'My parents came from Ireland in \'49, during the Famine. Half the village starved. We came with nothing.',
           'We worked hard! We built this city.',
@@ -1196,6 +1219,7 @@ export const DIALOGUE = {
         next: 'when',
       },
       welcomed: {
+        listen: ['mirror'],
         set: ['learned_nativism'],
         note: 'NATIVISM: Some Americans, including some earlier immigrants, feared and disliked newer immigrants. The Irish had faced the same prejudice a generation before.',
         lines: [
@@ -1220,6 +1244,7 @@ export const DIALOGUE = {
     speaker: 'guild',
     nodes: {
       start: {
+        listen: ['why'],
         set: ['learned_guild'],
         note: 'SETTLEMENT HOUSES: The Neighborhood Guild (1886) on the Lower East Side was America\'s first settlement house. Volunteers lived in the neighborhood and ran clubs, classes, and a kindergarten.',
         lines: [
@@ -1252,6 +1277,7 @@ export const DIALOGUE = {
     speaker: 'boss',
     nodes: {
       start: {
+        listen: ['who', 'why'],
         mood: 'up',
         set: ['met_quinn'],
         keep: 'coal',
@@ -1286,6 +1312,7 @@ export const DIALOGUE = {
         next: 'hub',
       },
       hub: {
+        listen: ['tweed', 'tammany'],
         lines: [],
         choices: [
           { text: 'What is that cartoon?', next: 'cartoon' },
@@ -1343,6 +1370,7 @@ export const DIALOGUE = {
         next: 'hub',
       },
       hub: {
+        listen: ['votes', 'buying'],
         lines: [],
         choices: [
           { text: 'How does Tammany win votes?', next: 'votes', key: true },
@@ -1411,6 +1439,7 @@ export const DIALOGUE = {
         next: 'hub',
       },
       hub: {
+        listen: ['tall', 'how'],
         lines: [],
         choices: [
           { text: 'What are you building?', next: 'what' },
@@ -1459,6 +1488,7 @@ export const DIALOGUE = {
     speaker: 'driver',
     nodes: {
       start: {
+        listen: ['how', 'future'],
         lines: ['Horsecar up Broadway! Five cents! Step lively!'],
         choices: [
           { text: 'How does the horsecar work?', next: 'how' },
@@ -1496,6 +1526,7 @@ export const DIALOGUE = {
     speaker: 'elguard',
     nodes: {
       start: {
+        listen: ['under'], ask: ['ride'],
         set: ['learned_el'],
         note: 'ELEVATED TRAINS: "The El" ran steam trains on iron tracks above the street. It was fast, but it dropped cinders and oil on the people below and blocked sunlight.',
         lines: [
@@ -1561,6 +1592,7 @@ export const DIALOGUE = {
         next: 'hub',
       },
       hub: {
+        listen: ['who', 'visitors'],
         lines: [],
         choices: [
           { text: 'Who made this park?', next: 'who', key: true },
@@ -1716,6 +1748,7 @@ export const DIALOGUE = {
     speaker: 'esther',
     nodes: {
       start: {
+        listen: ['afraid', 'strike'],
         set: ['met_esther'],
         keep: 'unioncard',
         note: 'UNIONS: The United Hebrew Trades was founded in New York in 1888 to organize Jewish workers in the garment shops, bakeries, and print shops.',
@@ -1862,6 +1895,7 @@ export const DIALOGUE = {
     speaker: 'boss',
     nodes: {
       start: {
+        listen: ['hewitt'],
         mood: 'up',
         set: ['heard_quinn2'],
         note: 'THE 1888 ELECTION: Tammany Hall backed Hugh J. Grant, the son of Irish immigrants. Its clubs gave out coal and jobs and expected votes in return.',
@@ -1914,6 +1948,7 @@ export const DIALOGUE = {
     speaker: 'guild',
     nodes: {
       start: {
+        listen: ['down'],
         set: ['heard_whitcomb2'],
         keep: 'leaflet',
         note: 'REFORM: Mayor Abram Hewitt ran an honest government and pushed for small parks and a public subway, but many immigrants felt he looked down on them.',

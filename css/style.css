@@ -186,7 +186,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #000; font-f
 }
 @media (max-width: 760px) {
   .chart { grid-template-columns: 1fr; }
-  #dlg-portrait { display: none; }
+
   #hud-keys { display: none; }
   #minimap { width: 110px; height: 110px; }
   #toasts { top: 132px; }

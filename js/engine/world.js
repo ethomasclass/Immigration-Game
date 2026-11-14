@@ -475,7 +475,7 @@ export class Zone {
     this.scene.background = new THREE.Color(spec.top || '#8fa0ae');
     this.updaters.push(() => {
       const c = this.game.camera.position; m.position.set(c.x, c.y + H * 0.2, c.z);
-      const real = texture(artKey).image; if (tex.image !== real) { tex.image = real; tex.needsUpdate = true; }
+      const real = texture(artKey).image; if (tex.image !== real) { tex.dispose(); tex.image = real; tex.needsUpdate = true; }
     });
     return m;
   }

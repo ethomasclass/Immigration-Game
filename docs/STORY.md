@@ -24,6 +24,7 @@ The game runs about **45–50 minutes over two class periods**. Students should 
 - **Real stakes, no deaths.** People are cheated, fired, hurt, and sent away, but nobody dies.
 - **The hero never speaks aloud.** Students speak only through choices, so the feelings stay theirs. People call them "kid."
 - **Required dialogue is short.** The emotional beats are written into required scenes, and everything else is optional.
+- **Listen, then go.** Conversations play straight through: each person says what matters (the `listen` list on a step in `js/data/dialogue.js`) and points the way (`direct`). Menus of questions are gone. The only conversation choices are the seven decisions in the flag map, plus small offers (`ask`: a pickle, a newspaper, the El).
 - **History doesn't bend.** Hugh J. Grant wins on November 6, 1888, whatever students do. Their choices change what happens to the *people*.
 
 ---

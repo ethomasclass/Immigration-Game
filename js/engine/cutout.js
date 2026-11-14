@@ -106,7 +106,7 @@ export function makeCutout(artId, c, scale = 1) {
   if (!placeholderCache.has(artId)) placeholderCache.set(artId, placeholder(c));
   const tex = texture(key, { type: 'solid', color: '#000000', w: 4, h: 4 });
   // Replace the generic placeholder with the drawn silhouette until real art arrives.
-  if (!hasRealArt(key) && tex.image !== placeholderCache.get(artId)) { tex.image = placeholderCache.get(artId); tex.needsUpdate = true; }
+  if (!hasRealArt(key) && tex.image !== placeholderCache.get(artId)) { tex.dispose(); tex.image = placeholderCache.get(artId); tex.needsUpdate = true; }
   tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
 
   const mat = new THREE.MeshLambertMaterial({ map: tex, alphaTest: 0.45, side: THREE.DoubleSide, emissive: new THREE.Color(0x3a3530), emissiveMap: tex });

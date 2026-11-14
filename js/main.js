@@ -226,6 +226,8 @@ class Game {
   // ------------------------------------------------------------------ modes
   setMode(m) {
     this.mode = m;
+    document.body.classList.toggle('talking', m === 'dialogue');
+    if (m === 'play' && this._pendingBanner) { const b = this._pendingBanner; this._pendingBanner = null; setTimeout(() => this.banner(...b), 250); }
     const playing = m === 'play';
     this.controls.enabled = playing;
     if (!playing) { this.controls.unlock(); if (this.photo.active) this.photo.toggle(false); }
@@ -398,6 +400,7 @@ class Game {
     clearTimeout(this._remT); this._remT = setTimeout(() => el.classList.add('hidden'), 5200);
   }
   banner(title, sub = '') {
+    if (this.mode === 'dialogue') { this._pendingBanner = [title, sub]; return; }   // shown when the conversation ends
     const el = $('banner');
     el.querySelector('.banner-title').textContent = title; el.querySelector('.banner-sub').innerHTML = sub;
     el.classList.remove('hidden', 'go'); void el.offsetWidth; el.classList.add('go');

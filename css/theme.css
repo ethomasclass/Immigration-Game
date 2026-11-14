@@ -257,3 +257,58 @@ body.touch #dlg-next { background: var(--brass); color: var(--inkc); border: 1px
 .kind li.cam::before { content: "\25C9"; color: #8a3a2a; }
 .kind li.per::before { content: "\2665"; color: #2f5a4a; }
 .kind li.none::before { content: "\2013"; color: #7a6a52; }
+
+/* =====================================================================
+   DIALOGUE, Hades-style: the speaker as a large cutout rising from the
+   bottom left, a name plate tab, and the text panel overlapping them.
+   ===================================================================== */
+#dialogue { position: fixed; inset: 0; left: 0; bottom: 0; transform: none; width: auto; display: block; padding: 0; z-index: 12;
+  background: none; border: 0; border-image: none; box-shadow: none; outline: none; cursor: pointer; }
+#dlg-shade { position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(0deg, rgba(10,6,4,.62) 0%, rgba(10,6,4,.25) 34%, transparent 56%), linear-gradient(90deg, rgba(10,6,4,.35), transparent 40%); }
+#dlg-portrait { position: absolute; left: max(0px, 3vw - 20px); bottom: 0; height: min(92vh, 900px); width: min(48vh, 40vw); flex: none; padding: 0;
+  border: 0; border-radius: 0; box-shadow: none; background-color: transparent; background-repeat: no-repeat;
+  background-size: auto 172%; background-position: 50% 0; filter: drop-shadow(0 6px 14px rgba(0,0,0,.55)); pointer-events: none;
+  display: flex; align-items: flex-end; justify-content: center; color: var(--cream); font-family: var(--display); font-size: 2rem; }
+#dlg-portrait.bust { height: min(78vh, 760px); width: min(60vh, 44vw); background-size: contain; background-position: 50% 100%; }
+#dlg-portrait.pop { animation: dlg-in .34s cubic-bezier(.2,.8,.25,1); }
+@keyframes dlg-in { from { transform: translateX(-36px); opacity: 0; } to { transform: none; opacity: 1; } }
+#dialogue.narr #dlg-portrait { visibility: hidden; }
+
+#dlg-panel { position: absolute; left: clamp(220px, 31vw, 520px); right: 3vw; bottom: 4vh; max-width: 980px; padding: 22px 30px 16px; min-height: 128px;
+  background: linear-gradient(180deg, #fbf5e6, #f1e6c9); color: var(--inkc);
+  border: 4px solid; border-image: linear-gradient(135deg, var(--brass-l), var(--brass-d) 45%, var(--brass-l) 55%, var(--brass-s)) 1;
+  box-shadow: 0 0 0 5px rgba(40,22,12,.92), 0 0 0 6px var(--brass-s), 0 14px 34px rgba(0,0,0,.65), inset 0 0 26px rgba(120,90,40,.14); }
+#dialogue.narr #dlg-panel { left: 50%; transform: translateX(-50%); width: min(820px, 92vw); right: auto; }
+#dlg-panel::before { content: ""; position: absolute; left: -14px; top: -14px; width: 30px; height: 30px; border-left: 3px solid var(--brass-l); border-top: 3px solid var(--brass-l); pointer-events: none; }
+#dlg-panel::after { content: ""; position: absolute; right: -14px; bottom: -14px; width: 30px; height: 30px; border-right: 3px solid var(--brass-l); border-bottom: 3px solid var(--brass-l); pointer-events: none; }
+#dlg-body { display: flex; flex-direction: column; gap: 8px; }
+
+/* name plate tab, sitting on the panel's top edge */
+#dlg-name { position: absolute; left: 26px; top: 0; transform: translateY(-100%); display: flex; flex-direction: column; align-items: center; gap: 0;
+  padding: 7px 26px 6px; min-width: 200px; border-radius: 0; font-variant: normal;
+  background: linear-gradient(180deg, #4a3423, #2c1d13); border: 2px solid var(--brass-m); border-bottom: 0; box-shadow: 0 -3px 10px rgba(0,0,0,.45); }
+#dlg-name .nm { font-family: var(--display); font-weight: 700; font-size: 1.55rem; letter-spacing: .06em; text-transform: uppercase; color: #f6ead0; line-height: 1.05; text-shadow: 0 2px 3px rgba(0,0,0,.6); }
+#dlg-name .role { font-family: var(--display); font-style: normal; font-size: .82rem; letter-spacing: .05em; color: #e9774e; margin: 1px 0 0; }
+#dlg-name:empty { display: none; }
+
+#dlg-text { font-size: 1.24rem; line-height: 1.55; min-height: 2.4em; color: #2a1e14; }
+#dlg-text.narration { font-style: italic; color: #4a3526; text-align: center; }
+#dlg-next { position: absolute; right: 18px; bottom: 8px; color: var(--brass-d); font-size: 1.1rem; animation: next-bob 1.1s ease-in-out infinite; text-align: right; }
+@keyframes next-bob { 50% { transform: translateY(3px); } }
+#dlg-choices { margin-top: 6px; }
+#dlg-choices button { font-size: 1.08rem; padding: 9px 14px; }
+
+@media (max-width: 760px), (max-height: 520px) {
+  #dlg-portrait { height: 100vh; width: 34vw; }
+  #dlg-portrait.bust { height: 82vh; width: 36vw; }
+  #dlg-panel { left: 30vw; right: 2vw; bottom: 2vh; padding: 16px 18px 12px; min-height: 0; }
+  #dlg-name { left: 14px; min-width: 0; padding: 4px 16px; } #dlg-name .nm { font-size: 1.1rem; } #dlg-name .role { font-size: .7rem; }
+  #dlg-text { font-size: 1rem; }
+}
+body.touch #dlg-next { position: static; animation: none; align-self: flex-end; }
+
+/* during a conversation the screen belongs to the speaker (as in Hades): HUD steps aside */
+body.talking #goal, body.talking #zone-name, body.talking #minimap, body.talking #purse, body.talking #hud-keys, body.talking #waypoint, body.talking #cries { opacity: 0; transition: opacity .25s; }
+#goal, #zone-name, #minimap, #purse, #hud-keys { transition: opacity .35s; }
+body.talking #hud-keys { visibility: hidden; }

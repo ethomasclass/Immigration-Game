@@ -611,15 +611,16 @@ export function prepCutout(img, { crop = true, maxH = 640 } = {}) {
 }
 
 function tryLoad(key, entry) {
-  const exts = ['png', 'jpg', 'webp', 'jpeg'];
+  const exts = ['webp', 'png', 'jpg', 'jpeg'];   // webp first: tools/prep-art.py writes transparent webp files
   const figure = /^portrait_/.test(key), strip = /^anim_/.test(key);
   const attempt = (i) => {
     if (i >= exts.length) return;
     const img = new Image();
     img.onload = () => {
       const use = figure ? prepCutout(img) : strip ? prepCutout(img, { crop: false, maxH: 512 }) : img;
-      entry.img = use; entry.url = null;
-      for (const t of entry.users) { t.image = use; t.needsUpdate = true; }
+      entry.img = use; entry.url = /\.(webp|png)$/.test(img.src) ? img.src : null;   // keyed files are shown as-is in HTML (sharper)
+      // dispose first: GPU texture storage is fixed-size, so a new image of another size must get fresh storage
+      for (const t of entry.users) { t.dispose(); t.image = use; t.needsUpdate = true; }
     };
     img.onerror = () => attempt(i + 1);
     img.src = `assets/art/${key}.${exts[i]}`;
@@ -654,7 +655,7 @@ export function texture(key, spec = {}, repeat = null) {
 export function artURL(key) {
   const e = cache.get(key);
   if (!e) return null;
-  if (e.img) return e.img.src || (e.url = e.url || e.img.toDataURL());
+  if (e.img) return e.url || e.img.src || (e.url = e.img.toDataURL());
   try { return e.canvas.toDataURL(); } catch { return null; }
 }
 export function hasRealArt(key) { return !!cache.get(key)?.img; }
