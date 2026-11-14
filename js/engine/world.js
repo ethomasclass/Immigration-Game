@@ -65,6 +65,40 @@ export class Zone {
     if (this._life) this._life.update(dt, pp, cam, this.game.mode === 'play');
   }
 
+  /**
+   * Record what the zone builds with these helpers, so Blender can model each piece in its place
+   * (dev.sceneLayout() exports the list). The coded meshes are tagged `blenderPart` and give way when
+   * the Blender model loads. Nested helper calls are recorded once, at the outermost call.
+   */
+  startRecording(names) {
+    this.sceneRec = []; let depth = 0;
+    const plain = (v) => v instanceof THREE.Material ? { color: '#' + (v.color ? v.color.getHexString() : '888888') } : Array.isArray(v) ? v.map(plain) : (v && typeof v === 'object') ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, plain(x)])) : v;
+    for (const name of names) {
+      const orig = this[name].bind(this);
+      this[name] = (...args) => {
+        const from = this.scene.children.length; depth++;
+        let out; try { out = orig(...args); } finally { depth--; }
+        if (depth === 0 && this.sceneRec) {
+          const objs = this.scene.children.slice(from).filter(o => !o.userData.baked && !o.userData.propPart);
+          if (name === 'box' && Math.max(args[3], args[4], args[5]) > 150) return out;     // far scenery (distant shores) stays coded
+          if (objs.length) { objs.forEach(o => { o.userData.blenderPart = true; }); this.sceneRec.push({ kind: name, args: plain(args), objs }); }
+        }
+        return out;
+      };
+    }
+  }
+  /** A piece placed without a helper: record it by hand. */
+  recordPiece(kind, spec, objs) { if (!this.sceneRec) return; objs.forEach(o => { o.userData.blenderPart = true; }); this.sceneRec.push({ kind, args: [spec], objs }); }
+  /** The recorded list without object references; pieces the game moves or hides (`dynamic`) are left to the game. */
+  sceneLayout() {
+    this.scene.updateMatrixWorld(true);
+    return (this.sceneRec || []).filter(r => !r.objs.some(o => o.userData.dynamic || o.userData.baked || o.userData.propPart)).map(r => ({
+      kind: r.kind, args: r.args,
+      // boxes carry their final placement (some are turned after they are made, like the open fort gates)
+      boxes: r.kind === 'box' ? r.objs.filter(o => o.isMesh && o.geometry.parameters).map(o => ({ m: [...o.matrixWorld.elements], p: o.geometry.parameters })) : undefined,
+    }));
+  }
+
   /** Street life effects (cries, birds, smoke, drifting leaves). Created on first use. */
   get life() { return this._life || (this._life = new Life(this)); }
 

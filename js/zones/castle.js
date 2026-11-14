@@ -29,6 +29,8 @@ const pt = (a, r) => [Math.sin(a) * r, Math.cos(a) * r];
 
 export class CastleZone extends Zone {
   build() {
+    // everything built with these helpers is remodelled in Blender (tools/blender/castle_exterior.py)
+    this.startRecording(['box', 'shed', 'building', 'tree', 'bench', 'pavilion', 'hamper', 'bundle', 'barrel', 'crate', 'wallLine', 'ringWall', 'lamppost', 'picket']);
     this.setSky('#c4c2b4', 260, 2600, '#c9c6b8');
     this.lights({ ambient: 0x9a9080, ambientI: 1.3, sky: 0xe8e4d4, ground: 0x4a4038, hemiI: 1.0, sun: { color: 0xfff0d8, i: 1.4, pos: [-30, 50, 40] } });
     this.bounds = { minX: -80, maxX: 90, minZ: -72, maxZ: 62 + PZ };
@@ -43,6 +45,7 @@ export class CastleZone extends Zone {
 
     this.streetLife();
     this.loadBaked();
+    this.sceneRecDone = true;
     this.spawn = { x: 0, z: 56 + PZ, yaw: 0 };
     if (flag('gate_opened')) this.openGate(true);
   }
@@ -124,10 +127,12 @@ export class CastleZone extends Zone {
     const hood = new THREE.Mesh(hg, material('barge_hood', { type: 'boards', color: '#c8c0aa', n: 14 }, { side: THREE.DoubleSide }));
     hood.position.set(9, 0.72, 43 + PZ); hood.scale.set(1, 0.6, 1); this.scene.add(hood);
     for (const z of [34 + PZ, 52 + PZ]) { const e = new THREE.Mesh(new THREE.CircleGeometry(3.0, 16, 0, Math.PI), colorMat('#b8b09a', { side: THREE.DoubleSide })); e.position.set(9, 0.72, z); e.scale.set(1, 0.6, 1); this.scene.add(e); }
+    this.recordPiece('bargeHood', { x: 9, z: 43 + PZ, len: 18, r: 3, sy: 0.6, y: 0.72 }, [hood, ...this.scene.children.slice(-2)]);
     this.box(20, -0.6, 62 + PZ, 5, 1.6, 20, '#1e1c1a', { collide: false });
     this.box(20, 1.0, 60 + PZ, 3.4, 2.2, 8, '#7a3b2a', { collide: false });
     this.box(20, 3.2, 57.6 + PZ, 2.6, 1.6, 2.6, '#8a4a36', { collide: false });
     const funnel = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.6, 4.6, 10), colorMat('#151515')); funnel.position.set(20, 5.4, 62 + PZ); this.scene.add(funnel);
+    this.recordPiece('funnel', { x: 20, z: 62 + PZ, y: 5.4, h: 4.6 }, [funnel]);
     for (let i = 0; i < 5; i++) this.crowd(i, 8 + (i % 2) * 1.5, 38 + PZ + i * 2.6, 0);
     // your steamship at anchor
     this.steamship(-120, 300);
@@ -205,11 +210,12 @@ export class CastleZone extends Zone {
     let nx = -uz, nz = ux; if (nx * mx + nz * mz < 0) { nx = -nx; nz = -nz; }
     this.exitDoor = { x: mx, z: mz, nx, nz, ux, uz };
     const cap = new THREE.Mesh(new THREE.RingGeometry(RI, R, 48), colorMat('#6e4a38')); cap.rotation.x = -Math.PI / 2; cap.position.y = H; this.scene.add(cap);
+    this.recordPiece('wallCap', { ri: RI, r: R, y: H }, [cap]);
     // old embrasures, now glazed windows
     for (let a = 0.25; a < Math.PI * 2; a += 0.28) {
       if (a > CH0 - 0.05 && a < CH1 + 0.05) continue;
       const [x, z] = pt(a, R + 0.03);
-      this.panel(x, 3.6, z, 1.1, 1.5, ['window_castle', { type: 'embrasure', w: 128, h: 96 }], a);
+      this.recordPiece('none', {}, [this.panel(x, 3.6, z, 1.1, 1.5, ['window_castle', { type: 'embrasure', w: 128, h: 96 }], a)]);   // real gun ports in the Blender wall
     }
     // low domed roof (post-1876) with a central lantern and flagpole
     // a shallow dome: rim radius R+0.6, rising 4.2 m
@@ -357,7 +363,7 @@ export class CastleZone extends Zone {
     const d = this.exitDoor;
     const bx = d.x - d.nx * 1.4, bz = d.z - d.nz * 1.4;
     this.barrier = this.wallLine(bx - d.ux * 2, bz - d.uz * 2, bx + d.ux * 2, bz + d.uz * 2, 2.4, '#3a2a1a', 0.25);
-    this.barrier.userData.keep = true;
+    this.barrier.userData.keep = true; this.barrier.userData.dynamic = true;
     this.sign2(d.x - d.nx * 1.6, 3.4, d.z - d.nz * 1.6, 'TO NEW YORK · NACH NEW YORK', Math.atan2(-d.nx, -d.nz));
     this.interact({ x: d.x - d.nx * 2.6, z: d.z - d.nz * 2.6, r: 2.4, prompt: 'Go through the gate', cond: () => this.inspected(), action: () => this.openGate() }).lockedMsg = 'Not yet. Finish your goal (top left) first.';
     this.interactables[this.interactables.length - 1].soft = true;
@@ -393,6 +399,7 @@ export class CastleZone extends Zone {
     const ob = new THREE.Mesh(new THREE.BoxGeometry(OW, OH, OD), [colorMat('#cfc6b0'), colorMat('#cfc6b0'), colorMat('#5e5e5c'), colorMat('#cfc6b0'),
       material('facade_cg_office3', { type: 'facade', color: '#d6cdb6', floors: 3, bays: 7, storeFrac: 0.3, cornice: '#6a6a64', stone: '#a89c84', lit: 0.35, civic: true, w: 448, h: 256 }), colorMat('#cfc6b0')]);
     ob.position.set(ocx, OH / 2, ocz); ob.rotation.y = oa + Math.PI; this.scene.add(ob);
+    this.recordPiece('office', { x: ocx, z: ocz, ry: oa + Math.PI, w: OW, h: OH, d: OD }, [ob]);
     const off = OD / 2 + 0.02, fx = ocx - Math.sin(oa) * off, fz = ocz - Math.cos(oa) * off;
     this.panel(fx, OH - 1.0, fz, 12, 0.8, ['sign_cg_commissioners', { type: 'sign', title: 'OFFICE OF COMMISSIONERS OF EMIGRATION', color: '#f0ead8', ink: '#1e1610', w: 640, h: 48 }], oa + Math.PI);
     this.panel(fx, OH - 1.9, fz, 9, 0.6, ['sign_cg_agent', { type: 'sign', title: 'GENERAL AGENT & SUPERINTENDENT', color: '#f0ead8', ink: '#1e1610', w: 512, h: 40 }], oa + Math.PI);
@@ -473,7 +480,7 @@ export class CastleZone extends Zone {
     this.gateTalk.hidden = true;
     // gate in the fence (locked until inspection)
     this.gateBar = this.box(37, 0, -40, 14, 3.9, 0.3, FENCE);
-    this.gateBar.userData.keep = true;
+    this.gateBar.userData.keep = true; this.gateBar.userData.dynamic = true;
     this.gateCol = this.colliders[this.colliders.length - 1];
     const ex = this.exit(40, -66, 'Walk up to Hester Street', () => flag('gate_done'), () => this.game.loadZone('les', { skipCard: flag('been_les') }));
     ex.lockedMsg = 'Rivka\'s family still has to decide who to trust.'; ex.soft = true;
@@ -499,29 +506,29 @@ export class CastleZone extends Zone {
    */
   loadBaked() {
     if (/[?&]baked=0/.test(location.search)) return;
-    import('../../lib/GLTFLoader.js').then(({ GLTFLoader }) => new GLTFLoader().load('assets/models/castle_interior.glb', (gltf) => {
-      if (this.game.zone !== this) return;              // left the zone while loading
-      const root = gltf.scene;
-      root.traverse((o) => {
+    import('../../lib/GLTFLoader.js').then(({ GLTFLoader }) => {
+      const loader = new GLTFLoader();
+      // the light is already baked into each texture, so the models are drawn unlit
+      const unlit = (root) => root.traverse((o) => {
         if (!o.isMesh) return;
         const map = o.material.map;
         if (map) { map.colorSpace = THREE.SRGBColorSpace; map.anisotropy = 4; }
-        o.material = new THREE.MeshBasicMaterial({ map, side: THREE.DoubleSide, fog: true });    // the light is already in the texture
-        o.material.color.setScalar(0.94);
+        o.material = new THREE.MeshBasicMaterial({ map, side: THREE.DoubleSide, fog: true }); o.material.color.setScalar(0.94);
       });
-      root.position.y = 0.03;                           // just above the Battery paving, which runs under the fort
-      this.scene.add(root);
-      for (const o of this.scene.children.filter(o => o.userData.baked)) this.scene.remove(o);
-      this.bakedLoaded = true;
-      // hall furniture modelled in Blender (tools/blender/castle_props.py), placed from propLayout
-      new GLTFLoader().load('assets/models/castle_props.glb', (g2) => {
-        if (this.game.zone !== this) return;
-        g2.scene.traverse((o) => { if (!o.isMesh) return; const map = o.material.map; if (map) { map.colorSpace = THREE.SRGBColorSpace; map.anisotropy = 4; } o.material = new THREE.MeshBasicMaterial({ map, side: THREE.DoubleSide }); o.material.color.setScalar(0.94); });
-        this.scene.add(g2.scene);
-        for (const o of this.scene.children.filter(o => o.userData.propPart)) this.scene.remove(o);
-        this.propsLoaded = true;
-      }, undefined, () => {});
-    }, undefined, (e) => console.warn('baked rotunda not loaded', e)));
+      // the three models load side by side; each replaces the coded pieces it covers when it arrives
+      const part = (file, tag, flag) => loader.load('assets/models/' + file, (gltf) => {
+        if (this.game.zone !== this) return;              // left the zone while loading
+        unlit(gltf.scene);
+        gltf.scene.position.y = 0.03;                     // just above the Battery paving, which runs under the fort
+        this.scene.add(gltf.scene);
+        const own = (o) => tag === 'blenderPart' ? !o.userData.baked && !o.userData.propPart : true;   // each model removes only its own pieces
+        for (const o of this.scene.children.filter(o => o.userData[tag] && !o.userData.dynamic && own(o))) this.scene.remove(o);
+        this[flag] = true;
+      }, undefined, (e) => console.warn(file + ' not loaded', e));
+      part('castle_interior.glb', 'baked', 'bakedLoaded');            // rotunda shell (tools/blender/castle_interior.py)
+      part('castle_props.glb', 'propPart', 'propsLoaded');             // hall furniture (castle_props.py)
+      part('castle_exterior.glb', 'blenderPart', 'exteriorLoaded');    // everything else (castle_exterior.py)
+    });
   }
 
   inspected() { return flag('medical') && flag('registered') && flag('novak_decided'); }
