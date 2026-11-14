@@ -281,27 +281,32 @@ export class CastleZone extends Zone {
     for (let a = 0.35; a < Math.PI * 2 - 0.2; a += 0.16) {
       if (a > CH0 - 0.3 && a < CH1 + 0.3) continue;
       const [x, z] = pt(a, RI - 0.9);
+      const n0 = this.scene.children.length;
       const b = this.box(x, 0, z, 1.6, 0.45, 0.5, DESK, { collide: false });
       b.rotation.y = a + Math.PI / 2;
+      this.prop({ kind: 'bench', x, z, ry: a + Math.PI / 2, w: 1.6 }, n0);
       this.colliders.push({ minX: x - 0.45, maxX: x + 0.45, minZ: z - 0.45, maxZ: z + 0.45, see: true });
     }
     [[0.6, 1], [0.9, 3], [1.3, 6], [3.4, 2], [3.9, 4], [4.4, 7], [5.0, 0], [5.6, 5]].forEach(([a, n]) => { const [x, z] = pt(a, RI - 1.8); this.crowd(n, x, z, 0); });
 
     // ---- 1. Medical check just inside the pier door ----
-    this.box(-1.5, 0, 22 + PZ, 0.08, 1.0, 5, '#2a2a2a');
-    this.box(1.5, 0, 22 + PZ, 0.08, 1.0, 5, '#2a2a2a');
+    for (const sx of [-1.5, 1.5]) { const n0 = this.scene.children.length; this.box(sx, 0, 22 + PZ, 0.08, 1.0, 5, '#2a2a2a'); this.prop({ kind: 'partition', x0: sx, z0: 19.5 + PZ, x1: sx, z1: 24.5 + PZ }, n0); }
     for (let i = 0; i < 2; i++) this.crowd(i + 2, -0.95 + i * 0.12, 22.6 + PZ - i * 1.3, 0);   // the queue keeps left, leaving a wide lane in
-    this.box(-4.2, 0, 17.6 + PZ, 2.2, 0.95, 0.8, DESK);
+    { const n0 = this.scene.children.length; this.box(-4.2, 0, 17.6 + PZ, 2.2, 0.95, 0.8, DESK); this.prop({ kind: 'counter', x: -4.2, z: 17.6 + PZ, ry: 0, w: 2.2, d: 0.8, h: 0.95 }, n0); }
     this.person('doctor', -4.2, 16.6 + PZ, 0);
     this.sign2(-4.2, 2.5, 18.05 + PZ, 'MEDICAL OFFICER', 0);
 
     // ---- 2. Registration: a square of clerks' desks behind wooden railings ----
     const S = 8;
-    this.box(0, 0, S, 7, 1.2, 0.9, DESK); this.box(0, 0, -S, 7, 1.2, 0.9, DESK);
-    this.box(S, 0, 0, 0.9, 1.2, 7, DESK); this.box(-S, 0, 0, 0.9, 1.2, 7, DESK);
+    for (const [x, z, ry] of [[0, S, 0], [0, -S, Math.PI], [S, 0, Math.PI / 2], [-S, 0, -Math.PI / 2]]) {
+      const n0 = this.scene.children.length;
+      this.box(x, 0, z, ry % Math.PI ? 0.9 : 7, 1.2, ry % Math.PI ? 7 : 0.9, DESK);
+      this.prop({ kind: 'counter', x, z, ry, w: 7, d: 0.9, h: 1.2 }, n0);
+    }
     // picket railings divide the floor into aisles and pens (1860s-80s engraving)
-    this.picket(-3.5, S + 0.45, -6.5, S + 0.45); this.picket(3.5, S + 0.45, 6.5, S + 0.45);
-    this.picket(-1.6, 26.2 + PZ, -1.6, 19.0 + PZ); this.picket(1.6, 26.2 + PZ, 1.6, 20.6 + PZ);
+    for (const [x0, z0, x1, z1] of [[-3.5, S + 0.45, -6.5, S + 0.45], [3.5, S + 0.45, 6.5, S + 0.45], [-1.6, 26.2 + PZ, -1.6, 19.0 + PZ], [1.6, 26.2 + PZ, 1.6, 20.6 + PZ]]) {
+      const n0 = this.scene.children.length; this.picket(x0, z0, x1, z1); this.prop({ kind: 'partition', x0, z0, x1, z1 }, n0);
+    }
     this.person('clerk', 2.4, S - 1.2, 0);
     this.crowd(4, -S + 1.3, 0, 0); this.crowd(4, S - 1.3, 1.5, 0); this.crowd(4, 0, -S + 1.3, 0);
     this.sign2(0, 3.2, S + 0.5, 'REGISTRY', 0);
@@ -335,7 +340,9 @@ export class CastleZone extends Zone {
     // ---- 4. Counters near the landward exit ----
     const counter = (a, r, label, w = 3.2) => {
       const [x, z] = pt(a, r);
+      const n0 = this.scene.children.length;
       const b = this.box(x, 0, z, w, 1.1, 0.9, DESK, { collide: false }); b.rotation.y = a;
+      this.prop({ kind: 'booth', x, z, ry: a, w, d: 0.9 }, n0);
       this.colliders.push({ minX: x - 1.1, maxX: x + 1.1, minZ: z - 1.1, maxZ: z + 1.1 });
       this.panel(x + Math.sin(a) * 0.6, 2.6, z + Math.cos(a) * 0.6, w, 0.5, ['sign_cg_' + label, { type: 'sign', title: label, w: 320, h: 48 }], a + Math.PI);
       return [x, z];
@@ -361,7 +368,9 @@ export class CastleZone extends Zone {
     const wallPanel = (a, y, w, h, mat) => { const [x, z] = pt(a, RI - 0.22); const m = this.panel(x, y, z, w, h, mat, a + Math.PI); return [x, z]; };
     const desk = (a, r, w, label) => {
       const [x, z] = pt(a, r);
+      const n0 = this.scene.children.length;
       const b = this.box(x, 0, z, w, 1.05, 0.8, DESK, { collide: false }); b.rotation.y = a;
+      this.prop({ kind: 'booth', x, z, ry: a, w, d: 0.8 }, n0);
       this.colliders.push({ minX: x - 1, maxX: x + 1, minZ: z - 1, maxZ: z + 1 });
       this.panel(x + Math.sin(a) * 0.5, 2.5, z + Math.cos(a) * 0.5, Math.max(2.4, label.length * 0.2), 0.5, ['sign_cg_' + label, { type: 'sign', title: label, w: 320, h: 48 }], a + Math.PI);
       return [x, z];
@@ -395,7 +404,7 @@ export class CastleZone extends Zone {
     srail.rotation.set(0, oa + Math.PI, 0); srail.rotateZ(-sa);
     this.blockLine(ocx + ux * OW / 2 - Math.sin(oa) * (off + 1.6), ocz + uz * OW / 2 - Math.cos(oa) * (off + 1.6), ocx - ux * OW / 2 - Math.sin(oa) * (off + 1.6), ocz - uz * OW / 2 - Math.cos(oa) * (off + 1.6));
     // pot-belly stoves and heaps of baggage: bundles, beds, and baskets
-    this.stove(-11, 5.5); this.stove(11, -5.5);
+    for (const [x, z] of [[-11, 5.5], [11, -5.5]]) { const n0 = this.scene.children.length; this.stove(x, z); this.prop({ kind: 'stove', x, z }, n0); }
     for (const [x, z] of [[-9, 13], [-10.2, 12.2], [12, 12.5], [-12, -12], [13.4, 11.6]]) this.hamper(x, z);
     for (const [x, z, c] of [[-9.6, 14.1, '#7a5a6a'], [11.2, 13.6, '#5a6a7a'], [-13.2, -11.2, '#8a7a5a'], [-11, -13, '#6a4a3a'], [14.6, 12.6, '#7a6a4a']]) this.bundle(x, z, c);
     // outside: the hospital shed (right of the water entrance) and the customs shed with baggage scales
@@ -475,6 +484,12 @@ export class CastleZone extends Zone {
     this.panel(40, 2.8, -71.9, 2.2, 0.4, ['sign_street_STATE ST', { type: 'sign', title: 'STATE ST', color: '#1d2a3a', ink: '#f0e8d0', w: 192, h: 40 }]);
   }
 
+  /** A hall set piece. Blender reads this list (dev.propLayout()) to model it; the coded meshes made since `from` give way when castle_props.glb loads. */
+  prop(spec, from) {
+    (this.propLayout = this.propLayout || []).push(spec);
+    for (const o of this.scene.children.slice(from)) { o.userData.propPart = true; o.userData.keep = true; }
+  }
+
   /** Mark coded pieces that the light-baked Blender model replaces (kept unmerged so they can be removed). */
   tagBaked(from) { for (const o of this.scene.children.slice(from)) { o.userData.baked = true; o.userData.keep = true; } }
 
@@ -494,9 +509,18 @@ export class CastleZone extends Zone {
         o.material = new THREE.MeshBasicMaterial({ map, side: THREE.DoubleSide, fog: true });    // the light is already in the texture
         o.material.color.setScalar(0.94);
       });
+      root.position.y = 0.03;                           // just above the Battery paving, which runs under the fort
       this.scene.add(root);
       for (const o of this.scene.children.filter(o => o.userData.baked)) this.scene.remove(o);
       this.bakedLoaded = true;
+      // hall furniture modelled in Blender (tools/blender/castle_props.py), placed from propLayout
+      new GLTFLoader().load('assets/models/castle_props.glb', (g2) => {
+        if (this.game.zone !== this) return;
+        g2.scene.traverse((o) => { if (!o.isMesh) return; const map = o.material.map; if (map) { map.colorSpace = THREE.SRGBColorSpace; map.anisotropy = 4; } o.material = new THREE.MeshBasicMaterial({ map, side: THREE.DoubleSide }); o.material.color.setScalar(0.94); });
+        this.scene.add(g2.scene);
+        for (const o of this.scene.children.filter(o => o.userData.propPart)) this.scene.remove(o);
+        this.propsLoaded = true;
+      }, undefined, () => {});
     }, undefined, (e) => console.warn('baked rotunda not loaded', e)));
   }
 
