@@ -95,6 +95,7 @@ Many photos reasonably fit more than one column. Ask students to justify their c
 - **The elevator:** the Potter Building (1886) stood next to the Times Building, which was being rebuilt in 1888. The rooftop view and the workers are a reconstruction.
 - **Tweed** died in 1878, so he appears only as a legacy (Nast's 1871 cartoon, the courthouse).
 - **Ship:** one ship carrying Russian Jews, southern Italians, and Germans together is a simplification. Most sailed from different ports (Hamburg, Bremen, Naples, Liverpool).
+- **Castle Garden's interior** is modelled on 1860s–80s engravings. Its upper gallery burned in 1876 and was not rebuilt, so in 1888 it was really gone; the building is also drawn larger than its true 56 m.
 - **Castle Garden** inspections were quicker and less medical than the later Ellis Island exams. The game avoids Ellis Island details like chalk marks.
 - **Riis's methods:** students are prompted to think about consent. Riis's photos helped bring reform, but his writing included ethnic stereotypes.
 

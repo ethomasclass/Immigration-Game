@@ -36,6 +36,11 @@ This research backs the game's environments. Colors are rendering estimates. Poi
 - **Outside, from the ca. 1880–90 aerials and Shults's 1880 landing view:** low, pale, gabled wooden sheds (not dark brown), a covered landing shed on the pier, and barges with long curved roofs. The hospital and customs sheds stand on a timber wharf at the water side.
 - **The Battery, from ca. 1885 photographs:** a granite seawall with an iron pipe railing, gas lamps, slat benches, gravel walks, and small octagonal pavilions.
 
+### Castle Garden as modelled after the depot engravings (Blender pass)
+- The interior follows two 1860s–80s engravings, "Interior View of the State Emigrant Landing Depot, Castle Garden": an upper gallery on slender posts all round the wall, tall columns with palm-frond capitals carrying the lantern, and the Commissioners' office block with its long outside stair.
+- **The gallery** is shown as it was before the **1876 fire**, after which it was not rebuilt. It is kept because it is the Castle Garden people recognise from the pictures.
+- **Scale:** the fort is drawn 70 m across instead of the true 56 m, with 13 m walls, to match the spacious proportions of the engravings.
+
 ## Lower East Side
 - **Hester Street, west to east:** Bowery (Third Ave El overhead), Chrystie, Forsyth, Eldridge, **Allen (Second Ave El overhead, opened 1880, stations at Canal and Grand)**, Orchard, Ludlow, Essex.
 - **Block sizes:** blocks were about 200 ft. Side streets were about 50 ft wide building to building (a 30 ft roadway and 10 ft sidewalks). The Bowery was about 100 ft wide.
