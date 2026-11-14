@@ -39,6 +39,7 @@ export class CastleZone extends Zone {
     this.street();
 
     this.streetLife();
+    this.loadBaked();
     this.spawn = { x: 0, z: 56, yaw: 0 };
     if (flag('gate_opened')) this.openGate(true);
   }
@@ -185,7 +186,9 @@ export class CastleZone extends Zone {
   fort() {
     const doorS = [-0.06, 0.06];
     this.ringWall(0, 0, R, H, SANDSTONE, [doorS, [CH0, CH1]]);
+    const b0 = this.scene.children.length;
     this.ringWall(0, 0, RI, H, ['wall_castle_inner', { type: 'ashlar', color: '#a08872', mortar: '#c8b8a0', rows: 6, w: 512, h: 512 }], [[-0.075, 0.075], [CH0 - 0.02, CH1 + 0.02]]);
+    this.tagBaked(b0);   // inner wall face: replaced by the baked model when it loads
     // straight landward wall with the exit door in the middle
     const [ax, az] = pt(CH0, R * 0.995), [bx, bz] = pt(CH1, R * 0.995);
     const mx = (ax + bx) / 2, mz = (az + bz) / 2, dx = (bx - ax), dz = (bz - az), L = Math.hypot(dx, dz);
@@ -208,6 +211,7 @@ export class CastleZone extends Zone {
     const rim = R + 0.6, rise = 4.2, Rs = (rim * rim + rise * rise) / (2 * rise), th = Math.asin(rim / Rs);
     // the roof is a ring around a raised lantern (drum of arched windows) carried on the column ring
     const DR = 10, th0 = Math.asin(DR / Rs);
+    const b1 = this.scene.children.length;
     const roof = new THREE.Mesh(new THREE.SphereGeometry(Rs, 48, 8, 0, Math.PI * 2, th0, th - th0), material('roof_castle', { type: 'planks', color: '#6e6e6a', n: 16 }, { side: THREE.DoubleSide }));
     const roofY = H + 0.2 + rise - Rs; roof.position.y = roofY; this.scene.add(roof);
     const drumY = roofY + Math.sqrt(Rs * Rs - DR * DR), drumH = 2.8;
@@ -217,6 +221,7 @@ export class CastleZone extends Zone {
     const lcap = new THREE.Mesh(new THREE.ConeGeometry(DR + 0.8, 2.6, 36, 1, true), material('roof_castle', { type: 'planks', color: '#6e6e6a', n: 16 }, { side: THREE.DoubleSide }));
     lcap.position.y = drumY + drumH + 1.25; this.scene.add(lcap);
     const ceil = new THREE.Mesh(new THREE.CircleGeometry(DR, 36), colorMat('#efe9da', { basic: true })); ceil.rotation.x = Math.PI / 2; ceil.position.y = drumY + drumH - 0.02; this.scene.add(ceil);
+    this.tagBaked(b1);   // roof, clerestory drum, lantern cap and ceiling
     this.box(0, drumY + drumH + 2.4, 0, 0.14, 9, 0.14, '#ddd', { collide: false });
     this.panel(1.25, drumY + drumH + 10.6, 0, 2.4, 1.3, ['flag_us_38_stars', { type: 'solid', color: '#9a3030' }], 0, true);
     this.target('castle', 0, 5, R, 60);
@@ -228,9 +233,13 @@ export class CastleZone extends Zone {
     const fg = new THREE.CircleGeometry(R - 0.05, 48); fg.rotateX(-Math.PI / 2);
     const fuv = fg.attributes.uv; for (let i = 0; i < fuv.count; i++) fuv.setXY(i, fuv.getX(i) * 14, fuv.getY(i) * 14);
     const fl = new THREE.Mesh(fg, material(FLOOR[0], FLOOR[1], { repeat: [1, 1] })); fl.position.y = 0.03; this.scene.add(fl);
+    fl.userData.baked = true; fl.userData.keep = true;
+    // the strip of floor in the two doorways stays even with the baked model
+    { const rg = new THREE.RingGeometry(RI - 0.02, R - 0.05, 64); rg.rotateX(-Math.PI / 2); const ruv = rg.attributes.uv; for (let i = 0; i < ruv.count; i++) ruv.setXY(i, ruv.getX(i) * 14, ruv.getY(i) * 14); const rf = new THREE.Mesh(rg, material(FLOOR[0], FLOOR[1], { repeat: [1, 1] })); rf.position.y = 0.025; this.scene.add(rf); }
     // worn stone thresholds in both doorways
     this.box(0, 0, R - 1.2, 3.8, 0.05, 2.8, '#7a6a5a', { collide: false });
     // ring of slender columns with flared ("palm") capitals and arched braces, holding up the lantern
+    const b2 = this.scene.children.length;
     const DR = this.drum.r, cy = this.drum.y, colMat = colorMat('#d8d2c2'), N = 12;
     for (let i = 0; i < N; i++) {
       const a = Math.PI / 12 + i * Math.PI * 2 / N, [x, z] = pt(a, DR);
@@ -245,6 +254,7 @@ export class CastleZone extends Zone {
       arch.rotateX(Math.PI); this.scene.add(arch);
     }
     const ring = new THREE.Mesh(new THREE.TorusGeometry(DR, 0.2, 6, 48), colMat); ring.rotation.x = Math.PI / 2; ring.position.y = cy - 0.05; this.scene.add(ring);
+    this.tagBaked(b2);   // columns, capitals, arched braces and ring beam
     this.lamp(-8, 6, 8, 0xfff0d0, 9, 22); this.lamp(8, 6, -8, 0xfff0d0, 9, 22); this.lamp(0, 7.5, 0, 0xfff4e0, 8, 24);
     // benches around the wall (also used as beds)
     for (let a = 0.35; a < Math.PI * 2 - 0.2; a += 0.16) {
@@ -436,6 +446,31 @@ export class CastleZone extends Zone {
     if (flag('gate_done')) this.gateFamily.forEach((n, i) => { n.group.position.set(this.awaySpots[i][0], 0, this.awaySpots[i][1]); });
     if (flag('gate_done')) { this.gateTalk.pos.x = this.awaySpots[0][0]; this.gateTalk.pos.z = this.awaySpots[0][1]; }
     this.panel(40, 2.8, -71.9, 2.2, 0.4, ['sign_street_STATE ST', { type: 'sign', title: 'STATE ST', color: '#1d2a3a', ink: '#f0e8d0', w: 192, h: 40 }]);
+  }
+
+  /** Mark coded pieces that the light-baked Blender model replaces (kept unmerged so they can be removed). */
+  tagBaked(from) { for (const o of this.scene.children.slice(from)) { o.userData.baked = true; o.userData.keep = true; } }
+
+  /**
+   * Load the rotunda modelled and light-baked in Blender (tools/blender/castle_interior.py).
+   * Until it arrives, or if it fails, the coded version stays. ?baked=0 in the address keeps the coded version.
+   */
+  loadBaked() {
+    if (/[?&]baked=0/.test(location.search)) return;
+    import('../../lib/GLTFLoader.js').then(({ GLTFLoader }) => new GLTFLoader().load('assets/models/castle_interior.glb', (gltf) => {
+      if (this.game.zone !== this) return;              // left the zone while loading
+      const root = gltf.scene;
+      root.traverse((o) => {
+        if (!o.isMesh) return;
+        const map = o.material.map;
+        if (map) { map.colorSpace = THREE.SRGBColorSpace; map.anisotropy = 4; }
+        o.material = new THREE.MeshBasicMaterial({ map, side: THREE.DoubleSide, fog: true });    // the light is already in the texture
+        o.material.color.setScalar(0.94);
+      });
+      this.scene.add(root);
+      for (const o of this.scene.children.filter(o => o.userData.baked)) this.scene.remove(o);
+      this.bakedLoaded = true;
+    }, undefined, (e) => console.warn('baked rotunda not loaded', e)));
   }
 
   inspected() { return flag('medical') && flag('registered') && flag('novak_decided'); }
